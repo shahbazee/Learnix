@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_standard" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=JetBrains+Mono:wght@500;600;700&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base { html, body { margin: 0; padding: 0; } body { overscroll-behavior: none; } main > :first-child { margin-top: 0 !important; } main > :last-child { margin-bottom: 0 !important; } } ::-webkit-scrollbar { display: none; }</style><script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script><script id="tailwind-config">tailwind.config = {
+  darkMode: "class",
+  theme: {
+    extend: {
+      "colors": {
+        "surface-container-highest": "#dae2fd",
+        "on-secondary-container": "#006172",
+        "on-tertiary-container": "#ffdde7",
+        "error": "#ba1a1a",
+        "surface-container-high": "#e2e7ff",
+        "surface-bright": "#faf8ff",
+        "background": "#f8fafc",
+        "error-container": "#ffdad6",
+        "surface-variant": "#e2e8f0",
+        "secondary-fixed-dim": "#06b6d4",
+        "secondary-fixed": "#acedff",
+        "on-error": "#ffffff",
+        "surface-container": "#ffffff",
+        "tertiary-fixed-dim": "#ffb0cd",
+        "surface-dim": "#d2d9f4",
+        "surface-tint": "#732ee4",
+        "on-primary-container": "#ede0ff",
+        "on-primary-fixed-variant": "#5a00c6",
+        "secondary-container": "#06b6d4",
+        "on-surface": "#0f172a",
+        "on-surface-variant": "#475569",
+        "on-primary": "#ffffff",
+        "tertiary-container": "#ec4899",
+        "inverse-on-surface": "#eef0ff",
+        "surface-container-lowest": "#ffffff",
+        "outline-variant": "#cbd5e1",
+        "on-secondary-fixed": "#001f26",
+        "primary-fixed-dim": "#a855f7",
+        "on-background": "#0f172a",
+        "on-tertiary-fixed-variant": "#8c0053",
+        "primary-fixed": "#eaddff",
+        "primary-container": "#7c3aed",
+        "on-tertiary": "#ffffff",
+        "secondary": "#0891b2",
+        "tertiary": "#db2777",
+        "tertiary-fixed": "#ffd9e4",
+        "on-secondary": "#ffffff",
+        "inverse-primary": "#d2bbff",
+        "on-primary-fixed": "#25005a",
+        "on-error-container": "#93000a",
+        "on-secondary-fixed-variant": "#004e5c",
+        "surface-container-low": "#f1f5f9",
+        "surface": "#ffffff",
+        "inverse-surface": "#1e293b",
+        "primary": "#7c3aed",
+        "outline": "#94a3b8",
+        "on-tertiary-fixed": "#3e0022"
+      },
+      "borderRadius": {
+        "DEFAULT": "1rem",
+        "lg": "2rem",
+        "xl": "3rem",
+        "full": "9999px"
+      },
+      "spacing": {
+        "space-md": "1rem",
+        "gutter": "1.5rem",
+        "space-sm": "0.5rem",
+        "space-xs": "0.25rem",
+        "space-xl": "2.5rem",
+        "margin-desktop": "3rem",
+        "margin": "2rem",
+        "space-lg": "1.5rem",
+        "gutter-lg": "2rem",
+        "margin-mobile": "1rem",
+        "gutter-sm": "1rem"
+      },
+      "fontFamily": {
+        "display-hero": [ "Plus Jakarta Sans" ],
+        "body-md": [ "Plus Jakarta Sans" ],
+        "display-hero-mobile": [ "Plus Jakarta Sans" ],
+        "headline-lg-mobile": [ "Plus Jakarta Sans" ],
+        "body-lg": [ "Plus Jakarta Sans" ],
+        "body-sm": [ "Plus Jakarta Sans" ],
+        "label-mono-sm": [ "JetBrains Mono" ],
+        "headline-sm": [ "Plus Jakarta Sans" ],
+        "headline-lg": [ "Plus Jakarta Sans" ],
+        "caps-tag": [ "Plus Jakarta Sans" ],
+        "label-mono-md": [ "JetBrains Mono" ],
+        "headline-md": [ "Plus Jakarta Sans" ]
+      },
+      "fontSize": {
+        "display-hero": [ "56px", { "lineHeight": "64px", "letterSpacing": "-0.03em", "fontWeight": "800" } ],
+        "body-md": [ "15px", { "lineHeight": "24px", "letterSpacing": "-0.005em", "fontWeight": "400" } ],
+        "display-hero-mobile": [ "36px", { "lineHeight": "44px", "letterSpacing": "-0.025em", "fontWeight": "800" } ],
+        "headline-lg-mobile": [ "28px", { "lineHeight": "36px", "letterSpacing": "-0.02em", "fontWeight": "700" } ],
+        "body-lg": [ "18px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "400" } ],
+        "body-sm": [ "13px", { "lineHeight": "20px", "letterSpacing": "0em", "fontWeight": "400" } ],
+        "label-mono-sm": [ "11px", { "lineHeight": "14px", "letterSpacing": "0.02em", "fontWeight": "600" } ],
+        "headline-sm": [ "22px", { "lineHeight": "28px", "letterSpacing": "-0.015em", "fontWeight": "600" } ],
+        "headline-lg": [ "40px", { "lineHeight": "48px", "letterSpacing": "-0.025em", "fontWeight": "700" } ],
+        "caps-tag": [ "11px", { "lineHeight": "14px", "letterSpacing": "0.08em", "fontWeight": "700" } ],
+        "label-mono-md": [ "13px", { "lineHeight": "18px", "letterSpacing": "-0.01em", "fontWeight": "600" } ],
+        "headline-md": [ "28px", { "lineHeight": "36px", "letterSpacing": "-0.02em", "fontWeight": "700" } ]
+      }
+    }
+  }
+};</script></head><body class="bg-[#f8fafc] font-body-md text-[#0f172a] antialiased min-h-screen relative selection:bg-purple-500 selection:text-white"><div class="fixed inset-0 pointer-events-none overflow-hidden z-0"><div class="absolute -top-36 left-1/4 w-[36rem] h-[36rem] rounded-full bg-cyan-400/20 blur-[130px]"></div><div class="absolute top-1/4 -right-20 w-[32rem] h-[32rem] rounded-full bg-fuchsia-400/20 blur-[130px]"></div><div class="absolute bottom-10 left-1/3 w-[36rem] h-[36rem] rounded-full bg-violet-500/15 blur-[140px]"></div><div class="absolute top-2/3 -left-20 w-96 h-96 rounded-full bg-amber-300/20 blur-[120px]"></div></div><header class="fixed top-6 left-0 right-0 z-50 px-gutter-mobile md:px-gutter flex justify-center pointer-events-none"><div class="pointer-events-auto h-16 w-full max-w-5xl rounded-full bg-white/85 backdrop-blur-2xl border border-white/80 shadow-[0_20px_40px_-15px_rgba(99,102,241,0.15),0_1px_3px_rgba(0,0,0,0.05)] px-space-md flex items-center justify-between gap-space-sm"><div class="flex items-center gap-space-sm pl-space-xs"><img alt="EduFlow Iridescent Liquid Glyph Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1UVW5muaBBW6EzbhjvttGIl-Xu6R56jfN0HSgB9u5e3zomDvMY8RnjjIaBDmMPHYFuN2eQFygVIZ9oWY0WODsT-GTFwxdcu8ufp2lQi6GCUx_uWvo-Sy7OojoUKUI-blpAlmVIXjuzbQGBT95wMCdU1bezL1PWOYgFB4sahlf6MqnH9bCT8cJ5lE-O2uGL66A1JYEq6s0zoDCDXabQYgSPmNONzq__vBYFT8mDtnrXRp3nKoNUNaDNhtOfD"/><span class="font-headline-sm text-headline-sm text-slate-900 font-extrabold tracking-tight">EduFlow</span></div><nav class="hidden lg:flex items-center gap-space-xs p-1 rounded-full bg-slate-100/80 border border-slate-200/60"><a class="px-space-md py-1.5 rounded-full text-slate-600 hover:text-slate-900 hover:bg-white/80 transition-colors font-body-sm text-body-sm font-medium" data-path="explore-catalog" href="#">Explore Catalog</a><a class="px-space-md py-1.5 rounded-full text-slate-600 hover:text-slate-900 hover:bg-white/80 transition-colors font-body-sm text-body-sm font-medium" data-path="curriculum" href="#">Curriculum</a><a class="px-space-md py-1.5 rounded-full text-slate-600 hover:text-slate-900 hover:bg-white/80 transition-colors font-body-sm text-body-sm font-medium" data-path="instructors" href="#">Instructors</a><a class="px-space-md py-1.5 rounded-full text-slate-600 hover:text-slate-900 hover:bg-white/80 transition-colors font-body-sm text-body-sm font-medium" data-path="pricing" href="#">Pricing</a><a aria-current="page" class="px-space-md py-1.5 rounded-full transition-all bg-white text-violet-700 shadow-sm font-bold" data-path="dashboard" href="#">Dashboard</a></nav><div class="flex items-center gap-space-xs"><button class="hidden sm:flex items-center gap-space-xs px-space-sm py-1.5 rounded-full bg-slate-100/90 hover:bg-slate-200/80 text-slate-600 hover:text-slate-900 transition-all border border-slate-200/60" type="button"><span class="material-symbols-outlined text-[18px]">search</span><span class="font-label-mono-sm text-label-mono-sm px-1.5 py-0.5 rounded bg-white text-slate-500 shadow-xs border border-slate-200/50">⌘K</span></button><a class="hidden md:inline-flex px-space-sm py-1.5 font-body-sm text-body-sm text-slate-600 hover:text-slate-900 font-semibold transition-colors" data-path="login" href="#">Sign In</a><a class="relative inline-flex items-center justify-center p-[2px] rounded-full overflow-hidden shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 transition-all" data-path="signup" href="#"><span class="absolute inset-0 bg-gradient-to-r from-violet-600 via-cyan-500 to-pink-500"></span><span class="relative px-space-md py-1.5 rounded-full bg-white text-slate-900 font-body-sm text-body-sm font-bold hover:bg-transparent hover:text-white transition-all">Get Started</span></a><div class="pl-space-xs"><img alt="Profile" class="w-8 h-8 rounded-full object-cover ring-2 ring-violet-500/30 shadow-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAeH6bAqM-93WEMb2Sc3tcrQGgzfVnW4T4eorkWD0oNIdqGHkUJhgmF5hMiJdCVvb5by6vW0N17dtYxKHQu85yLQzt-ez9NcN0ODzhR-CJ2F_S1KD_9XJD4fjEfqbf3glH3uE86W5twATYcr4KLzzZCWKelvj6ZL4AaWiXn8dtraglqY3Azhp4jqp3kP16yiud80EPcLdgf0dCNoTSnj8EfygHudJqTKXGKqWHC2dbod8elKJAwpFxb-Q"/></div></div></div></header><main class="relative z-10 w-full pt-16 min-h-screen"><div class="flex flex-col w-full">
+<div class="w-full max-w-[1440px] mx-auto px-gutter-mobile md:px-margin pt-space-md pb-space-xl flex flex-col gap-space-lg">
+<!-- TOP GREETING & METRICS BAR -->
+<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-space-md relative">
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-center gap-space-sm flex-wrap">
+<span class="font-caps-tag text-caps-tag uppercase text-cyan-700 font-bold tracking-widest px-space-sm py-1 rounded-full bg-cyan-100/80 border border-cyan-200/80 backdrop-blur-md">
+            Spatial Workspace // Tier 1
+          </span>
+<span class="font-label-mono-sm text-label-mono-sm text-slate-500 flex items-center gap-1.5 font-semibold">
+<span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse ring-4 ring-emerald-500/20"></span>
+            Sync Active • Local 10:42 PM
+          </span>
+</div>
+<h1 class="font-headline-lg text-headline-lg text-[#0f172a] font-extrabold tracking-tight">
+          Welcome back, <span class="bg-gradient-to-r from-cyan-500 via-violet-600 to-fuchsia-600 bg-clip-text text-transparent drop-shadow-sm">Sarah</span>
+</h1>
+<p class="font-body-md text-body-md text-slate-600 font-medium">
+          Module 4 milestone is within reach. Resume your agentic microservice architecture session.
+        </p>
+</div>
+<!-- Streaks & User Control Cluster -->
+<div class="flex items-center gap-space-sm flex-wrap">
+<!-- Gamification Pills -->
+<div class="flex items-center gap-space-xs p-1.5 rounded-full bg-white/90 backdrop-blur-2xl shadow-xl shadow-slate-200/60 border border-white">
+<!-- Streak Badge: Glowing amber/orange pill -->
+<div class="flex items-center gap-1.5 px-space-sm py-1.5 rounded-full bg-gradient-to-r from-amber-500/15 to-orange-500/15 border border-amber-400/40 text-amber-800 shadow-sm">
+<span class="text-base drop-shadow-sm">🔥</span>
+<span class="font-label-mono-md text-label-mono-md font-bold text-amber-700">14 Day Streak</span>
+</div>
+<!-- XP Pill: Bright electric yellow/cyan pill -->
+<div class="flex items-center gap-1.5 px-space-sm py-1.5 rounded-full bg-gradient-to-r from-yellow-400/20 via-cyan-400/20 to-teal-400/20 border border-cyan-300 text-slate-900 shadow-sm">
+<span class="text-base text-amber-500 font-bold drop-shadow-sm">⚡</span>
+<span class="font-label-mono-md text-label-mono-md font-bold text-cyan-800">1,840 XP</span>
+</div>
+</div>
+<!-- Floating Profile Capsule -->
+<div class="flex items-center gap-space-sm px-space-sm py-1.5 rounded-full bg-white/90 backdrop-blur-2xl shadow-xl shadow-slate-200/60 border border-white">
+<!-- Notification trigger with cyan unread badge -->
+<button aria-label="Notifications" class="relative w-10 h-10 rounded-full flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors group" type="button">
+<span class="material-symbols-outlined text-slate-600 group-hover:text-slate-900 text-[20px]">notifications</span>
+<span class="absolute top-2 right-2 w-2.5 h-2.5 rounded-full bg-cyan-500 ring-2 ring-white shadow-[0_0_8px_#06b6d4]"></span>
+</button>
+<!-- Settings trigger -->
+<button aria-label="Settings" class="w-10 h-10 rounded-full flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors group" type="button">
+<span class="material-symbols-outlined text-slate-600 group-hover:text-slate-900 text-[20px]">tune</span>
+</button>
+<!-- User Avatar -->
+<div class="relative group cursor-pointer">
+<img alt="Sarah Jenkins Student Profile" class="w-10 h-10 rounded-full object-cover ring-2 ring-violet-500 shadow-md shadow-violet-500/20" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAeH6bAqM-93WEMb2Sc3tcrQGgzfVnW4T4eorkWD0oNIdqGHkUJhgmF5hMiJdCVvb5by6vW0N17dtYxKHQu85yLQzt-ez9NcN0ODzhR-CJ2F_S1KD_9XJD4fjEfqbf3glH3uE86W5twATYcr4KLzzZCWKelvj6ZL4AaWiXn8dtraglqY3Azhp4jqp3kP16yiud80EPcLdgf0dCNoTSnj8EfygHudJqTKXGKqWHC2dbod8elKJAwpFxb-Q"/>
+<span class="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-emerald-500 ring-2 ring-white"></span>
+</div>
+</div>
+</div>
+</div>
+<!-- MAIN BENTO GRID MATRIX -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-space-lg">
+<!-- CARD 1: HERO RESUME LEARNING (Span 8 on desktop) -->
+<div class="lg:col-span-8 group relative rounded-xl bg-white/80 backdrop-blur-xl border border-white p-space-md md:p-space-lg flex flex-col justify-between overflow-hidden shadow-[0_20px_50px_-15px_rgba(124,58,237,0.12),0_4px_16px_-2px_rgba(0,0,0,0.04)] transition-all duration-300 hover:shadow-[0_25px_60px_-12px_rgba(124,58,237,0.2)]">
+<!-- Ambient radiant light pool behind card -->
+<div class="absolute -top-24 -left-24 w-80 h-80 rounded-full bg-violet-400/20 blur-3xl pointer-events-none"></div>
+<div class="absolute -bottom-24 -right-24 w-72 h-72 rounded-full bg-cyan-400/20 blur-3xl pointer-events-none"></div>
+<div class="relative z-10 flex flex-col gap-space-md">
+<!-- Card Header & Metadata -->
+<div class="flex items-center justify-between flex-wrap gap-space-sm">
+<div class="flex items-center gap-space-xs">
+<span class="px-space-sm py-1 rounded-full bg-violet-100 text-violet-700 font-caps-tag text-caps-tag uppercase tracking-wider font-bold border border-violet-200">
+                Current Course Track
+              </span>
+<span class="font-label-mono-sm text-label-mono-sm text-slate-500 font-semibold">Django 5.2 + AutoGen</span>
+</div>
+<div class="flex items-center gap-2 text-slate-500 font-label-mono-sm text-label-mono-sm font-semibold">
+<span class="material-symbols-outlined text-[16px] text-cyan-600">timer</span>
+<span>24 min remaining in section</span>
+</div>
+</div>
+<!-- Titles -->
+<div class="flex flex-col gap-space-xs">
+<h2 class="font-headline-md text-headline-md text-[#0f172a] font-extrabold tracking-tight">
+              Full-Stack Django 5 &amp; Multi-Agent AI
+            </h2>
+<p class="font-body-lg text-body-lg text-violet-600 font-semibold">
+              Module 4: Advanced Stripe Webhooks &amp; Event Processing
+            </p>
+</div>
+<!-- Video Thumbnail Module with Progress Sheen -->
+<div class="relative w-full aspect-video rounded-lg overflow-hidden bg-slate-900 shadow-xl group/video">
+<div class="w-full h-full bg-cover bg-center transition-transform duration-700 group-hover/video:scale-105 opacity-90" data-alt="High quality dark cinematic code editor view running Python 3 and Django 5 webhook test suite on multi-monitor setup with subtle purple and cyan ambient LED reflections, blurred IDE terminals, ultra-sleek spatial computer room atmosphere" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuD4l9ZCcJ-EMcKanGSiHRW-JWvWhrRKgIJL5TezW5rO72yhg_RXJEB83gvcg0GThWWX5yJSISdDzim36YLuMXeOHW1mp_7Kec8n2HwOlc9ve9j9fNL_CggRMyZhSkSaXPzDBwlv3LpdZCqJQJu5MulwYVeC2zAM4CnVzu4h-KknMP68uDURC6FBcuOTeaXfSzs3IbmnYy7QT-kSOIxaLWEhh0Co1LOXZEEtbqP17pJvI1I0dOrCyhIMPg')"></div>
+<!-- Gradient Scrim for contrast -->
+<div class="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-900/30 to-transparent"></div>
+<!-- Glowing Live Play State Overlay -->
+<div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+<div class="w-16 h-16 rounded-full bg-white/90 backdrop-blur-xl flex items-center justify-center text-slate-900 shadow-[0_0_35px_rgba(6,182,212,0.6)] group-hover/video:scale-110 transition-transform">
+<span class="material-symbols-outlined text-[32px] text-violet-600 ml-1" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+</div>
+</div>
+<!-- In-Video Progress Overlay -->
+<div class="absolute bottom-4 left-4 right-4 flex flex-col gap-1.5 p-3 rounded-DEFAULT bg-white/90 backdrop-blur-xl border border-white shadow-lg">
+<div class="flex items-center justify-between text-slate-900 font-label-mono-sm text-label-mono-sm">
+<span class="text-slate-600 font-semibold flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-cyan-500"></span>
+                  Telemetry Progress
+                </span>
+<span class="text-cyan-700 font-bold font-label-mono-md text-label-mono-md">82% Completed</span>
+</div>
+<div class="w-full h-2.5 rounded-full bg-slate-200 overflow-hidden p-0.5">
+<div class="h-full rounded-full bg-gradient-to-r from-violet-600 via-cyan-500 to-teal-400 shadow-[0_0_10px_#06b6d4]" style="width: 82%;"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Bottom Action Strip -->
+<div class="relative z-10 mt-space-md pt-space-md flex flex-wrap items-center justify-between gap-space-sm border-t border-slate-100">
+<div class="flex items-center gap-space-sm text-slate-600 font-body-sm text-body-sm font-medium">
+<span class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[18px] text-pink-600">check_circle</span>
+              14/17 Lessons Completed
+            </span>
+<span class="text-slate-300">•</span>
+<span class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[18px] text-violet-600">terminal</span>
+              3 Interactive Sandboxes
+            </span>
+</div>
+<a class="inline-flex items-center gap-2 px-space-lg py-2.5 rounded-full bg-gradient-to-r from-violet-600 via-purple-600 to-cyan-500 text-white font-headline-sm text-body-md font-bold shadow-[0_10px_25px_-5px_rgba(124,58,237,0.4)] hover:shadow-[0_12px_30px_-4px_rgba(6,182,212,0.5)] hover:scale-105 transition-all" href="#">
+<span>Resume Learning</span>
+<span class="material-symbols-outlined text-[18px]">play_arrow</span>
+</a>
+</div>
+</div>
+<!-- CARD 2: METRICS COMPLETION RING (Span 4 on desktop) -->
+<div class="lg:col-span-4 rounded-xl bg-white/80 backdrop-blur-xl border border-white p-space-md md:p-space-lg flex flex-col justify-between shadow-[0_20px_50px_-15px_rgba(6,182,212,0.12),0_4px_16px_-2px_rgba(0,0,0,0.04)] relative overflow-hidden group">
+<div class="absolute -top-16 -right-16 w-52 h-52 rounded-full bg-cyan-400/20 blur-3xl pointer-events-none"></div>
+<div class="flex items-center justify-between">
+<span class="font-caps-tag text-caps-tag uppercase tracking-wider text-slate-500 font-bold">Telemetry Metrics</span>
+<span class="material-symbols-outlined text-violet-600 text-[22px]">insights</span>
+</div>
+<!-- SVG Circular Ring Section -->
+<div class="flex flex-col items-center justify-center my-space-md relative">
+<div class="relative w-48 h-48 flex items-center justify-center">
+<svg class="w-full h-full -rotate-90 drop-shadow-sm" viewbox="0 0 160 160">
+<!-- Background Ring -->
+<circle class="text-slate-100" cx="80" cy="80" fill="transparent" r="66" stroke="currentColor" stroke-linecap="round" stroke-width="12"></circle>
+<!-- Primary Vivid Ring (Hours Progress) -->
+<circle class="transition-all duration-1000" cx="80" cy="80" fill="transparent" r="66" stroke="url(#vibrantLightGrad)" stroke-dasharray="414" stroke-dashoffset="95" stroke-linecap="round" stroke-width="12"></circle>
+<!-- Secondary Inner Accent Ring (Certificates) -->
+<circle class="text-slate-100" cx="80" cy="80" fill="transparent" r="50" stroke="currentColor" stroke-linecap="round" stroke-width="6"></circle>
+<circle class="transition-all duration-1000" cx="80" cy="80" fill="transparent" r="50" stroke="#f43f5e" stroke-dasharray="314" stroke-dashoffset="110" stroke-linecap="round" stroke-width="6"></circle>
+<defs>
+<lineargradient id="vibrantLightGrad" x1="0%" x2="100%" y1="0%" y2="100%">
+<stop offset="0%" stop-color="#ec4899"></stop>
+<stop offset="45%" stop-color="#8b5cf6"></stop>
+<stop offset="100%" stop-color="#06b6d4"></stop>
+</lineargradient>
+</defs>
+</svg>
+<!-- Center Concentric Values -->
+<div class="absolute flex flex-col items-center justify-center text-center">
+<span class="font-display-hero text-headline-lg font-black text-[#0f172a] leading-none">78%</span>
+<span class="font-label-mono-sm text-label-mono-sm text-cyan-700 font-extrabold uppercase tracking-widest mt-1">Aggregate</span>
+</div>
+</div>
+</div>
+<!-- Metric Breakdowns Breakdown Pills -->
+<div class="grid grid-cols-3 gap-space-xs text-center">
+<div class="p-2.5 rounded-DEFAULT bg-slate-50/90 border border-slate-200/70 backdrop-blur-md flex flex-col items-center">
+<span class="font-display-hero text-headline-sm font-black text-cyan-600">3</span>
+<span class="font-label-mono-sm text-label-mono-sm text-slate-500 font-bold mt-0.5">Completed</span>
+</div>
+<div class="p-2.5 rounded-DEFAULT bg-slate-50/90 border border-slate-200/70 backdrop-blur-md flex flex-col items-center">
+<span class="font-display-hero text-headline-sm font-black text-violet-600">48.5</span>
+<span class="font-label-mono-sm text-label-mono-sm text-slate-500 font-bold mt-0.5">Hours</span>
+</div>
+<div class="p-2.5 rounded-DEFAULT bg-slate-50/90 border border-slate-200/70 backdrop-blur-md flex flex-col items-center">
+<span class="font-display-hero text-headline-sm font-black text-pink-600">2</span>
+<span class="font-label-mono-sm text-label-mono-sm text-slate-500 font-bold mt-0.5">Verified</span>
+</div>
+</div>
+</div>
+<!-- CARD 4: WEEKLY ACTIVITY HEATMAP (Span 7 on desktop) -->
+<div class="lg:col-span-7 rounded-xl bg-white/80 backdrop-blur-xl border border-white p-space-md md:p-space-lg flex flex-col justify-between shadow-[0_20px_50px_-15px_rgba(124,58,237,0.1),0_4px_16px_-2px_rgba(0,0,0,0.04)] relative overflow-hidden">
+<div class="flex items-center justify-between flex-wrap gap-space-xs mb-space-sm">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-cyan-600 text-[20px]">grid_view</span>
+<h3 class="font-headline-sm text-headline-sm text-[#0f172a] font-bold">Weekly Study Velocity</h3>
+</div>
+<span class="font-label-mono-sm text-label-mono-sm text-slate-500 font-semibold">Last 12 Weeks • 148 commits</span>
+</div>
+<p class="font-body-sm text-body-sm text-slate-600 mb-space-md font-medium">
+          Consistent coding sessions logged via EduFlow CLI agent sandboxes.
+        </p>
+<!-- Contribution Matrix (Light mode GitHub style with lavender, cyan, violet, teal) -->
+<div class="overflow-x-auto pb-2">
+<div class="min-w-[480px] flex flex-col gap-1.5">
+<!-- Day rows (7 days x 12 weeks grid) -->
+<div class="grid grid-flow-col grid-rows-7 gap-1.5 w-full">
+<!-- Week 1 -->
+<div class="w-4 h-4 rounded-sm bg-slate-100"></div>
+<div class="w-4 h-4 rounded-sm bg-slate-100"></div>
+<div class="w-4 h-4 rounded-sm bg-purple-200"></div>
+<div class="w-4 h-4 rounded-sm bg-slate-100"></div>
+<div class="w-4 h-4 rounded-sm bg-purple-300"></div>
+<div class="w-4 h-4 rounded-sm bg-slate-100"></div>
+<div class="w-4 h-4 rounded-sm bg-slate-100"></div>
+<!-- Week 2 -->
+<div class="w-4 h-4 rounded-sm bg-purple-200"></div>
+<div class="w-4 h-4 rounded-sm bg-slate-100"></div>
+<div class="w-4 h-4 rounded-sm bg-cyan-300"></div>
+<div class="w-4 h-4 rounded-sm bg-purple-400"></div>
+<div class="w-4 h-4 rounded-sm bg-purple-300"></div>
+<div class="w-4 h-4 rounded-sm bg-slate-100"></div>
+<div class="w-4 h-4 rounded-sm bg-slate-100"></div>
+<!-- Week 3 -->
+<div class="w-4 h-4 rounded-sm bg-purple-300"></div>
+<div class="w-4 h-4 rounded-sm bg-violet-500"></div>
+<div class="w-4 h-4 rounded-sm bg-cyan-400"></div>
+<div class="w-4 h-4 rounded-sm bg-purple-400"></div>
+<div class="w-4 h-4 rounded-sm bg-slate-100"></div>
+<div class="w-4 h-4 rounded-sm bg-slate-100"></div>
+<div class="w-4 h-4 rounded-sm bg-slate-100"></div>
+<!-- Week 4 -->
+<div class="w-4 h-4 rounded-sm bg-slate-100"></div>
+<div class="w-4 h-4 rounded-sm bg-purple-200"></div>
+<div class="w-4 h-4 rounded-sm bg-violet-400"></div>
+<div class="w-4 h-4 rounded-sm bg-slate-100"></div>
+<div class="w-4 h-4 rounded-sm bg-cyan-400"></div>
+<div class="w-4 h-4 rounded-sm bg-violet-600"></div>
+<div class="w-4 h-4 rounded-sm bg-slate-100"></div>
+<!-- Week 5 -->
+<div class="w-4 h-4 rounded-sm bg-purple-300"></div>
+<div class="w-4 h-4 rounded-sm bg-slate-100"></div>
+<div class="w-4 h-4 rounded-sm bg-slate-100"></div>
+<div class="w-4 h-4 rounded-sm bg-purple-200"></div>
+<div class="w-4 h-4 rounded-sm bg-purple-400"></div>
+<div class="w-4 h-4 rounded-sm bg-violet-600"></div>
+<div class="w-4 h-4 rounded-sm bg-teal-400"></div>
+<!-- Week 6 -->
+<div class="w-4 h-4 rounded-sm bg-purple-400"></div>
+<div class="w-4 h-4 rounded-sm bg-violet-500"></div>
+<div class="w-4 h-4 rounded-sm bg-cyan-400"></div>
+<div class="w-4 h-4 rounded-sm bg-violet-600"></div>
+<div class="w-4 h-4 rounded-sm bg-purple-500"></div>
+<div class="w-4 h-4 rounded-sm bg-slate-100"></div>
+<div class="w-4 h-4 rounded-sm bg-slate-100"></div>
+<!-- Week 7 -->
+<div class="w-4 h-4 rounded-sm bg-slate-100"></div>
+<div class="w-4 h-4 rounded-sm bg-purple-200"></div>
+<div class="w-4 h-4 rounded-sm bg-purple-300"></div>
+<div class="w-4 h-4 rounded-sm bg-cyan-400"></div>
+<div class="w-4 h-4 rounded-sm bg-violet-500"></div>
+<div class="w-4 h-4 rounded-sm bg-violet-600"></div>
+<div class="w-4 h-4 rounded-sm bg-teal-400"></div>
+<!-- Week 8 -->
+<div class="w-4 h-4 rounded-sm bg-purple-400"></div>
+<div class="w-4 h-4 rounded-sm bg-cyan-300"></div>
+<div class="w-4 h-4 rounded-sm bg-violet-600"></div>
+<div class="w-4 h-4 rounded-sm bg-violet-700"></div>
+<div class="w-4 h-4 rounded-sm bg-cyan-400"></div>
+<div class="w-4 h-4 rounded-sm bg-purple-300"></div>
+<div class="w-4 h-4 rounded-sm bg-slate-100"></div>
+<!-- Week 9 -->
+<div class="w-4 h-4 rounded-sm bg-purple-200"></div>
+<div class="w-4 h-4 rounded-sm bg-purple-500"></div>
+<div class="w-4 h-4 rounded-sm bg-violet-600"></div>
+<div class="w-4 h-4 rounded-sm bg-teal-400"></div>
+<div class="w-4 h-4 rounded-sm bg-purple-400"></div>
+<div class="w-4 h-4 rounded-sm bg-slate-100"></div>
+<div class="w-4 h-4 rounded-sm bg-slate-100"></div>
+<!-- Week 10 -->
+<div class="w-4 h-4 rounded-sm bg-violet-400"></div>
+<div class="w-4 h-4 rounded-sm bg-violet-600"></div>
+<div class="w-4 h-4 rounded-sm bg-cyan-400"></div>
+<div class="w-4 h-4 rounded-sm bg-violet-700"></div>
+<div class="w-4 h-4 rounded-sm bg-purple-500"></div>
+<div class="w-4 h-4 rounded-sm bg-teal-400"></div>
+<div class="w-4 h-4 rounded-sm bg-purple-300"></div>
+<!-- Week 11 -->
+<div class="w-4 h-4 rounded-sm bg-violet-500"></div>
+<div class="w-4 h-4 rounded-sm bg-cyan-400"></div>
+<div class="w-4 h-4 rounded-sm bg-violet-700"></div>
+<div class="w-4 h-4 rounded-sm bg-teal-500"></div>
+<div class="w-4 h-4 rounded-sm bg-violet-600"></div>
+<div class="w-4 h-4 rounded-sm bg-purple-400"></div>
+<div class="w-4 h-4 rounded-sm bg-slate-100"></div>
+<!-- Week 12 (Current) -->
+<div class="w-4 h-4 rounded-sm bg-violet-600"></div>
+<div class="w-4 h-4 rounded-sm bg-cyan-500 shadow-[0_0_8px_rgba(6,182,212,0.6)]"></div>
+<div class="w-4 h-4 rounded-sm bg-purple-500"></div>
+<div class="w-4 h-4 rounded-sm bg-teal-400 shadow-[0_0_8px_rgba(45,212,191,0.7)]"></div>
+<div class="w-4 h-4 rounded-sm bg-violet-600 animate-pulse shadow-[0_0_10px_rgba(124,58,237,0.7)]"></div>
+<div class="w-4 h-4 rounded-sm bg-slate-100"></div>
+<div class="w-4 h-4 rounded-sm bg-slate-100"></div>
+</div>
+</div>
+</div>
+<!-- Legend and summary -->
+<div class="flex items-center justify-between mt-space-sm pt-space-xs text-slate-500 font-label-mono-sm text-label-mono-sm font-semibold">
+<span>Less</span>
+<div class="flex items-center gap-1.5">
+<div class="w-3 h-3 rounded-sm bg-slate-100 border border-slate-200"></div>
+<div class="w-3 h-3 rounded-sm bg-purple-200"></div>
+<div class="w-3 h-3 rounded-sm bg-violet-400"></div>
+<div class="w-3 h-3 rounded-sm bg-violet-600"></div>
+<div class="w-3 h-3 rounded-sm bg-cyan-500 shadow-[0_0_6px_rgba(6,182,212,0.6)]"></div>
+</div>
+<span>More Active</span>
+</div>
+</div>
+<!-- CARD 5: UPCOMING LIVE OFFICE HOURS (Span 5 on desktop) -->
+<div class="lg:col-span-5 rounded-xl bg-white/80 backdrop-blur-xl border border-white p-space-md md:p-space-lg flex flex-col justify-between shadow-[0_20px_50px_-15px_rgba(236,72,153,0.12),0_4px_16px_-2px_rgba(0,0,0,0.04)] relative overflow-hidden">
+<div class="absolute -bottom-12 -left-12 w-48 h-48 rounded-full bg-pink-400/20 blur-2xl pointer-events-none"></div>
+<div>
+<div class="flex items-center justify-between mb-space-sm">
+<span class="px-space-sm py-0.5 rounded-full bg-pink-100 text-pink-700 border border-pink-200 font-caps-tag text-caps-tag uppercase tracking-wider flex items-center gap-1.5 font-bold">
+<span class="w-2 h-2 rounded-full bg-pink-500 animate-ping"></span>
+              Live Room Scheduled
+            </span>
+<span class="font-label-mono-sm text-label-mono-sm text-slate-500 font-semibold">Starts in 35m</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-[#0f172a] font-bold">
+            AI Agent Architecture Office Hours
+          </h3>
+<p class="font-body-sm text-body-sm text-slate-600 mt-1 font-medium">
+            Live interactive code teardown with Lead Research Architect Dr. Marcus Vance. Bring your Stripe webhook edge cases.
+          </p>
+<!-- Schedule reminder badge -->
+<div class="mt-space-md p-space-sm rounded-DEFAULT bg-slate-50/90 border border-slate-200/70 backdrop-blur-md flex items-center justify-between gap-space-sm">
+<div class="flex items-center gap-space-xs">
+<div class="w-10 h-10 rounded-full bg-cyan-100 text-cyan-700 flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]">calendar_today</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-mono-md text-label-mono-md font-bold text-slate-900">Today • 11:30 PM UTC</span>
+<span class="font-body-sm text-body-sm text-slate-500 font-medium">Spatial Audio Room #08</span>
+</div>
+</div>
+<div class="flex -space-x-2 overflow-hidden">
+<div class="w-7 h-7 rounded-full bg-violet-600 border-2 border-white flex items-center justify-center text-[10px] text-white font-bold shadow-sm">+28</div>
+</div>
+</div>
+</div>
+<div class="mt-space-md pt-space-xs flex items-center gap-space-sm">
+<button class="w-full py-2.5 px-space-md rounded-full bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-body-sm text-body-sm font-bold flex items-center justify-center gap-2 transition-all shadow-lg shadow-pink-500/25 group" type="button">
+<span class="material-symbols-outlined text-white group-hover:scale-110 transition-transform text-[18px]">videocam</span>
+<span>Join Live Room</span>
+</button>
+<button aria-label="Add to Calendar" class="w-11 h-11 shrink-0 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-900 border border-slate-200/60 flex items-center justify-center transition-all" type="button">
+<span class="material-symbols-outlined text-[18px]">bookmark_add</span>
+</button>
+</div>
+</div>
+<!-- CARD 3: RECENT PURCHASES & INVOICES (Full 12 cols span) -->
+<div class="lg:col-span-12 rounded-xl bg-white/80 backdrop-blur-xl border border-white p-space-md md:p-space-lg shadow-[0_20px_50px_-15px_rgba(99,102,241,0.1),0_4px_16px_-2px_rgba(0,0,0,0.04)] relative overflow-hidden">
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-space-sm mb-space-md">
+<div class="flex items-center gap-space-xs">
+<div class="w-10 h-10 rounded-full bg-cyan-100 border border-cyan-200 flex items-center justify-center text-cyan-700 shadow-sm">
+<span class="material-symbols-outlined text-[20px]">receipt_long</span>
+</div>
+<div>
+<h3 class="font-headline-sm text-headline-sm text-[#0f172a] font-bold">Recent Purchases &amp; Billing History</h3>
+<p class="font-body-sm text-body-sm text-slate-600 font-medium">Direct access to verified Stripe payment receipts and downloadable PDF tax vouchers.</p>
+</div>
+</div>
+<div class="flex items-center gap-space-xs self-start md:self-auto">
+<span class="font-label-mono-sm text-label-mono-sm text-slate-600 font-semibold px-space-sm py-1 rounded-full bg-slate-100 border border-slate-200">
+              Stripe Customer ID: cus_N9vQx83d
+            </span>
+</div>
+</div>
+<!-- Enrolled Courses & Invoices Table / Rows -->
+<div class="flex flex-col gap-space-xs">
+<!-- Item 1 -->
+<div class="flex flex-col lg:flex-row lg:items-center justify-between p-space-md rounded-DEFAULT bg-white/90 border border-slate-100 shadow-sm hover:shadow-md hover:border-violet-200 transition-all gap-space-md">
+<div class="flex items-center gap-space-md min-w-0">
+<div class="w-12 h-12 rounded-lg bg-gradient-to-tr from-violet-600 to-indigo-500 text-white flex items-center justify-center shrink-0 shadow-md shadow-violet-500/20">
+<span class="material-symbols-outlined text-[24px]">dataset</span>
+</div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-space-xs flex-wrap">
+<span class="font-headline-sm text-body-lg font-bold text-[#0f172a] truncate">Full-Stack Django 5 &amp; Multi-Agent AI</span>
+<span class="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200 font-caps-tag text-caps-tag font-bold tracking-wide">
+                    PAID
+                  </span>
+</div>
+<div class="flex items-center gap-space-xs font-label-mono-sm text-label-mono-sm text-slate-500 mt-0.5 font-medium">
+<span>Order #EDF-98214</span>
+<span>•</span>
+<span>Jan 18, 2025</span>
+<span>•</span>
+<span class="text-slate-900 font-bold">$349.00 USD</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-space-xs flex-wrap shrink-0">
+<button class="px-space-sm py-1.5 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-label-mono-md text-label-mono-md flex items-center gap-1.5 transition-colors border border-slate-200/60 font-semibold" type="button">
+<span class="material-symbols-outlined text-[16px] text-violet-600">download</span>
+<span>Download PDF Invoice</span>
+</button>
+<button class="px-space-sm py-1.5 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-label-mono-md text-label-mono-md flex items-center gap-1.5 transition-colors border border-slate-200/60 font-semibold" type="button">
+<span class="material-symbols-outlined text-[16px] text-cyan-600">open_in_new</span>
+<span>View Stripe Receipt</span>
+</button>
+</div>
+</div>
+<!-- Item 2 -->
+<div class="flex flex-col lg:flex-row lg:items-center justify-between p-space-md rounded-DEFAULT bg-white/90 border border-slate-100 shadow-sm hover:shadow-md hover:border-cyan-200 transition-all gap-space-md">
+<div class="flex items-center gap-space-md min-w-0">
+<div class="w-12 h-12 rounded-lg bg-gradient-to-tr from-cyan-500 to-teal-400 text-white flex items-center justify-center shrink-0 shadow-md shadow-cyan-500/20">
+<span class="material-symbols-outlined text-[24px]">neurology</span>
+</div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-space-xs flex-wrap">
+<span class="font-headline-sm text-body-lg font-bold text-[#0f172a] truncate">High-Throughput Vector Databases &amp; Embeddings</span>
+<span class="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200 font-caps-tag text-caps-tag font-bold tracking-wide">
+                    PAID
+                  </span>
+</div>
+<div class="flex items-center gap-space-xs font-label-mono-sm text-label-mono-sm text-slate-500 mt-0.5 font-medium">
+<span>Order #EDF-87109</span>
+<span>•</span>
+<span>Dec 04, 2024</span>
+<span>•</span>
+<span class="text-slate-900 font-bold">$289.00 USD</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-space-xs flex-wrap shrink-0">
+<button class="px-space-sm py-1.5 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-label-mono-md text-label-mono-md flex items-center gap-1.5 transition-colors border border-slate-200/60 font-semibold" type="button">
+<span class="material-symbols-outlined text-[16px] text-violet-600">download</span>
+<span>Download PDF Invoice</span>
+</button>
+<button class="px-space-sm py-1.5 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-label-mono-md text-label-mono-md flex items-center gap-1.5 transition-colors border border-slate-200/60 font-semibold" type="button">
+<span class="material-symbols-outlined text-[16px] text-cyan-600">open_in_new</span>
+<span>View Stripe Receipt</span>
+</button>
+</div>
+</div>
+<!-- Item 3 -->
+<div class="flex flex-col lg:flex-row lg:items-center justify-between p-space-md rounded-DEFAULT bg-white/90 border border-slate-100 shadow-sm hover:shadow-md hover:border-pink-200 transition-all gap-space-md">
+<div class="flex items-center gap-space-md min-w-0">
+<div class="w-12 h-12 rounded-lg bg-gradient-to-tr from-pink-500 to-rose-400 text-white flex items-center justify-center shrink-0 shadow-md shadow-pink-500/20">
+<span class="material-symbols-outlined text-[24px]">token</span>
+</div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-space-xs flex-wrap">
+<span class="font-headline-sm text-body-lg font-bold text-[#0f172a] truncate">Spatial Shader Graphics with WebGPU &amp; WGSL</span>
+<span class="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200 font-caps-tag text-caps-tag font-bold tracking-wide">
+                    PAID
+                  </span>
+</div>
+<div class="flex items-center gap-space-xs font-label-mono-sm text-label-mono-sm text-slate-500 mt-0.5 font-medium">
+<span>Order #EDF-76402</span>
+<span>•</span>
+<span>Oct 19, 2024</span>
+<span>•</span>
+<span class="text-slate-900 font-bold">$319.00 USD</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-space-xs flex-wrap shrink-0">
+<button class="px-space-sm py-1.5 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-label-mono-md text-label-mono-md flex items-center gap-1.5 transition-colors border border-slate-200/60 font-semibold" type="button">
+<span class="material-symbols-outlined text-[16px] text-violet-600">download</span>
+<span>Download PDF Invoice</span>
+</button>
+<button class="px-space-sm py-1.5 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-label-mono-md text-label-mono-md flex items-center gap-1.5 transition-colors border border-slate-200/60 font-semibold" type="button">
+<span class="material-symbols-outlined text-[16px] text-cyan-600">open_in_new</span>
+<span>View Stripe Receipt</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div></main><footer class="relative z-10 w-full mt-margin bg-white/70 backdrop-blur-xl border-t border-slate-200/60"><div class="max-w-7xl mx-auto px-gutter-mobile md:px-margin py-space-xl flex flex-col md:flex-row items-center justify-between gap-space-lg"><div class="flex items-center gap-space-sm"><img alt="EduFlow Iridescent Liquid Glyph Logo" class="h-6 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1UVW5muaBBW6EzbhjvttGIl-Xu6R56jfN0HSgB9u5e3zomDvMY8RnjjIaBDmMPHYFuN2eQFygVIZ9oWY0WODsT-GTFwxdcu8ufp2lQi6GCUx_uWvo-Sy7OojoUKUI-blpAlmVIXjuzbQGBT95wMCdU1bezL1PWOYgFB4sahlf6MqnH9bCT8cJ5lE-O2uGL66A1JYEq6s0zoDCDXabQYgSPmNONzq__vBYFT8mDtnrXRp3nKoNUNaDNhtOfD"/><span class="font-headline-sm text-headline-sm text-slate-900 font-bold">EduFlow</span><span class="font-label-mono-sm text-label-mono-sm text-slate-500 font-semibold px-space-xs py-0.5 rounded-full bg-slate-100 border border-slate-200">v2.4 Spatial</span></div><div class="flex flex-wrap items-center justify-center gap-space-md text-slate-600 font-body-sm text-body-sm font-medium"><a class="hover:text-slate-900 transition-colors" data-path="explore-catalog" href="#">Courses</a><a class="hover:text-slate-900 transition-colors" data-path="curriculum" href="#">Syllabus</a><a class="hover:text-slate-900 transition-colors" data-path="pricing" href="#">Membership</a><a class="hover:text-slate-900 transition-colors" data-path="instructors" href="#">Faculty</a></div><div class="font-label-mono-sm text-label-mono-sm text-slate-500 font-medium">© 2025 EduFlow Technologies Inc. All rights reserved.</div></div></footer></body></html>

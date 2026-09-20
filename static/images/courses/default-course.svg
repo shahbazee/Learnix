@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="50%" stop-color="#1e1b4b"/>
+      <stop offset="100%" stop-color="#090d16"/>
+    </linearGradient>
+    <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#06b6d4"/>
+      <stop offset="50%" stop-color="#7c3aed"/>
+      <stop offset="100%" stop-color="#ec4899"/>
+    </linearGradient>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+    </pattern>
+  </defs>
+  <rect width="800" height="450" fill="url(#bgGrad)"/>
+  <rect width="800" height="450" fill="url(#grid)"/>
+  <circle cx="400" cy="225" r="140" fill="url(#accentGrad)" opacity="0.15" filter="blur(40px)"/>
+  <g transform="translate(400, 210) scale(1.4)">
+    <polygon points="0,-45 39,-22 39,23 0,45 -39,23 -39,-22" fill="none" stroke="url(#accentGrad)" stroke-width="3"/>
+    <polygon points="0,-30 26,-15 26,15 0,30 -26,15 -26,-15" fill="none" stroke="#06b6d4" stroke-width="2" opacity="0.8"/>
+    <circle cx="0" cy="0" r="8" fill="#7c3aed"/>
+  </g>
+  <text x="400" y="320" text-anchor="middle" font-family="'Plus Jakarta Sans', sans-serif" font-size="20" font-weight="700" fill="#f8fafc" letter-spacing="1">LEARNIX MASTERCLASS</text>
+  <text x="400" y="348" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="12" fill="#94a3b8" letter-spacing="2">ARCHITECTURAL CURRICULUM</text>
+</svg>

@@ -1,0 +1,216 @@
+<!-- Frosted Glass Quick-Search Modal (⌘K / Ctrl+K) for Learnix -->
+<div id="searchModal" data-lenis-prevent class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-900/40 backdrop-blur-md transition-all duration-300" aria-modal="true" role="dialog">
+  <div class="relative w-full max-w-2xl rounded-[2rem] bg-white/95 backdrop-blur-2xl border border-white/90 shadow-[0_24px_64px_-12px_rgba(124,58,237,0.25)] p-6 overflow-hidden">
+    
+    <!-- Search Input Bar -->
+    <div class="relative flex items-center border-b border-slate-100 pb-4">
+      <span class="material-symbols-outlined text-[24px] text-violet-600 mr-3">search</span>
+      <input id="modalSearchInput" type="text" placeholder="Search curricula, modules, instructors, tech stacks..." class="w-full text-base font-semibold text-[#0f172a] placeholder-slate-400 bg-transparent border-none focus:outline-none focus:ring-0" autocomplete="off"/>
+      <div id="searchSpinner" class="hidden mr-3">
+        <span class="material-symbols-outlined text-violet-600 text-[20px] animate-spin">progress_activity</span>
+      </div>
+      <button type="button" onclick="closeSearchModal()" class="px-2 py-1 rounded-lg bg-slate-100 text-slate-500 hover:text-slate-900 text-xs font-mono font-bold transition-colors">
+        ESC
+      </button>
+    </div>
+
+    <!-- Live Search Results Container -->
+    <div id="liveSearchResults" data-lenis-prevent class="hidden mt-4 space-y-2 max-h-[340px] overflow-y-auto pr-1">
+      <div class="flex items-center justify-between px-2">
+        <p class="text-[11px] font-mono uppercase tracking-wider text-slate-400 font-semibold">Matched Masterclasses</p>
+        <span id="resultsCount" class="text-[11px] font-mono text-purple-600 font-bold"></span>
+      </div>
+      <div id="searchResultsList" class="space-y-1.5">
+        <!-- Injected dynamically via JS -->
+      </div>
+    </div>
+
+    <!-- Default Quick Navigation Shortcuts (shown when input is blank) -->
+    <div id="quickNavContainer" class="mt-4 space-y-2">
+      <p class="text-[11px] font-mono uppercase tracking-wider text-slate-400 font-semibold px-2">Quick Navigation</p>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+        <a href="{% url 'core:home' %}" class="flex items-center gap-3 p-3 rounded-xl hover:bg-violet-50/70 transition-all text-slate-700 hover:text-violet-700 font-medium group">
+          <span class="w-7 h-7 rounded-lg bg-violet-100 flex items-center justify-center text-violet-700 group-hover:scale-110 transition-transform">
+            <span class="material-symbols-outlined text-[16px]">home</span>
+          </span>
+          <div>
+            <div class="font-bold text-slate-900 group-hover:text-violet-700">Home</div>
+            <div class="text-[10px] text-slate-400">Showcase</div>
+          </div>
+        </a>
+
+        <a href="{% url 'courses:course_list' %}" class="flex items-center gap-3 p-3 rounded-xl hover:bg-purple-50/70 transition-all text-slate-700 hover:text-purple-700 font-medium group">
+          <span class="w-7 h-7 rounded-lg bg-purple-100 flex items-center justify-center text-purple-700 group-hover:scale-110 transition-transform">
+            <span class="material-symbols-outlined text-[16px]">school</span>
+          </span>
+          <div>
+            <div class="font-bold text-slate-900 group-hover:text-purple-700">Course Catalog</div>
+            <div class="text-[10px] text-slate-400">All Curricula</div>
+          </div>
+        </a>
+
+        <a href="{% url 'core:about' %}" class="flex items-center gap-3 p-3 rounded-xl hover:bg-cyan-50/70 transition-all text-slate-700 hover:text-cyan-700 font-medium group">
+          <span class="w-7 h-7 rounded-lg bg-cyan-100 flex items-center justify-center text-cyan-700 group-hover:scale-110 transition-transform">
+            <span class="material-symbols-outlined text-[16px]">info</span>
+          </span>
+          <div>
+            <div class="font-bold text-slate-900 group-hover:text-cyan-700">About</div>
+            <div class="text-[10px] text-slate-400">Manifesto</div>
+          </div>
+        </a>
+      </div>
+
+      <!-- Suggested Topics -->
+      <div class="pt-3 border-t border-slate-100 flex flex-wrap items-center gap-2">
+        <span class="text-[11px] font-mono text-slate-400 font-semibold">Suggested:</span>
+        <a href="{% url 'courses:course_list' %}?category=python-django" class="px-2.5 py-1 rounded-full bg-slate-100 text-slate-700 text-xs font-semibold hover:bg-violet-100 hover:text-violet-700 transition-colors">Python & Django</a>
+        <a href="{% url 'courses:course_list' %}?category=system-design" class="px-2.5 py-1 rounded-full bg-slate-100 text-slate-700 text-xs font-semibold hover:bg-cyan-100 hover:text-cyan-700 transition-colors">Distributed Systems</a>
+        <a href="{% url 'courses:course_list' %}?category=ml-llms" class="px-2.5 py-1 rounded-full bg-slate-100 text-slate-700 text-xs font-semibold hover:bg-pink-100 hover:text-pink-700 transition-colors">LLMs & AI</a>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  let searchDebounceTimeout = null;
+
+  function openSearchModal() {
+    const modal = document.getElementById('searchModal');
+    if (modal) {
+      if (window.lenis) window.lenis.stop();
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      setTimeout(() => {
+        const input = document.getElementById('modalSearchInput');
+        if (input) {
+          input.focus();
+          input.select();
+        }
+      }, 50);
+    }
+  }
+
+  function closeSearchModal() {
+    const modal = document.getElementById('searchModal');
+    if (modal) {
+      if (window.lenis) window.lenis.start();
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+  }
+
+  // Keyboard shortcut listener (Cmd+K / Ctrl+K and ESC)
+  document.addEventListener('keydown', (e) => {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+      e.preventDefault();
+      const modal = document.getElementById('searchModal');
+      if (modal && modal.classList.contains('hidden')) {
+        openSearchModal();
+      } else {
+        closeSearchModal();
+      }
+    }
+    if (e.key === 'Escape') {
+      closeSearchModal();
+    }
+  });
+
+  // Close modal when clicking on backdrop
+  document.getElementById('searchModal')?.addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) {
+      closeSearchModal();
+    }
+  });
+
+  // Real-time AJAX Search Query Handler
+  const searchInput = document.getElementById('modalSearchInput');
+  const liveResults = document.getElementById('liveSearchResults');
+  const quickNav = document.getElementById('quickNavContainer');
+  const resultsList = document.getElementById('searchResultsList');
+  const resultsCount = document.getElementById('resultsCount');
+  const spinner = document.getElementById('searchSpinner');
+
+  searchInput?.addEventListener('input', (e) => {
+    const query = e.target.value.trim();
+    clearTimeout(searchDebounceTimeout);
+
+    if (query.length < 2) {
+      liveResults.classList.add('hidden');
+      quickNav.classList.remove('hidden');
+      if (spinner) spinner.classList.add('hidden');
+      return;
+    }
+
+    if (spinner) spinner.classList.remove('hidden');
+
+    searchDebounceTimeout = setTimeout(async () => {
+      try {
+        const response = await fetch(`/courses/api/search/?q=${encodeURIComponent(query)}`);
+        const data = await response.json();
+        
+        if (spinner) spinner.classList.add('hidden');
+        quickNav.classList.add('hidden');
+        liveResults.classList.remove('hidden');
+        resultsList.innerHTML = '';
+
+        if (data.results && data.results.length > 0) {
+          resultsCount.textContent = `${data.results.length} found`;
+          data.results.forEach(course => {
+            const card = document.createElement('a');
+            card.href = course.url;
+            card.className = "flex items-center justify-between p-3 rounded-xl bg-slate-50/80 hover:bg-violet-50/80 border border-slate-100 hover:border-violet-200 transition-all group";
+            card.innerHTML = `
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-lg overflow-hidden shrink-0 border border-slate-200/80 bg-slate-900 shadow-xs">
+                  <img src="${course.thumbnail_url || '/static/images/courses/default-course.svg'}"
+                       alt="${course.title}"
+                       class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                       onerror="this.onerror=null; this.src='/static/images/courses/default-course.svg';"/>
+                </div>
+                <div class="flex flex-col text-left">
+                  <span class="font-bold text-slate-900 group-hover:text-violet-700 text-sm leading-snug">${course.title}</span>
+                  <div class="flex items-center gap-2 text-[11px] text-slate-500 font-mono mt-0.5">
+                    <span>${course.category}</span>
+                    <span>·</span>
+                    <span class="text-purple-600 font-semibold">${course.level}</span>
+                    <span>·</span>
+                    <span class="flex items-center text-amber-500 font-semibold">★ ${course.rating}</span>
+                  </div>
+                </div>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-bold font-mono text-slate-800">${course.price.startsWith('$') ? course.price : '$' + course.price}</span>
+                <span class="material-symbols-outlined text-slate-400 group-hover:text-violet-600 text-[18px] transition-transform group-hover:translate-x-0.5">arrow_forward</span>
+              </div>
+            `;
+            resultsList.appendChild(card);
+          });
+        } else {
+          resultsCount.textContent = '0 found';
+          resultsList.innerHTML = `
+            <div class="p-6 text-center text-slate-500 text-sm bg-slate-50/60 rounded-xl">
+              <span class="material-symbols-outlined text-slate-400 text-[28px] mb-1">search_off</span>
+              <p class="font-medium text-slate-700">No masterclasses matched "${query}"</p>
+              <p class="text-xs text-slate-400 mt-1">Try searching for "Django", "Rust", "LLMs", or "Distributed".</p>
+            </div>
+          `;
+        }
+      } catch (err) {
+        if (spinner) spinner.classList.add('hidden');
+        console.error('Search error:', err);
+      }
+    }, 220);
+  });
+
+  searchInput?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      const firstItem = resultsList.querySelector('a');
+      if (firstItem) {
+        window.location.href = firstItem.href;
+      } else if (searchInput.value.trim()) {
+        window.location.href = `/courses/?q=${encodeURIComponent(searchInput.value.trim())}`;
+      }
+    }
+  });
+</script>

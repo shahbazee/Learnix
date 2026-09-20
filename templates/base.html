@@ -1,0 +1,120 @@
+{% load static %}
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>{% block title %}{{ SITE_NAME }} — Master Modern Engineering{% endblock %}</title>
+
+  <!-- Typography: Plus Jakarta Sans & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+
+  <!-- Learnix Design System Styles & Smooth Scrolling -->
+  <link rel="stylesheet" href="{% static 'css/learnix.css' %}"/>
+
+  <!-- Tailwind CSS CDN with Luminous Liquid Glass Theme Extension -->
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            primary: "#7c3aed",
+            "primary-container": "#6d28d9",
+            "on-primary": "#ffffff",
+            "primary-fixed": "#ede9fe",
+            "primary-fixed-dim": "#a78bfa",
+            secondary: "#06b6d4",
+            "secondary-container": "#0891b2",
+            "on-secondary": "#ffffff",
+            "secondary-fixed": "#cffafe",
+            tertiary: "#ec4899",
+            "tertiary-container": "#db2777",
+            "on-tertiary": "#ffffff",
+            "tertiary-fixed": "#fce7f3",
+            background: "#f8fafc",
+            "on-background": "#0f172a",
+            surface: "#ffffff",
+            "on-surface": "#0f172a",
+            "on-surface-variant": "#475569",
+            "surface-container": "#f1f5f9",
+            "surface-container-high": "#edf2f7",
+            "surface-container-highest": "#e2e8f0",
+            "outline-variant": "#cbd5e1",
+            error: "#ba1a1a",
+          },
+          fontFamily: {
+            sans: ["'Plus Jakarta Sans'", "sans-serif"],
+            mono: ["'JetBrains Mono'", "monospace"],
+          },
+          borderRadius: {
+            DEFAULT: "1rem",
+            lg: "2rem",
+            xl: "3rem",
+            full: "9999px",
+          },
+        }
+      }
+    };
+  </script>
+
+  <style>
+    @layer base {
+      html {
+        scroll-behavior: auto;
+        scroll-padding-top: 5.5rem;
+      }
+      html, body {
+        margin: 0;
+        padding: 0;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+      }
+    }
+  </style>
+
+  {% block extra_head %}{% endblock %}
+</head>
+<body class="bg-[#f8fafc] text-[#0f172a] antialiased min-h-screen relative selection:bg-purple-500/20 selection:text-purple-700">
+
+  <!-- Dynamic Ambient Liquid Background Orbs (Hardware-Accelerated Compositing) -->
+  <div class="fixed inset-0 pointer-events-none overflow-hidden z-0 transform-gpu" style="transform: translate3d(0, 0, 0); will-change: transform;">
+    <div class="absolute -top-36 left-1/4 w-[600px] h-[600px] rounded-full bg-cyan-400/15 blur-[140px] transform-gpu" style="transform: translate3d(0, 0, 0); backface-visibility: hidden;"></div>
+    <div class="absolute top-1/4 -right-24 w-[550px] h-[550px] rounded-full bg-purple-500/15 blur-[150px] transform-gpu" style="transform: translate3d(0, 0, 0); backface-visibility: hidden;"></div>
+    <div class="absolute top-2/3 left-1/3 w-[650px] h-[650px] rounded-full bg-pink-400/10 blur-[160px] transform-gpu" style="transform: translate3d(0, 0, 0); backface-visibility: hidden;"></div>
+    <div class="absolute bottom-10 -left-20 w-[480px] h-[480px] rounded-full bg-indigo-400/10 blur-[140px] transform-gpu" style="transform: translate3d(0, 0, 0); backface-visibility: hidden;"></div>
+  </div>
+
+  <!-- Global Header / Navbar -->
+  {% include 'includes/_navbar.html' %}
+
+  <!-- Django Flash Alert Messages -->
+  {% include 'includes/_messages.html' %}
+
+  <!-- Main Content Block -->
+  <main class="relative z-10 w-full min-h-screen pt-24">
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- Quick Search Modal (⌘K) -->
+  {% include 'includes/_search_modal.html' %}
+
+  <!-- Global Footer -->
+  {% include 'includes/_footer.html' %}
+
+  <!-- Learnix Reusable Global Loading Component (Stitch Compass Star Asset) -->
+  {% include 'includes/_loader.html' %}
+
+  <!-- Learnix Smooth & Fluid Scrolling Engine (Lenis) -->
+  <script src="{% static 'js/lenis.min.js' %}"></script>
+  <script src="{% static 'js/smooth-scroll.js' %}"></script>
+
+  <!-- Learnix Core Client Architecture & Global Loader Engine -->
+  <script src="{% static 'js/learnix.js' %}"></script>
+
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

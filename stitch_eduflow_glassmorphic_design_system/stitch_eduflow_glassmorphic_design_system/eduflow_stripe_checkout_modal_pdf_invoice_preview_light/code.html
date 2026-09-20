@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta content="web_standard" name="shell-type"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=JetBrains+Mono:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+    @layer base { 
+      html, body { margin: 0; padding: 0; } 
+      body { overscroll-behavior: none; } 
+      main > :first-child { margin-top: 0 !important; } 
+      main > :last-child { margin-bottom: 0 !important; } 
+    } 
+    ::-webkit-scrollbar { display: none; }
+  </style>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "secondary": "#00687a",
+            "surface": "#faf8ff",
+            "on-primary-fixed": "#25005a",
+            "primary-container": "#7c3aed",
+            "background": "#faf8ff",
+            "outline-variant": "#ccc3d8",
+            "tertiary-fixed-dim": "#ffb0cd",
+            "primary-fixed-dim": "#d2bbff",
+            "outline": "#7b7487",
+            "on-tertiary-fixed": "#3e0022",
+            "surface-tint": "#732ee4",
+            "on-background": "#131b2e",
+            "surface-dim": "#d2d9f4",
+            "surface-container-high": "#e2e7ff",
+            "tertiary-container": "#bf2076",
+            "surface-bright": "#faf8ff",
+            "on-surface": "#131b2e",
+            "on-secondary-fixed-variant": "#004e5c",
+            "primary-fixed": "#eaddff",
+            "surface-container-low": "#f2f3ff",
+            "surface-container-lowest": "#ffffff",
+            "on-primary-container": "#ede0ff",
+            "secondary-fixed": "#acedff",
+            "primary": "#630ed4",
+            "error-container": "#ffdad6",
+            "surface-variant": "#dae2fd",
+            "tertiary-fixed": "#ffd9e4",
+            "surface-container": "#eaedff",
+            "surface-container-highest": "#dae2fd",
+            "inverse-on-surface": "#eef0ff",
+            "on-secondary": "#ffffff",
+            "tertiary": "#9b005c",
+            "error": "#ba1a1a",
+            "on-error": "#ffffff",
+            "on-tertiary": "#ffffff",
+            "on-error-container": "#93000a",
+            "on-secondary-fixed": "#001f26",
+            "on-primary": "#ffffff",
+            "secondary-container": "#57dffe",
+            "inverse-primary": "#d2bbff",
+            "secondary-fixed-dim": "#4cd7f6",
+            "inverse-surface": "#283044",
+            "on-secondary-container": "#006172",
+            "on-tertiary-container": "#ffdde7",
+            "on-surface-variant": "#4a4455",
+            "on-tertiary-fixed-variant": "#8c0053",
+            "on-primary-fixed-variant": "#5a00c6"
+          },
+          "borderRadius": {
+            "DEFAULT": "1rem",
+            "lg": "2rem",
+            "xl": "3rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "margin-mobile": "1.25rem",
+            "space-xs": "0.25rem",
+            "space-md": "1rem",
+            "space-xl": "2.5rem",
+            "gutter-mobile": "1rem",
+            "gutter": "1.5rem",
+            "space-sm": "0.5rem",
+            "margin": "3rem",
+            "space-lg": "1.5rem"
+          },
+          "fontFamily": {
+            "display-hero": ["Plus Jakarta Sans"],
+            "headline-lg": ["Plus Jakarta Sans"],
+            "headline-md": ["Plus Jakarta Sans"],
+            "headline-sm": ["Plus Jakarta Sans"],
+            "body-lg": ["Plus Jakarta Sans"],
+            "body-md": ["Plus Jakarta Sans"],
+            "body-sm": ["Plus Jakarta Sans"],
+            "label-mono-sm": ["JetBrains Mono"],
+            "label-mono-md": ["JetBrains Mono"],
+            "caps-tag": ["Plus Jakarta Sans"]
+          },
+          "fontSize": {
+            "display-hero": ["56px", { "lineHeight": "64px", "letterSpacing": "-0.03em", "fontWeight": "800" }],
+            "headline-lg": ["40px", { "lineHeight": "48px", "letterSpacing": "-0.025em", "fontWeight": "700" }],
+            "headline-md": ["28px", { "lineHeight": "36px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+            "headline-sm": ["22px", { "lineHeight": "30px", "letterSpacing": "-0.015em", "fontWeight": "600" }],
+            "body-lg": ["18px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "400" }],
+            "body-md": ["15px", { "lineHeight": "24px", "letterSpacing": "-0.005em", "fontWeight": "400" }],
+            "body-sm": ["13px", { "lineHeight": "20px", "letterSpacing": "0em", "fontWeight": "400" }],
+            "label-mono-sm": ["11px", { "lineHeight": "14px", "letterSpacing": "0.02em", "fontWeight": "500" }],
+            "label-mono-md": ["13px", { "lineHeight": "18px", "letterSpacing": "-0.01em", "fontWeight": "500" }],
+            "caps-tag": ["11px", { "lineHeight": "14px", "letterSpacing": "0.08em", "fontWeight": "700" }]
+          }
+        }
+      }
+    };
+  </script>
+</head>
+<body class="bg-[#faf8ff] font-body-md text-on-surface antialiased min-h-screen relative selection:bg-primary-container selection:text-white">
+<!-- Multi-layered subtle ambient glowing blur orbs in luminous light mode -->
+<div class="fixed inset-0 pointer-events-none overflow-hidden z-0">
+<div class="absolute -top-36 left-1/4 w-[32rem] h-[32rem] rounded-full bg-violet-400/20 blur-[130px]"></div>
+<div class="absolute top-1/4 -right-24 w-96 h-96 rounded-full bg-cyan-300/25 blur-[120px]"></div>
+<div class="absolute bottom-20 left-1/3 w-[30rem] h-[30rem] rounded-full bg-fuchsia-300/20 blur-[140px]"></div>
+<div class="absolute top-2/3 -left-32 w-80 h-80 rounded-full bg-blue-300/20 blur-[130px]"></div>
+</div>
+<!-- Floating Light Pill Navigation Header -->
+<header class="fixed top-6 left-0 right-0 z-50 px-gutter-mobile md:px-gutter flex justify-center pointer-events-none">
+<div class="pointer-events-auto h-16 w-full max-w-5xl rounded-full bg-white/85 backdrop-blur-2xl shadow-[0_16px_36px_-10px_rgba(76,29,149,0.08),0_1px_3px_rgba(0,0,0,0.04)] border border-white/90 px-space-md flex items-center justify-between gap-space-sm">
+<div class="flex items-center gap-space-sm pl-space-xs">
+<img alt="EduFlow Iridescent Liquid Glyph Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1UVW5muaBBW6EzbhjvttGIl-Xu6R56jfN0HSgB9u5e3zomDvMY8RnjjIaBDmMPHYFuN2eQFygVIZ9oWY0WODsT-GTFwxdcu8ufp2lQi6GCUx_uWvo-Sy7OojoUKUI-blpAlmVIXjuzbQGBT95wMCdU1bezL1PWOYgFB4sahlf6MqnH9bCT8cJ5lE-O2uGL66A1JYEq6s0zoDCDXabQYgSPmNONzq__vBYFT8mDtnrXRp3nKoNUNaDNhtOfD"/>
+<span class="font-headline-sm text-headline-sm text-on-surface font-extrabold tracking-tight">EduFlow</span>
+</div>
+<nav class="hidden lg:flex items-center gap-space-xs p-1 rounded-full bg-surface-container-low/70 border border-slate-200/50">
+<a class="px-space-md py-1.5 rounded-full text-on-surface-variant hover:text-on-surface hover:bg-white transition-all font-body-sm text-body-sm font-medium" data-path="explore-catalog" href="#">Explore Catalog</a>
+<a class="px-space-md py-1.5 rounded-full text-on-surface-variant hover:text-on-surface hover:bg-white transition-all font-body-sm text-body-sm font-medium" data-path="curriculum" href="#">Curriculum</a>
+<a class="px-space-md py-1.5 rounded-full text-on-surface-variant hover:text-on-surface hover:bg-white transition-all font-body-sm text-body-sm font-medium" data-path="instructors" href="#">Instructors</a>
+<a class="px-space-md py-1.5 rounded-full text-on-surface-variant hover:text-on-surface hover:bg-white transition-all font-body-sm text-body-sm font-medium" data-path="pricing" href="#">Pricing</a>
+<a class="px-space-md py-1.5 rounded-full text-on-surface-variant hover:text-on-surface hover:bg-white transition-all font-body-sm text-body-sm font-medium" data-path="dashboard" href="#">Dashboard</a>
+</nav>
+<div class="flex items-center gap-space-xs">
+<button class="hidden sm:flex items-center gap-space-xs px-space-sm py-1.5 rounded-full bg-slate-100/80 hover:bg-slate-200/70 text-on-surface-variant hover:text-on-surface transition-all border border-slate-200/60" type="button">
+<span class="material-symbols-outlined text-[18px]">search</span>
+<span class="font-label-mono-sm text-label-mono-sm px-1.5 py-0.5 rounded bg-white text-on-surface-variant shadow-sm border border-slate-200/60">⌘K</span>
+</button>
+<a class="hidden md:inline-flex px-space-sm py-1.5 font-body-sm text-body-sm text-on-surface-variant hover:text-on-surface font-semibold transition-colors" data-path="login" href="#">Sign In</a>
+<a class="relative inline-flex items-center justify-center p-[1px] rounded-full overflow-hidden shadow-[0_8px_20px_-4px_rgba(124,58,237,0.35)]" data-path="signup" href="#">
+<span class="absolute inset-0 bg-gradient-to-r from-violet-600 via-indigo-600 to-cyan-500"></span>
+<span class="relative px-space-md py-1.5 rounded-full bg-white/90 backdrop-blur-md text-on-surface font-body-sm text-body-sm font-bold hover:bg-transparent hover:text-white transition-all">Get Started</span>
+</a>
+<div class="pl-space-xs">
+<img alt="Profile" class="w-8 h-8 rounded-full object-cover ring-2 ring-violet-500/20 shadow-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAeH6bAqM-93WEMb2Sc3tcrQGgzfVnW4T4eorkWD0oNIdqGHkUJhgmF5hMiJdCVvb5by6vW0N17dtYxKHQu85yLQzt-ez9NcN0ODzhR-CJ2F_S1KD_9XJD4fjEfqbf3glH3uE86W5twATYcr4KLzzZCWKelvj6ZL4AaWiXn8dtraglqY3Azhp4jqp3kP16yiud80EPcLdgf0dCNoTSnj8EfygHudJqTKXGKqWHC2dbod8elKJAwpFxb-Q"/>
+</div>
+</div>
+</div>
+</header>
+<main class="relative z-10 w-full pt-20 min-h-screen">
+<div class="flex flex-col w-full">
+<div class="relative w-full max-w-7xl mx-auto px-gutter-mobile md:px-gutter pb-space-xl">
+<!-- Top System Breadcrumbs & Session Meta -->
+<div class="flex flex-wrap items-center justify-between gap-space-sm py-space-md">
+<div class="inline-flex items-center gap-space-xs px-space-md py-1.5 rounded-full bg-white/80 backdrop-blur-xl border border-white shadow-sm">
+<span class="font-label-mono-sm text-label-mono-sm text-secondary flex items-center gap-1.5 font-bold">
+<span class="inline-block w-2 h-2 rounded-full bg-secondary animate-pulse"></span>
+              ENCRYPTED LINK
+            </span>
+<span class="text-outline-variant font-label-mono-sm text-label-mono-sm font-semibold">//</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant font-medium">Billing &amp; Checkout</span>
+<span class="text-outline-variant font-label-mono-sm text-label-mono-sm">/</span>
+<span class="font-label-mono-sm text-label-mono-sm text-primary font-bold">Tier 1 Spatial Node</span>
+<span class="text-outline-variant font-label-mono-sm text-label-mono-sm">/</span>
+<span class="font-label-mono-sm text-label-mono-sm text-on-surface font-semibold">Order #EDF-98214</span>
+</div>
+<!-- Quick Status Indicators -->
+<div class="flex items-center gap-space-xs font-label-mono-sm text-label-mono-sm text-on-surface-variant">
+<span class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/80 backdrop-blur-md border border-slate-200/60 shadow-sm text-secondary font-medium">
+<span class="material-symbols-outlined text-[15px] text-secondary">verified_user</span>
+              TLS 1.3 Strict · 256-bit AES
+            </span>
+<span class="hidden sm:flex items-center gap-1 px-3 py-1 rounded-full bg-white/80 backdrop-blur-md border border-slate-200/60 shadow-sm text-on-surface font-medium">
+<span class="material-symbols-outlined text-[15px] text-tertiary">bolt</span>
+              Edge Node: SFO-1
+            </span>
+</div>
+</div>
+<!-- Main Title & Toggle Switcher -->
+<div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-space-md mb-space-lg">
+<div class="space-y-1">
+<h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight flex items-center gap-space-sm font-extrabold">
+<span>Checkout &amp; Terminal</span>
+<span class="font-label-mono-sm text-label-mono-sm uppercase tracking-widest text-primary-container font-bold px-2.5 py-1 rounded-full bg-primary-container/10 border border-primary-container/20">PRODUCTION V2.4</span>
+</h1>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-2xl">
+              Complete high-tier cohort enrollment with Stripe zero-latency payment routing and view instant cryptographically signed verified tax receipts.
+            </p>
+</div>
+<!-- Quick View Anchors -->
+<div class="flex items-center p-1 rounded-full bg-white/90 backdrop-blur-xl border border-slate-200/60 shadow-md">
+<a class="px-space-md py-1.5 rounded-full bg-violet-600 text-white font-body-sm text-body-sm font-semibold flex items-center gap-1.5 shadow-sm transition-all hover:bg-violet-700" href="#checkout-modal">
+<span class="material-symbols-outlined text-[16px]">credit_card</span>
+              Payment Checkout
+            </a>
+<a class="px-space-md py-1.5 rounded-full text-on-surface-variant hover:text-on-surface font-body-sm text-body-sm font-medium flex items-center gap-1.5 transition-all" href="#pdf-invoice-preview">
+<span class="material-symbols-outlined text-[16px]">description</span>
+              PDF Invoice Sheet
+            </a>
+</div>
+</div>
+<!-- SECTION 1: SECURE STRIPE CHECKOUT MODAL / CONTAINER (Split Glass Panes) -->
+<section class="relative rounded-2xl bg-white/80 backdrop-blur-2xl shadow-[0_24px_60px_-15px_rgba(76,29,149,0.08)] border border-white/80 overflow-hidden mb-space-xl" id="checkout-modal">
+<!-- Ambient Glow Corners -->
+<div class="absolute -top-32 -right-28 w-96 h-96 rounded-full bg-violet-400/15 blur-3xl pointer-events-none"></div>
+<div class="absolute -bottom-24 -left-20 w-80 h-80 rounded-full bg-cyan-300/20 blur-3xl pointer-events-none"></div>
+<!-- Stripe Sandbox Banner Ribbon in Delicate Light Glass -->
+<div class="w-full bg-amber-50/80 backdrop-blur-md border-b border-amber-200/60 px-space-md py-2.5 flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="flex h-2 w-2 relative">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-500 opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-amber-600"></span>
+</span>
+<span class="font-label-mono-sm text-label-mono-sm text-amber-900 tracking-wide font-semibold">⚡ STRIPE SANDBOX MODE · TEST CARDS ENABLED (4242 ···· 4242)</span>
+</div>
+<div class="hidden sm:flex items-center gap-space-xs font-label-mono-sm text-label-mono-sm text-emerald-800 font-semibold bg-emerald-50 px-3 py-0.5 rounded-full border border-emerald-200">
+<span class="material-symbols-outlined text-[15px] text-emerald-600">shield_with_heart</span>
+              PCI-DSS Level 1 Compliant Vault
+            </div>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-12 min-h-[620px]">
+<!-- LEFT CARD: Order Summary & Cohort Matrix (Col 1-5) -->
+<div class="lg:col-span-5 p-space-md md:p-space-xl flex flex-col justify-between bg-gradient-to-b from-white/95 to-slate-50/80 border-b lg:border-b-0 lg:border-r border-slate-200/60">
+<div class="space-y-space-md">
+<!-- Header Section -->
+<div class="flex items-center justify-between">
+<span class="font-caps-tag text-caps-tag text-on-surface-variant uppercase tracking-wider font-bold">Cohort Enrollment</span>
+<span class="font-label-mono-sm text-label-mono-sm px-2.5 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed-variant font-bold border border-secondary-fixed-dim/60 shadow-sm">
+                    Live Cohort Alpha
+                  </span>
+</div>
+<!-- Course Card Media Tile -->
+<div class="relative rounded-xl overflow-hidden bg-white p-space-sm group shadow-md border border-slate-200/70">
+<div class="relative h-44 w-full rounded-lg overflow-hidden bg-slate-900">
+<img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" data-alt="Hyper-futuristic computing terminal with 3D neural node visualizations" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBPXFf7gmlY0AC4cB6p4ziE9k1-0mlbrsrSNHvMcWICMHfSv-Mj40Y7t3YvOdagUf6oAdxr_YS_dQohtb80g1vhRGgOEPnDd26vzdDwqli9Z8vQlaDnzNo7s9bmFmMHz4vZxdqpFdmZPPip0O5EFPfK8enuaue5GwPDNFmAAya3dUjEIQ1TkguiEChABh-FC8AFUpB9y4TEBKUUKxQzTqKI82seHTjSW7eai3PyAYZXHrMsJpsOH10dyg"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+<!-- Badges floating inside image -->
+<div class="absolute bottom-3 left-3 right-3 flex items-center justify-between">
+<span class="px-2.5 py-1 rounded-full bg-white/95 backdrop-blur-md font-label-mono-sm text-label-mono-sm text-secondary font-bold flex items-center gap-1 shadow-sm">
+<span class="material-symbols-outlined text-[14px]">neurology</span>
+                        14 Modules · 68h Lab
+                      </span>
+<span class="font-label-mono-sm text-label-mono-sm text-slate-800 bg-white/90 backdrop-blur-md px-2.5 py-1 rounded-full font-bold shadow-sm">
+                        Oct 2025
+                      </span>
+</div>
+</div>
+<!-- Course Metadata Body -->
+<div class="pt-3 px-1 space-y-2">
+<h2 class="font-headline-sm text-headline-sm text-on-surface font-extrabold leading-snug">
+                      Full-Stack Django 5 &amp; Multi-Agent AI Architecture
+                    </h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-2">
+                      Architect distributed reactive LLM systems, Redis async streams, vector index pipelines, and production GPU orchestration.
+                    </p>
+<!-- Instructor Pill Card -->
+<div class="pt-2 flex items-center justify-between">
+<div class="flex items-center gap-2">
+<img class="w-8 h-8 rounded-full object-cover shadow-sm ring-1 ring-slate-200" data-alt="Senior AI researcher Marcus Vance" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBqX5dmJksqE5kg2Hnbbs2oUnS-XQ_ZHXAXSAUQK5nKAZE12B3gWD_IXO1VFxQ_duT1kMkGF63oxGl1MrUjc9rUk_baaXeih947f3jSvi3Kp9J3LXcLRrZD15KdTn3-mbGIyYLOVb00wTuaaETf27Vv2nlKJ-CUOVnfJPq1s35rlfJQ7Y2Z5RgnT1iGBDf6zkDSraS3zSr0zpJTJmYKVcXLuzLRBzaSG4oqEl5eiUITW4g6d7d2Rxi0LQ"/>
+<div>
+<div class="flex items-center gap-1 font-body-sm text-body-sm text-on-surface font-bold">
+<span>Marcus Vance</span>
+<span class="material-symbols-outlined text-secondary text-[14px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<div class="font-label-mono-sm text-label-mono-sm text-on-surface-variant">Ex-Google Brain · Lead Fellow</div>
+</div>
+</div>
+<span class="font-label-mono-sm text-label-mono-sm px-2.5 py-0.5 rounded-full bg-violet-100 text-violet-800 font-bold border border-violet-200">Masterclass</span>
+</div>
+</div>
+</div>
+<!-- Itemized Pricing Breakdown -->
+<div class="rounded-xl bg-white/90 border border-slate-200/70 p-space-md space-y-space-xs shadow-sm">
+<div class="flex justify-between items-center font-body-sm text-body-sm">
+<span class="text-on-surface-variant font-medium">Course Base Tuition</span>
+<span class="font-label-mono-md text-label-mono-md text-on-surface font-semibold">$120.00 USD</span>
+</div>
+<div class="flex justify-between items-center font-body-sm text-body-sm">
+<span class="text-on-surface-variant flex items-center gap-1.5 font-medium">
+                      Interactive Cloud GPU Lab
+                      <span class="text-[11px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold">Lifetime</span>
+</span>
+<span class="font-label-mono-md text-label-mono-md text-emerald-700 font-bold">Free</span>
+</div>
+<div class="flex justify-between items-center font-body-sm text-body-sm">
+<span class="text-on-surface-variant font-medium">Sales Tax &amp; Platform Gate (0%)</span>
+<span class="font-label-mono-md text-label-mono-md text-on-surface-variant font-medium">$0.00 USD</span>
+</div>
+<!-- Divider -->
+<div class="h-px w-full bg-slate-200 my-2"></div>
+<div class="flex justify-between items-end pt-1">
+<div>
+<div class="font-caps-tag text-caps-tag uppercase text-on-surface-variant font-bold">Total Amount Due</div>
+<div class="font-label-mono-sm text-label-mono-sm text-primary font-bold">Immediate Access Granted</div>
+</div>
+<div class="text-right">
+<div class="font-headline-md text-headline-md font-extrabold text-on-surface tracking-tight">$120.00</div>
+<span class="font-label-mono-sm text-label-mono-sm text-outline font-semibold">USD Currency</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Bottom Confidence Pledge -->
+<div class="pt-space-md">
+<div class="flex items-start gap-2.5 p-3 rounded-xl bg-violet-50/80 border border-violet-100 text-on-surface font-body-sm text-body-sm shadow-sm">
+<span class="material-symbols-outlined text-secondary text-[22px] shrink-0 mt-0.5" style="font-variation-settings: 'FILL' 1;">verified</span>
+<div>
+<span class="font-bold text-on-surface">30-Day Unconditional Guarantee:</span>
+                    Full refund anytime if sandbox GPU benchmarks don’t meet rigorous production expectations.
+                  </div>
+</div>
+</div>
+</div>
+<!-- RIGHT CARD: Payment Details (Stripe Elements Live) (Col 6-12) -->
+<div class="lg:col-span-7 p-space-md md:p-space-xl flex flex-col justify-between bg-white/70 backdrop-blur-xl">
+<div>
+<!-- Section Header & Express Checkout -->
+<div class="flex items-center justify-between mb-space-md">
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-bold">Payment Details</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Choose express digital wallet or standard payment instrument.</p>
+</div>
+<div class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 font-label-mono-sm text-label-mono-sm text-emerald-800 font-bold shadow-sm">
+<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    Stripe Elements Live
+                  </div>
+</div>
+<!-- Express Pay Segment -->
+<div class="grid grid-cols-2 gap-space-sm mb-space-md">
+<button class="group relative py-2.5 px-4 rounded-full bg-white hover:bg-slate-50 transition-all duration-200 flex items-center justify-center gap-2 shadow-sm border border-slate-200" type="button">
+<svg class="h-4 w-auto fill-current text-slate-900 group-hover:scale-105 transition-transform" viewbox="0 0 170 170">
+<path d="M150.37 130.25c-2.45 5.66-5.35 10.87-8.71 15.66-4.58 6.53-8.33 11.05-11.22 13.56-4.48 4.12-9.28 6.23-14.42 6.35-3.69 0-8.14-1.05-13.32-3.18-5.19-2.12-9.97-3.17-14.34-3.17-4.58 0-9.49 1.05-14.75 3.17-5.26 2.13-9.5 3.24-12.74 3.35-4.35.13-9.16-1.9-14.41-6.08-3.69-3.04-7.67-7.81-11.96-14.34-6.1-9.26-10.74-19.8-13.93-31.62-3.19-11.82-4.79-22.77-4.79-32.86 0-14.99 3.84-27.17 11.51-36.56 7.68-9.39 17.1-14.16 28.27-14.33 4.46 0 9.4 1.14 14.81 3.42 5.41 2.29 9.3 3.49 11.66 3.61 2.27-.12 6.22-1.32 11.85-3.61 5.62-2.28 10.37-3.34 14.23-3.18 10.45.52 19.12 4.45 26.01 11.78-9.24 5.61-13.75 13.52-13.53 23.73.23 8.01 3.23 14.75 9.01 20.21 5.79 5.46 12.67 8.52 20.65 9.17-2.03 6.07-4.32 11.96-6.86 17.68zM119.22 33.15c0-6.42 2.37-12.44 7.1-18.06 4.73-5.62 10.59-9.39 17.58-11.31.25 1.54.37 2.9.37 4.09 0 6.32-2.46 12.44-7.39 18.36-4.93 5.92-10.87 9.46-17.82 10.62-.24-1.22-.36-2.45-.36-3.7z"></path>
+</svg>
+<span class="font-body-sm text-body-sm font-bold text-slate-900">Pay with Apple Pay</span>
+</button>
+<button class="group relative py-2.5 px-4 rounded-full bg-white hover:bg-slate-50 transition-all duration-200 flex items-center justify-center gap-2 shadow-sm border border-slate-200" type="button">
+<svg class="h-4 w-auto" viewbox="0 0 48 48">
+<path d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z" fill="#EA4335"></path>
+<path d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z" fill="#4285F4"></path>
+<path d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.79l7.97-6.2z" fill="#FBBC05"></path>
+<path d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z" fill="#34A853"></path>
+</svg>
+<span class="font-body-sm text-body-sm font-bold text-slate-800">Google Pay</span>
+</button>
+</div>
+<!-- Divider Or Label -->
+<div class="relative flex items-center justify-center my-space-md">
+<div class="w-full h-px bg-slate-200"></div>
+<span class="absolute px-3 rounded-full bg-white text-on-surface-variant font-label-mono-sm text-label-mono-sm uppercase tracking-widest font-semibold border border-slate-200/60 shadow-sm">
+                    Or pay with card
+                  </span>
+</div>
+<!-- Interactive Stripe Form Simulator -->
+<form class="space-y-space-sm" id="payment-form" onsubmit="event.preventDefault(); simulatePayment();">
+<!-- Cardholder Name -->
+<div class="space-y-1">
+<label class="block font-label-mono-sm text-label-mono-sm uppercase tracking-wider text-on-surface-variant font-bold">Cardholder Name</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3.5 top-3 text-[18px] text-slate-400">badge</span>
+<input class="w-full bg-white/80 text-on-surface font-body-md text-body-md pl-10 pr-4 py-2.5 rounded-xl border border-slate-200/90 focus:outline-none focus:border-violet-500 focus:ring-4 focus:ring-violet-500/10 placeholder-slate-400 transition-all shadow-sm" id="card-name" placeholder="Jane Doe" required="" type="text" value="Dr. Sarah Lin"/>
+</div>
+</div>
+<!-- Card Number with Multi-Brand Micro Badges -->
+<div class="space-y-1">
+<div class="flex items-center justify-between">
+<label class="block font-label-mono-sm text-label-mono-sm uppercase tracking-wider text-on-surface-variant font-bold">Card Number</label>
+<div class="flex items-center gap-1.5">
+<span class="font-label-mono-sm text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 font-bold border border-slate-200">VISA</span>
+<span class="font-label-mono-sm text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 font-bold border border-slate-200">MC</span>
+<span class="font-label-mono-sm text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 font-bold border border-slate-200">AMEX</span>
+</div>
+</div>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3.5 top-3 text-[18px] text-violet-600">credit_card</span>
+<input class="w-full bg-white/80 text-on-surface font-label-mono-md text-label-mono-md pl-10 pr-10 py-2.5 rounded-xl border border-slate-200/90 focus:outline-none focus:border-violet-500 focus:ring-4 focus:ring-violet-500/10 transition-all tracking-wider shadow-sm font-semibold" id="card-number" maxlength="19" required="" type="text" value="4242 •••• •••• 4242"/>
+<span class="material-symbols-outlined absolute right-3.5 top-3 text-[18px] text-emerald-600">lock</span>
+</div>
+</div>
+<!-- Expiry, CVC & ZIP in Triple Column -->
+<div class="grid grid-cols-3 gap-space-sm">
+<!-- MM/YY -->
+<div class="space-y-1">
+<label class="block font-label-mono-sm text-label-mono-sm uppercase tracking-wider text-on-surface-variant font-bold">Expires</label>
+<input class="w-full bg-white/80 text-on-surface font-label-mono-md text-label-mono-md px-3.5 py-2.5 rounded-xl border border-slate-200/90 focus:outline-none focus:border-violet-500 focus:ring-4 focus:ring-violet-500/10 text-center shadow-sm font-semibold" maxlength="5" placeholder="MM/YY" required="" type="text" value="12/28"/>
+</div>
+<!-- CVC -->
+<div class="space-y-1">
+<div class="flex items-center justify-between">
+<label class="block font-label-mono-sm text-label-mono-sm uppercase tracking-wider text-on-surface-variant font-bold">CVC</label>
+<span class="material-symbols-outlined text-[14px] text-slate-400" title="3-digit card code">help_outline</span>
+</div>
+<input class="w-full bg-white/80 text-on-surface font-label-mono-md text-label-mono-md px-3.5 py-2.5 rounded-xl border border-slate-200/90 focus:outline-none focus:border-violet-500 focus:ring-4 focus:ring-violet-500/10 text-center tracking-widest shadow-sm font-semibold" maxlength="4" placeholder="•••" required="" type="password" value="849"/>
+</div>
+<!-- ZIP/Postal -->
+<div class="space-y-1">
+<label class="block font-label-mono-sm text-label-mono-sm uppercase tracking-wider text-on-surface-variant font-bold">ZIP Code</label>
+<input class="w-full bg-white/80 text-on-surface font-label-mono-md text-label-mono-md px-3.5 py-2.5 rounded-xl border border-slate-200/90 focus:outline-none focus:border-violet-500 focus:ring-4 focus:ring-violet-500/10 text-center shadow-sm font-semibold" required="" type="text" value="94305"/>
+</div>
+</div>
+<!-- Country Selector -->
+<div class="space-y-1 pt-1">
+<label class="block font-label-mono-sm text-label-mono-sm uppercase tracking-wider text-on-surface-variant font-bold">Country or Region</label>
+<div class="relative">
+<select class="w-full bg-white/80 text-on-surface font-body-sm text-body-sm px-3.5 py-2.5 rounded-xl border border-slate-200/90 appearance-none focus:outline-none focus:border-violet-500 focus:ring-4 focus:ring-violet-500/10 shadow-sm font-medium">
+<option selected="">United States (California)</option>
+<option>Canada</option>
+<option>United Kingdom</option>
+<option>Germany</option>
+<option>Japan</option>
+<option>Australia</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-3 text-[18px] text-on-surface-variant pointer-events-none">expand_more</span>
+</div>
+</div>
+<!-- Save Card for future cohorts checkbox -->
+<div class="flex items-center gap-2.5 pt-2">
+<input checked="" class="w-4 h-4 rounded border-slate-300 text-violet-600 focus:ring-violet-500 cursor-pointer" id="save-card" type="checkbox"/>
+<label class="font-body-sm text-body-sm text-on-surface-variant cursor-pointer select-none font-medium" for="save-card">
+                      Securely link card credentials to EduFlow Spatial Keyring for 1-click renewals
+                    </label>
+</div>
+<!-- Glowing Submit CTA Button -->
+<div class="pt-space-sm">
+<button class="group relative w-full py-4 px-6 rounded-full font-headline-sm text-headline-sm text-white font-extrabold overflow-hidden shadow-lg shadow-violet-500/25 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2" id="pay-button" type="submit">
+<!-- Gradient Backing -->
+<span class="absolute inset-0 bg-gradient-to-r from-violet-600 via-indigo-600 to-cyan-500 opacity-95 group-hover:opacity-100 transition-opacity"></span>
+<span class="relative z-10 flex items-center gap-2">
+<span class="material-symbols-outlined text-[22px]" id="pay-icon">lock</span>
+<span id="pay-text">Complete Payment · $120.00 USD</span>
+</span>
+</button>
+</div>
+</form>
+</div>
+<!-- Footer Trust Credentials -->
+<div class="pt-space-md flex flex-wrap items-center justify-between gap-space-xs text-outline font-label-mono-sm text-label-mono-sm font-semibold">
+<div class="flex items-center gap-1.5 text-secondary">
+<span class="material-symbols-outlined text-[16px]">encrypted</span>
+<span>Stripe Elements API 2025.4</span>
+</div>
+<div class="flex items-center gap-3">
+<span>SOC2 Type II</span>
+<span>·</span>
+<span>ISO/IEC 27001</span>
+<span>·</span>
+<span>End-to-End Encrypted</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- SUCCESS NOTIFICATION TOAST -->
+<div class="hidden fixed bottom-6 right-6 z-50 max-w-md w-full bg-white/95 backdrop-blur-2xl p-space-md rounded-2xl shadow-2xl border border-emerald-200 transition-all duration-500" id="payment-toast">
+<div class="flex items-start gap-3">
+<div class="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-emerald-600 text-[24px]">verified</span>
+</div>
+<div class="space-y-1">
+<h4 class="font-headline-sm text-headline-sm text-on-surface font-bold">Payment Successful</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Transaction ID: <span class="font-label-mono-sm text-label-mono-sm text-violet-700 font-bold">txn_87219904</span> confirmed. Cohort alpha seats unlocked.</p>
+</div>
+</div>
+</div>
+<!-- SECTION 2: HIGH-RESOLUTION PDF INVOICE & RECEIPT PREVIEW (Swiss Minimalist + Luminous Glass) -->
+<section class="space-y-space-md" id="pdf-invoice-preview">
+<!-- Section Title & PDF Control Toolbar -->
+<div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-space-sm">
+<div>
+<div class="flex items-center gap-2">
+<h2 class="font-headline-md text-headline-md text-on-surface font-extrabold tracking-tight">Verified PDF Invoice Sheet</h2>
+<span class="font-label-mono-sm text-label-mono-sm px-2.5 py-0.5 rounded-full bg-cyan-100 text-cyan-900 font-bold border border-cyan-200">
+                  A4 Printable Vector
+                </span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Archival proof-of-payment certificate with cryptographically registered hash token.</p>
+</div>
+<!-- Toolbar Buttons -->
+<div class="flex items-center gap-space-xs flex-wrap">
+<div class="inline-flex items-center rounded-full bg-white p-1 border border-slate-200/80 shadow-sm font-label-mono-sm text-label-mono-sm text-on-surface-variant font-medium">
+<button class="px-2.5 py-1 rounded-full hover:bg-slate-100 text-on-surface transition-colors flex items-center gap-1" onclick="changeZoom(-10)" type="button">
+<span class="material-symbols-outlined text-[15px]">zoom_out</span>
+</button>
+<span class="px-2 font-mono font-bold" id="zoom-indicator">100%</span>
+<button class="px-2.5 py-1 rounded-full hover:bg-slate-100 text-on-surface transition-colors flex items-center gap-1" onclick="changeZoom(10)" type="button">
+<span class="material-symbols-outlined text-[15px]">zoom_in</span>
+</button>
+</div>
+<button class="px-space-md py-1.5 rounded-full bg-white hover:bg-slate-50 text-on-surface font-body-sm text-body-sm font-semibold flex items-center gap-1.5 transition-all shadow-sm border border-slate-200/80" onclick="window.print()" type="button">
+<span class="material-symbols-outlined text-[16px]">print</span>
+                Print Sheet
+              </button>
+<button class="px-space-md py-1.5 rounded-full bg-primary-container text-white font-body-sm text-body-sm font-bold flex items-center gap-1.5 hover:bg-violet-700 transition-all shadow-md shadow-violet-500/20" onclick="simulateDownload()" type="button">
+<span class="material-symbols-outlined text-[16px]">download</span>
+                Download Signed PDF
+              </button>
+</div>
+</div>
+<!-- PDF Canvas Sheet Container -->
+<div class="w-full flex justify-center py-space-sm">
+<div class="w-full max-w-4xl rounded-2xl bg-white p-space-md md:p-space-xl shadow-[0_25px_60px_-15px_rgba(76,29,149,0.1)] border border-slate-200/80 transition-all duration-300 relative overflow-hidden" id="invoice-document-sheet">
+<!-- Top Gradient Edge Accent -->
+<div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-violet-600 via-cyan-500 to-fuchsia-500"></div>
+<!-- Document Top Bar: Logo, Invoice ID, Date & Status -->
+<div class="flex flex-col sm:flex-row justify-between items-start gap-space-md pb-space-lg border-b border-slate-100">
+<!-- Brand Mark & Company Details -->
+<div class="space-y-space-xs">
+<div class="flex items-center gap-space-sm">
+<div class="w-10 h-10 rounded-xl bg-violet-50 flex items-center justify-center shadow-sm border border-violet-100">
+<svg class="w-6 h-6 text-primary" fill="none" viewbox="0 0 100 100">
+<circle cx="50" cy="24" r="14" stroke="currentColor" stroke-width="8"></circle>
+<path d="M22 76C22 56.1178 38.1178 40 58 40H78" stroke="url(#eduflow-grad)" stroke-linecap="round" stroke-width="12"></path>
+<path d="M34 68C42 58 56 52 68 52" stroke="currentColor" stroke-linecap="round" stroke-width="6"></path>
+<defs>
+<lineargradient gradientunits="userSpaceOnUse" id="eduflow-grad" x1="22" x2="78" y1="40" y2="76">
+<stop stop-color="#00687a"></stop>
+<stop offset="1" stop-color="#7c3aed"></stop>
+</lineargradient>
+</defs>
+</svg>
+</div>
+<div>
+<span class="font-headline-sm text-headline-sm text-on-surface font-extrabold tracking-tight">EduFlow</span>
+<div class="font-label-mono-sm text-label-mono-sm text-on-surface-variant font-medium">Global Knowledge Network</div>
+</div>
+</div>
+<!-- Registered Company Address -->
+<div class="pt-2 font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+<div>EduFlow Technologies Inc.</div>
+<div>548 Market St, Suite 2901</div>
+<div>San Francisco, CA 94104, United States</div>
+<div class="font-label-mono-sm text-label-mono-sm text-outline pt-0.5">EIN / VAT ID: US-94-3298102</div>
+</div>
+</div>
+<!-- Invoice Status & Document Metadata -->
+<div class="sm:text-right space-y-space-xs">
+<!-- Paid Status Badge in crisp emerald -->
+<div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-emerald-50 text-emerald-800 font-label-mono-sm text-label-mono-sm font-extrabold border border-emerald-200 shadow-sm">
+<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    PAID · COMPLETED
+                  </div>
+<div class="pt-2">
+<div class="font-caps-tag text-caps-tag text-on-surface-variant uppercase tracking-wider font-bold">Official Invoice Reference</div>
+<div class="font-label-mono-md text-label-mono-md text-on-surface font-extrabold">INV-2026-08481</div>
+</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant space-y-0.5">
+<div>Date of Issuance: <span class="font-label-mono-sm text-label-mono-sm text-on-surface font-semibold">January 18, 2025</span></div>
+<div>Settlement Method: <span class="font-label-mono-sm text-label-mono-sm text-on-surface font-semibold">Stripe (Visa •••• 4242)</span></div>
+<div>Network Currency: <span class="font-label-mono-sm text-label-mono-sm text-on-surface font-semibold">USD ($)</span></div>
+</div>
+</div>
+</div>
+<!-- Billed To & Transaction Reference Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-space-md p-space-md rounded-xl bg-slate-50/80 border border-slate-200/70 my-space-lg">
+<!-- Billed To -->
+<div class="space-y-1">
+<span class="font-caps-tag text-caps-tag uppercase tracking-wider text-primary font-bold">Billed To (Student / Scholar)</span>
+<div class="font-headline-sm text-headline-sm text-on-surface font-bold">Sarah Lin, Ph.D.</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant font-medium">Lead Machine Learning Researcher</div>
+<div class="font-label-mono-sm text-label-mono-sm text-violet-700 font-semibold">sarah.lin@stanford.edu</div>
+<div class="font-label-mono-sm text-label-mono-sm text-outline pt-1">
+                    Stripe Customer ID: <span class="text-on-surface font-mono font-semibold">cus_N9vQx83d</span>
+</div>
+</div>
+<!-- Transaction Telemetry -->
+<div class="space-y-1">
+<span class="font-caps-tag text-caps-tag uppercase tracking-wider text-secondary font-bold">Stripe Gateway Telemetry</span>
+<div class="space-y-1 font-label-mono-sm text-label-mono-sm text-on-surface-variant">
+<div class="flex justify-between py-0.5">
+<span class="text-outline font-medium">Charge Reference:</span>
+<span class="text-on-surface font-mono font-semibold">ch_3N4kL92eZvKYlo2C1g9X8q2p</span>
+</div>
+<div class="flex justify-between py-0.5">
+<span class="text-outline font-medium">Stripe Transaction ID:</span>
+<span class="text-on-surface font-mono font-semibold">txn_87219904</span>
+</div>
+<div class="flex justify-between py-0.5">
+<span class="text-outline font-medium">Idempotency Key:</span>
+<span class="text-on-surface font-mono font-semibold">idem_9f81a74e02</span>
+</div>
+<div class="flex justify-between py-0.5">
+<span class="text-outline font-medium">Payment Routing:</span>
+<span class="text-secondary font-bold">Instant Gross Settlement (IGS)</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Itemized Invoice Table -->
+<div class="w-full overflow-x-auto mb-space-lg">
+<table class="w-full text-left">
+<thead>
+<tr class="bg-slate-100 font-caps-tag text-caps-tag text-on-surface-variant uppercase tracking-wider border-b border-slate-200">
+<th class="py-3 px-4 rounded-l-lg font-bold">Description &amp; Deliverables</th>
+<th class="py-3 px-4 text-center font-bold">Qty</th>
+<th class="py-3 px-4 text-right font-bold">Unit Price</th>
+<th class="py-3 px-4 rounded-r-lg text-right font-bold">Amount</th>
+</tr>
+</thead>
+<tbody class="font-body-sm text-body-sm text-on-surface divide-y divide-slate-100">
+<tr>
+<td class="py-4 px-4">
+<div class="font-bold text-on-surface">Full-Stack Django 5 &amp; Multi-Agent AI Architecture</div>
+<div class="font-label-mono-sm text-label-mono-sm text-on-surface-variant">Cohort Alpha Admission · Instructor Marcus Vance · Full Masterclass Syllabus</div>
+</td>
+<td class="py-4 px-4 text-center font-label-mono-sm text-label-mono-sm font-semibold">1</td>
+<td class="py-4 px-4 text-right font-label-mono-sm text-label-mono-sm">$120.00</td>
+<td class="py-4 px-4 text-right font-label-mono-sm text-label-mono-sm font-bold text-on-surface">$120.00</td>
+</tr>
+<tr>
+<td class="py-4 px-4">
+<div class="font-bold text-on-surface">Dedicated Cloud GPU Container Sandbox &amp; Redis Clusters</div>
+<div class="font-label-mono-sm text-label-mono-sm text-on-surface-variant">Tier 1 Compute Environment · 16GB VRAM Allocation · Lifetime Retention</div>
+</td>
+<td class="py-4 px-4 text-center font-label-mono-sm text-label-mono-sm font-semibold">1</td>
+<td class="py-4 px-4 text-right font-label-mono-sm text-label-mono-sm">$0.00</td>
+<td class="py-4 px-4 text-right font-label-mono-sm text-label-mono-sm text-emerald-700 font-bold">Included</td>
+</tr>
+<tr>
+<td class="py-4 px-4">
+<div class="font-bold text-on-surface">Cryptographically Verified Completion Credential</div>
+<div class="font-label-mono-sm text-label-mono-sm text-on-surface-variant">Ethereum L2 Sovereign Identity Attestation · Non-Fungible Academic Verification</div>
+</td>
+<td class="py-4 px-4 text-center font-label-mono-sm text-label-mono-sm font-semibold">1</td>
+<td class="py-4 px-4 text-right font-label-mono-sm text-label-mono-sm">$0.00</td>
+<td class="py-4 px-4 text-right font-label-mono-sm text-label-mono-sm text-emerald-700 font-bold">Included</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Bottom Totals & Verification Stamp Grid -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-space-md items-end pt-space-xs border-t border-slate-100">
+<!-- SHA-256 Verified Seal & QR Code (Col 1-7) -->
+<div class="md:col-span-7 p-space-md rounded-xl bg-slate-50/80 border border-slate-200/70 flex items-center gap-space-md">
+<div class="p-2.5 rounded-lg bg-white shrink-0 shadow-sm border border-slate-200">
+<svg class="w-14 h-14 text-slate-800" fill="currentColor" viewbox="0 0 24 24">
+<path d="M2 2h8v8H2V2zm2 2v4h4V4H4zm10-2h8v8h-8V2zm2 2v4h4V4h-4zM2 14h8v8H2v-8zm2 2v4h4v-4H4zm14 0h2v2h-2v-2zm-4 0h2v2h-2v-2zm4 4h2v2h-2v-2zm-4 4h2v2h-2v-2zm4-2h2v2h-2v-2zm-2-2h2v2h-2v-2zm-2 2h2v2h-2v-2zm4 2h2v2h-2v-2zM5 5h2v2H5V5zm12 0h2v2h-2V5zM5 17h2v2H5v-2z"></path>
+</svg>
+</div>
+<div class="space-y-1">
+<div class="flex items-center gap-1.5 font-label-mono-sm text-label-mono-sm font-bold text-violet-700">
+<span class="material-symbols-outlined text-[16px]">verified</span>
+                      SHA-256 Verified Seal
+                    </div>
+<div class="font-label-mono-sm text-[10px] text-slate-600 break-all leading-tight font-mono font-medium">
+                      8f9b4c02da1823ee9a27c0f1882d90e0c19284fa93489112bc09a1e0b59b4f91
+                    </div>
+<div class="font-label-mono-sm text-[11px] text-slate-500 font-medium">
+                      Authenticated by Stripe Identity &amp; EduFlow PKI Registry Authority
+                    </div>
+</div>
+</div>
+<!-- Numerical Subtotals & Net Due (Col 8-12) -->
+<div class="md:col-span-5 space-y-2 p-space-md rounded-xl bg-violet-50/60 border border-violet-100">
+<div class="flex justify-between font-body-sm text-body-sm text-on-surface-variant font-medium">
+<span>Subtotal (Net):</span>
+<span class="font-label-mono-sm text-label-mono-sm text-on-surface font-semibold">$120.00 USD</span>
+</div>
+<div class="flex justify-between font-body-sm text-body-sm text-on-surface-variant font-medium">
+<span>Value Added Tax (0% Exempt):</span>
+<span class="font-label-mono-sm text-label-mono-sm text-on-surface font-semibold">$0.00 USD</span>
+</div>
+<div class="flex justify-between font-body-sm text-body-sm text-on-surface-variant font-medium">
+<span>Processing Fees:</span>
+<span class="font-label-mono-sm text-label-mono-sm text-emerald-700 font-bold">Waived ($0.00)</span>
+</div>
+<!-- Total Paid Bar -->
+<div class="pt-2 border-t border-violet-200/60 flex justify-between items-baseline">
+<span class="font-headline-sm text-headline-sm text-on-surface font-extrabold">Total Paid:</span>
+<span class="font-headline-md text-headline-md text-violet-700 font-extrabold tracking-tight">$120.00 <span class="font-label-mono-sm text-label-mono-sm text-slate-600 font-semibold">USD</span></span>
+</div>
+</div>
+</div>
+<!-- Bottom Footer Note -->
+<div class="mt-space-lg pt-space-sm text-center font-label-mono-sm text-label-mono-sm text-slate-500 font-medium">
+                This invoice is generated electronically under Californian Electronic Signatures and Digital Signature Laws (Cal. Civ. Code § 1633.1). 
+                Questions regarding this charge? Contact billing@eduflow.ai or view raw ledger state at ledger.eduflow.ai/inv/INV-2026-08481.
+              </div>
+</div>
+</div>
+</section>
+</div>
+<!-- Micro-Interactions Script -->
+<script>
+        let currentZoom = 100;
+
+        function changeZoom(delta) {
+          currentZoom = Math.min(Math.max(currentZoom + delta, 80), 120);
+          const sheet = document.getElementById('invoice-document-sheet');
+          const indicator = document.getElementById('zoom-indicator');
+          if (sheet && indicator) {
+            sheet.style.transform = `scale(${currentZoom / 100})`;
+            sheet.style.transformOrigin = 'top center';
+            indicator.textContent = `${currentZoom}%`;
+          }
+        }
+
+        function simulatePayment() {
+          const btn = document.getElementById('pay-button');
+          const icon = document.getElementById('pay-icon');
+          const text = document.getElementById('pay-text');
+          const toast = document.getElementById('payment-toast');
+
+          if (!btn || !icon || !text) return;
+
+          btn.disabled = true;
+          icon.textContent = 'sync';
+          icon.classList.add('animate-spin');
+          text.textContent = 'Contacting Stripe Gateway...';
+
+          setTimeout(() => {
+            icon.classList.remove('animate-spin');
+            icon.textContent = 'check_circle';
+            text.textContent = 'Enrolled & Paid · $120.00 USD';
+
+            if (toast) {
+              toast.classList.remove('hidden');
+              setTimeout(() => {
+                toast.classList.add('hidden');
+              }, 6000);
+            }
+          }, 1400);
+        }
+
+        function simulateDownload() {
+          const btn = event.currentTarget;
+          const originalHtml = btn.innerHTML;
+          btn.innerHTML = '<span class="material-symbols-outlined text-[16px] animate-spin">sync</span> Compiling Hash...';
+          
+          setTimeout(() => {
+            btn.innerHTML = '<span class="material-symbols-outlined text-[16px]">done</span> PDF Saved';
+            setTimeout(() => {
+              btn.innerHTML = originalHtml;
+            }, 2200);
+          }, 1200);
+        }
+      </script>
+</div>
+</main>
+<!-- Global Luminous Light Footer -->
+<footer class="relative z-10 w-full mt-margin bg-white/80 backdrop-blur-xl border-t border-slate-200/60">
+<div class="max-w-7xl mx-auto px-gutter-mobile md:px-margin py-space-xl flex flex-col md:flex-row items-center justify-between gap-space-lg">
+<div class="flex items-center gap-space-sm">
+<img alt="EduFlow Iridescent Liquid Glyph Logo" class="h-6 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1UVW5muaBBW6EzbhjvttGIl-Xu6R56jfN0HSgB9u5e3zomDvMY8RnjjIaBDmMPHYFuN2eQFygVIZ9oWY0WODsT-GTFwxdcu8ufp2lQi6GCUx_uWvo-Sy7OojoUKUI-blpAlmVIXjuzbQGBT95wMCdU1bezL1PWOYgFB4sahlf6MqnH9bCT8cJ5lE-O2uGL66A1JYEq6s0zoDCDXabQYgSPmNONzq__vBYFT8mDtnrXRp3nKoNUNaDNhtOfD"/>
+<span class="font-headline-sm text-headline-sm text-on-surface font-extrabold tracking-tight">EduFlow</span>
+<span class="font-label-mono-sm text-label-mono-sm text-violet-800 px-space-xs py-0.5 rounded-full bg-violet-100 border border-violet-200 font-bold">v2.4 Spatial</span>
+</div>
+<div class="flex flex-wrap items-center justify-center gap-space-md text-on-surface-variant font-body-sm text-body-sm font-medium">
+<a class="hover:text-violet-600 transition-colors" data-path="explore-catalog" href="#">Courses</a>
+<a class="hover:text-violet-600 transition-colors" data-path="curriculum" href="#">Syllabus</a>
+<a class="hover:text-violet-600 transition-colors" data-path="pricing" href="#">Membership</a>
+<a class="hover:text-violet-600 transition-colors" data-path="instructors" href="#">Faculty</a>
+</div>
+<div class="font-label-mono-sm text-label-mono-sm text-on-surface-variant font-medium">
+        © 2025 EduFlow Technologies Inc. All rights reserved.
+      </div>
+</div>
+</footer>
+</body></html>

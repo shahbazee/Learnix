@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_standard" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=JetBrains+Mono:wght@500;600;700&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base { html, body { margin: 0; padding: 0; } body { overscroll-behavior: none; } main > :first-child { margin-top: 0 !important; } main > :last-child { margin-bottom: 0 !important; } } ::-webkit-scrollbar { display: none; }</style><script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script><script id="tailwind-config">tailwind.config = {
+  darkMode: "class",
+  theme: {
+    extend: {
+      "colors": {
+        "surface-container-highest": "#dae2fd",
+        "on-secondary-container": "#006172",
+        "on-tertiary-container": "#ffdde7",
+        "error": "#ba1a1a",
+        "surface-container-high": "#e2e7ff",
+        "surface-bright": "#faf8ff",
+        "background": "#f8fafc",
+        "error-container": "#ffdad6",
+        "surface-variant": "#e2e8f0",
+        "secondary-fixed-dim": "#06b6d4",
+        "secondary-fixed": "#acedff",
+        "on-error": "#ffffff",
+        "surface-container": "#ffffff",
+        "tertiary-fixed-dim": "#ffb0cd",
+        "surface-dim": "#d2d9f4",
+        "surface-tint": "#732ee4",
+        "on-primary-container": "#ede0ff",
+        "on-primary-fixed-variant": "#5a00c6",
+        "secondary-container": "#06b6d4",
+        "on-surface": "#0f172a",
+        "on-surface-variant": "#475569",
+        "on-primary": "#ffffff",
+        "tertiary-container": "#ec4899",
+        "inverse-on-surface": "#eef0ff",
+        "surface-container-lowest": "#ffffff",
+        "outline-variant": "#cbd5e1",
+        "on-secondary-fixed": "#001f26",
+        "primary-fixed-dim": "#a855f7",
+        "on-background": "#0f172a",
+        "on-tertiary-fixed-variant": "#8c0053",
+        "primary-fixed": "#eaddff",
+        "primary-container": "#7c3aed",
+        "on-tertiary": "#ffffff",
+        "secondary": "#0891b2",
+        "tertiary": "#db2777",
+        "tertiary-fixed": "#ffd9e4",
+        "on-secondary": "#ffffff",
+        "inverse-primary": "#d2bbff",
+        "on-primary-fixed": "#25005a",
+        "on-error-container": "#93000a",
+        "on-secondary-fixed-variant": "#004e5c",
+        "surface-container-low": "#f1f5f9",
+        "surface": "#ffffff",
+        "inverse-surface": "#1e293b",
+        "primary": "#7c3aed",
+        "outline": "#94a3b8",
+        "on-tertiary-fixed": "#3e0022"
+      },
+      "borderRadius": {
+        "DEFAULT": "1rem",
+        "lg": "2rem",
+        "xl": "3rem",
+        "full": "9999px"
+      },
+      "spacing": {
+        "space-md": "1rem",
+        "gutter": "1.5rem",
+        "space-sm": "0.5rem",
+        "space-xs": "0.25rem",
+        "space-xl": "2.5rem",
+        "margin-desktop": "3rem",
+        "margin": "2rem",
+        "space-lg": "1.5rem",
+        "gutter-lg": "2rem",
+        "margin-mobile": "1rem",
+        "gutter-sm": "1rem"
+      },
+      "fontFamily": {
+        "display-hero": [ "Plus Jakarta Sans" ],
+        "body-md": [ "Plus Jakarta Sans" ],
+        "display-hero-mobile": [ "Plus Jakarta Sans" ],
+        "headline-lg-mobile": [ "Plus Jakarta Sans" ],
+        "body-lg": [ "Plus Jakarta Sans" ],
+        "body-sm": [ "Plus Jakarta Sans" ],
+        "label-mono-sm": [ "JetBrains Mono" ],
+        "headline-sm": [ "Plus Jakarta Sans" ],
+        "headline-lg": [ "Plus Jakarta Sans" ],
+        "caps-tag": [ "Plus Jakarta Sans" ],
+        "label-mono-md": [ "JetBrains Mono" ],
+        "headline-md": [ "Plus Jakarta Sans" ]
+      },
+      "fontSize": {
+        "display-hero": [ "56px", { "lineHeight": "64px", "letterSpacing": "-0.03em", "fontWeight": "800" } ],
+        "body-md": [ "15px", { "lineHeight": "24px", "letterSpacing": "-0.005em", "fontWeight": "400" } ],
+        "display-hero-mobile": [ "36px", { "lineHeight": "44px", "letterSpacing": "-0.025em", "fontWeight": "800" } ],
+        "headline-lg-mobile": [ "28px", { "lineHeight": "36px", "letterSpacing": "-0.02em", "fontWeight": "700" } ],
+        "body-lg": [ "18px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "400" } ],
+        "body-sm": [ "13px", { "lineHeight": "20px", "letterSpacing": "0em", "fontWeight": "400" } ],
+        "label-mono-sm": [ "11px", { "lineHeight": "14px", "letterSpacing": "0.02em", "fontWeight": "600" } ],
+        "headline-sm": [ "22px", { "lineHeight": "28px", "letterSpacing": "-0.015em", "fontWeight": "600" } ],
+        "headline-lg": [ "40px", { "lineHeight": "48px", "letterSpacing": "-0.025em", "fontWeight": "700" } ],
+        "caps-tag": [ "11px", { "lineHeight": "14px", "letterSpacing": "0.08em", "fontWeight": "700" } ],
+        "label-mono-md": [ "13px", { "lineHeight": "18px", "letterSpacing": "-0.01em", "fontWeight": "600" } ],
+        "headline-md": [ "28px", { "lineHeight": "36px", "letterSpacing": "-0.02em", "fontWeight": "700" } ]
+      }
+    }
+  }
+};</script></head><body class="bg-[#f8fafc] font-body-md text-[#0f172a] antialiased min-h-screen relative selection:bg-purple-500 selection:text-white"><div class="fixed inset-0 pointer-events-none overflow-hidden z-0"><div class="absolute -top-36 left-1/4 w-[36rem] h-[36rem] rounded-full bg-cyan-400/20 blur-[130px]"></div><div class="absolute top-1/4 -right-20 w-[32rem] h-[32rem] rounded-full bg-fuchsia-400/20 blur-[130px]"></div><div class="absolute bottom-10 left-1/3 w-[36rem] h-[36rem] rounded-full bg-violet-500/15 blur-[140px]"></div><div class="absolute top-2/3 -left-20 w-96 h-96 rounded-full bg-amber-300/20 blur-[120px]"></div></div><header class="fixed top-6 left-0 right-0 z-50 px-gutter-mobile md:px-gutter flex justify-center pointer-events-none"><div class="pointer-events-auto h-16 w-full max-w-5xl rounded-full bg-white/85 backdrop-blur-2xl border border-white/80 shadow-[0_20px_40px_-15px_rgba(99,102,241,0.15),0_1px_3px_rgba(0,0,0,0.05)] px-space-md flex items-center justify-between gap-space-sm"><div class="flex items-center gap-space-sm pl-space-xs"><img alt="EduFlow Iridescent Liquid Glyph Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1UVW5muaBBW6EzbhjvttGIl-Xu6R56jfN0HSgB9u5e3zomDvMY8RnjjIaBDmMPHYFuN2eQFygVIZ9oWY0WODsT-GTFwxdcu8ufp2lQi6GCUx_uWvo-Sy7OojoUKUI-blpAlmVIXjuzbQGBT95wMCdU1bezL1PWOYgFB4sahlf6MqnH9bCT8cJ5lE-O2uGL66A1JYEq6s0zoDCDXabQYgSPmNONzq__vBYFT8mDtnrXRp3nKoNUNaDNhtOfD"/><span class="font-headline-sm text-headline-sm text-slate-900 font-extrabold tracking-tight">EduFlow</span></div><nav class="hidden lg:flex items-center gap-space-xs p-1 rounded-full bg-slate-100/80 border border-slate-200/60"><a class="px-space-md py-1.5 rounded-full text-slate-600 hover:text-slate-900 hover:bg-white/80 transition-colors font-body-sm text-body-sm font-medium" data-path="explore-catalog" href="#">Explore Catalog</a><a class="px-space-md py-1.5 rounded-full text-slate-600 hover:text-slate-900 hover:bg-white/80 transition-colors font-body-sm text-body-sm font-medium" data-path="curriculum" href="#">Curriculum</a><a class="px-space-md py-1.5 rounded-full text-slate-600 hover:text-slate-900 hover:bg-white/80 transition-colors font-body-sm text-body-sm font-medium" data-path="instructors" href="#">Instructors</a><a class="px-space-md py-1.5 rounded-full text-slate-600 hover:text-slate-900 hover:bg-white/80 transition-colors font-body-sm text-body-sm font-medium" data-path="pricing" href="#">Pricing</a><a class="px-space-md py-1.5 rounded-full text-slate-600 hover:text-slate-900 hover:bg-white/80 transition-colors font-body-sm text-body-sm font-medium" data-path="dashboard" href="#">Dashboard</a></nav><div class="flex items-center gap-space-xs"><button class="hidden sm:flex items-center gap-space-xs px-space-sm py-1.5 rounded-full bg-slate-100/90 hover:bg-slate-200/80 text-slate-600 hover:text-slate-900 transition-all border border-slate-200/60" type="button"><span class="material-symbols-outlined text-[18px]">search</span><span class="font-label-mono-sm text-label-mono-sm px-1.5 py-0.5 rounded bg-white text-slate-500 shadow-xs border border-slate-200/50">⌘K</span></button><a class="hidden md:inline-flex px-space-sm py-1.5 font-body-sm text-body-sm text-slate-600 hover:text-slate-900 font-semibold transition-colors" data-path="login" href="#">Sign In</a><a class="relative inline-flex items-center justify-center p-[2px] rounded-full overflow-hidden shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 transition-all" data-path="signup" href="#"><span class="absolute inset-0 bg-gradient-to-r from-violet-600 via-cyan-500 to-pink-500"></span><span class="relative px-space-md py-1.5 rounded-full bg-white text-slate-900 font-body-sm text-body-sm font-bold hover:bg-transparent hover:text-white transition-all">Get Started</span></a><div class="pl-space-xs"><img alt="Profile" class="w-8 h-8 rounded-full object-cover ring-2 ring-violet-500/30 shadow-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAeH6bAqM-93WEMb2Sc3tcrQGgzfVnW4T4eorkWD0oNIdqGHkUJhgmF5hMiJdCVvb5by6vW0N17dtYxKHQu85yLQzt-ez9NcN0ODzhR-CJ2F_S1KD_9XJD4fjEfqbf3glH3uE86W5twATYcr4KLzzZCWKelvj6ZL4AaWiXn8dtraglqY3Azhp4jqp3kP16yiud80EPcLdgf0dCNoTSnj8EfygHudJqTKXGKqWHC2dbod8elKJAwpFxb-Q"/></div></div></div></header><main class="relative z-10 w-full pt-16 min-h-screen"><div class="flex flex-col w-full">
+<div class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+<!-- Top Breadcrumb & Header Meta -->
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
+<div>
+<div class="flex items-center gap-2 text-on-surface-variant font-label-md text-label-md mb-2">
+<span>EduFlow Cloud</span>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<span>Preferences</span>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<span class="text-primary font-semibold">Account Settings</span>
+</div>
+<h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight">Account Settings</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant mt-1 max-w-2xl">
+          Manage your personal profile, credentials, connected integrations, and platform preferences.
+        </p>
+</div>
+<!-- Quick Status Badge & ID Capsule -->
+<div class="flex items-center gap-3">
+<div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/10 text-emerald-700 shadow-sm backdrop-blur-md">
+<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+<span class="font-label-lg text-label-lg font-bold">Active &amp; Pro Member</span>
+</div>
+<div class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-container-high/80 text-on-surface-variant font-label-mono-sm text-label-mono-sm shadow-xs backdrop-blur-sm">
+<span>ID:</span>
+<span class="font-semibold text-on-surface">EDF-9942-PX</span>
+</div>
+</div>
+</div>
+<!-- Layout: 2-Column Split -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+<!-- LEFT PILL NAVIGATION (Vertical Dock / Sidebar) -->
+<aside class="lg:col-span-4 xl:col-span-3 flex flex-col gap-6">
+<!-- Navigation Card -->
+<nav aria-label="Settings Categories" class="p-2.5 rounded-3xl bg-white/75 backdrop-blur-2xl shadow-xl shadow-purple-500/5 flex flex-col gap-1.5">
+<!-- General Profile Tab (Active) -->
+<a class="group relative flex items-center justify-between px-4 py-3 rounded-2xl bg-gradient-to-r from-violet-600/10 via-cyan-500/10 to-transparent text-primary shadow-xs transition-all duration-200" href="#profile">
+<div class="flex items-center gap-3 min-w-0">
+<div class="w-9 h-9 rounded-xl bg-primary text-on-primary flex items-center justify-center shadow-md shadow-violet-500/25">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">person</span>
+</div>
+<div class="truncate">
+<div class="font-title-md text-title-md font-bold text-on-surface tracking-tight">General Profile</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant truncate">Public info &amp; avatar</div>
+</div>
+</div>
+<div class="w-2 h-2 rounded-full bg-primary shadow-[0_0_8px_rgba(124,58,237,0.8)]"></div>
+</a>
+<!-- Security & Password -->
+<a class="group flex items-center justify-between px-4 py-3 rounded-2xl hover:bg-surface-container-high/60 text-on-surface-variant hover:text-on-surface transition-all duration-200" href="#security">
+<div class="flex items-center gap-3 min-w-0">
+<div class="w-9 h-9 rounded-xl bg-surface-container-high text-on-surface-variant group-hover:text-primary group-hover:bg-primary/10 flex items-center justify-center transition-colors">
+<span class="material-symbols-outlined text-[20px]">lock</span>
+</div>
+<div class="truncate">
+<div class="font-title-md text-title-md font-medium text-on-surface">Security &amp; Auth</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant">Passwords, keys</div>
+</div>
+</div>
+<span class="px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-700 font-label-sm text-label-sm font-bold">2FA Active</span>
+</a>
+<!-- Billing & Invoices -->
+<a class="group flex items-center justify-between px-4 py-3 rounded-2xl hover:bg-surface-container-high/60 text-on-surface-variant hover:text-on-surface transition-all duration-200" href="#billing">
+<div class="flex items-center gap-3 min-w-0">
+<div class="w-9 h-9 rounded-xl bg-surface-container-high text-on-surface-variant group-hover:text-primary group-hover:bg-primary/10 flex items-center justify-center transition-colors">
+<span class="material-symbols-outlined text-[20px]">credit_card</span>
+</div>
+<div class="truncate">
+<div class="font-title-md text-title-md font-medium text-on-surface">Billing &amp; Tiers</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant">Invoices &amp; card</div>
+</div>
+</div>
+<span class="px-2 py-0.5 rounded-full bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm font-semibold">Pro Plan</span>
+</a>
+<!-- Notification Preferences -->
+<a class="group flex items-center justify-between px-4 py-3 rounded-2xl hover:bg-surface-container-high/60 text-on-surface-variant hover:text-on-surface transition-all duration-200" href="#notifications">
+<div class="flex items-center gap-3 min-w-0">
+<div class="w-9 h-9 rounded-xl bg-surface-container-high text-on-surface-variant group-hover:text-primary group-hover:bg-primary/10 flex items-center justify-center transition-colors">
+<span class="material-symbols-outlined text-[20px]">notifications_active</span>
+</div>
+<div class="truncate">
+<div class="font-title-md text-title-md font-medium text-on-surface">Notifications</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant">Email &amp; in-app alerts</div>
+</div>
+</div>
+<span class="material-symbols-outlined text-slate-400 group-hover:text-primary text-[18px] transition-colors">chevron_right</span>
+</a>
+<!-- Connected Accounts -->
+<a class="group flex items-center justify-between px-4 py-3 rounded-2xl hover:bg-surface-container-high/60 text-on-surface-variant hover:text-on-surface transition-all duration-200" href="#connected-accounts">
+<div class="flex items-center gap-3 min-w-0">
+<div class="w-9 h-9 rounded-xl bg-surface-container-high text-on-surface-variant group-hover:text-primary group-hover:bg-primary/10 flex items-center justify-center transition-colors">
+<span class="material-symbols-outlined text-[20px]">hub</span>
+</div>
+<div class="truncate">
+<div class="font-title-md text-title-md font-medium text-on-surface">Integrations</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant">OAuth &amp; Git repos</div>
+</div>
+</div>
+<span class="px-2 py-0.5 rounded-full bg-cyan-500/15 text-cyan-800 font-label-sm text-label-sm font-bold">2 Linked</span>
+</a>
+</nav>
+<!-- Storage & GPU Usage Widget -->
+<div class="relative overflow-hidden p-5 rounded-3xl bg-white/70 backdrop-blur-2xl shadow-lg shadow-indigo-500/5">
+<div class="flex items-center justify-between mb-3">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[20px]">cloud_sync</span>
+<span class="font-title-md text-title-md font-bold text-on-surface">Workspace Cluster</span>
+</div>
+<span class="font-label-mono-sm text-label-mono-sm text-on-surface-variant font-semibold">Pro Tier</span>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between items-baseline font-body-sm text-body-sm">
+<span class="text-on-surface-variant">Student Storage &amp; GPU</span>
+<span class="font-bold text-on-surface">12.4 GB <span class="text-slate-400 font-normal">/ 50 GB</span></span>
+</div>
+<!-- Fluid Gradient Progress Bar -->
+<div class="w-full h-2 rounded-full bg-surface-container-high overflow-hidden p-0.5">
+<div class="h-full rounded-full bg-gradient-to-r from-cyan-400 via-primary to-pink-500 shadow-xs transition-all duration-500" style="width: 24.8%;"></div>
+</div>
+<div class="flex justify-between items-center pt-2">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Renews in 18 days</span>
+<a class="font-label-md text-label-md font-bold text-primary hover:text-primary-container transition-colors inline-flex items-center gap-0.5" href="#upgrade">
+                Upgrade Plan
+                <span class="material-symbols-outlined text-[14px]">arrow_outward</span>
+</a>
+</div>
+</div>
+</div>
+<!-- Quick Help Pill -->
+<div class="p-4 rounded-3xl bg-surface-container-low/80 backdrop-blur-md flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-white shadow-xs flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[18px]">support_agent</span>
+</div>
+<div class="min-w-0 flex-1">
+<p class="font-label-md text-label-md font-semibold text-on-surface leading-tight">Need assistance?</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant truncate">Stanford Enterprise concierge</p>
+</div>
+<button class="text-xs font-semibold text-primary hover:underline" type="button">Chat</button>
+</div>
+</aside>
+<!-- RIGHT MAIN CONFIGURATION PANEL -->
+<main class="lg:col-span-8 xl:col-span-9 flex flex-col gap-8">
+<!-- Large Liquid Glass Container for Profile Settings -->
+<div class="p-6 sm:p-8 md:p-10 rounded-3xl bg-white/80 backdrop-blur-2xl shadow-xl shadow-purple-500/5 space-y-10">
+<!-- Section 1: Profile Avatar Section -->
+<section class="space-y-6">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4">
+<div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface tracking-tight">Profile Picture &amp; Public Avatar</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mt-0.5">
+                  This identity is visible to professors, research peers, and collaborative study pods.
+                </p>
+</div>
+<span class="inline-flex items-center self-start sm:self-auto px-3 py-1 rounded-full bg-surface-container text-primary font-label-sm text-label-sm font-semibold">
+                Public Visibility
+              </span>
+</div>
+<!-- Avatar Row -->
+<div class="flex flex-col sm:flex-row items-center gap-6 p-6 rounded-3xl bg-surface-container-low/70 backdrop-blur-md">
+<!-- Avatar with iridescent ambient glow ring -->
+<div class="relative group">
+<div class="absolute -inset-1 rounded-full bg-gradient-to-r from-violet-600 via-cyan-400 to-pink-500 opacity-75 blur-xs group-hover:opacity-100 transition-opacity"></div>
+<div class="relative w-28 h-28 rounded-full overflow-hidden shadow-md bg-slate-900">
+<img alt="Sarah Lin Avatar" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida/AEtjO1VZicWMqfMcV3M76WTQjhijTbz0SYHV3lQAaPFgfukXkSLZLfsdLv71oCwFpExIYmeK09uGEiICkMUwQmtENAeLV0X9kbWipZsv81GjGIGUFWIyGBwUb4tXjA_nMJp7LtBkmTkxMTn6HKZTbNgkOFpbjQrojCQf48WgScMyP8OPE2iJ2PvqCyi6tWR9TnAtdc7Imo9_lFnD0tbVXhG_ooO8V3n3Jhl9Li5SO2LRxhqVoUU8pZo4lwIlTx2d"/>
+</div>
+<!-- Floating Camera Badge -->
+<button aria-label="Change photo" class="absolute bottom-0 right-0 w-9 h-9 rounded-full bg-white shadow-md text-on-surface-variant hover:text-primary hover:scale-105 flex items-center justify-center transition-all" title="Change Photo" type="button">
+<span class="material-symbols-outlined text-[18px]">photo_camera</span>
+</button>
+</div>
+<!-- Buttons and Metadata Specs -->
+<div class="flex flex-col items-center sm:items-start gap-3 flex-1 text-center sm:text-left">
+<div class="flex flex-wrap items-center justify-center sm:justify-start gap-3">
+<button class="px-5 py-2.5 rounded-full bg-white shadow-sm hover:shadow-md text-on-surface font-label-lg text-label-lg font-bold hover:bg-slate-50 transition-all flex items-center gap-2" type="button">
+<span class="material-symbols-outlined text-[18px] text-primary">upload</span>
+                    Upload New Picture
+                  </button>
+<button class="px-4 py-2.5 rounded-full text-error font-label-lg text-label-lg font-semibold hover:bg-error-container/40 transition-colors" type="button">
+                    Remove Avatar
+                  </button>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant max-w-md">
+                  Supports PNG, JPG, or WEBP up to 5MB. Optimal dimensions 400×400px. Automatic AI facial centering applied.
+                </p>
+</div>
+</div>
+</section>
+<!-- Section 2: Personal Information Grid -->
+<section class="space-y-6">
+<div class="flex items-center justify-between pb-2">
+<div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface tracking-tight">Personal Information</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mt-0.5">
+                  Update your contact details and academic credentials.
+                </p>
+</div>
+<span class="font-label-mono-sm text-label-mono-sm text-on-surface-variant">EN-US · UTC-7</span>
+</div>
+<form class="grid grid-cols-1 md:grid-cols-2 gap-5" onsubmit="event.preventDefault();">
+<!-- First Name -->
+<div class="space-y-2">
+<label class="block font-label-lg text-label-lg font-bold text-on-surface" for="first-name">First Name</label>
+<div class="relative">
+<input class="w-full px-4 py-3 rounded-2xl bg-surface-container-low text-on-surface font-body-lg text-body-lg shadow-xs focus:outline-hidden focus:bg-white focus:shadow-md transition-all" id="first-name" type="text" value="Sarah"/>
+</div>
+</div>
+<!-- Last Name -->
+<div class="space-y-2">
+<label class="block font-label-lg text-label-lg font-bold text-on-surface" for="last-name">Last Name &amp; Suffix</label>
+<div class="relative">
+<input class="w-full px-4 py-3 rounded-2xl bg-surface-container-low text-on-surface font-body-lg text-body-lg shadow-xs focus:outline-hidden focus:bg-white focus:shadow-md transition-all" id="last-name" type="text" value="Lin, Ph.D."/>
+</div>
+</div>
+<!-- Email Address (Spans 2 columns or single) -->
+<div class="space-y-2 md:col-span-2">
+<div class="flex items-center justify-between">
+<label class="block font-label-lg text-label-lg font-bold text-on-surface" for="email-address">Email Address</label>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Linked to Stanford University Single Sign-On</span>
+</div>
+<div class="relative flex items-center">
+<span class="absolute left-4 material-symbols-outlined text-slate-400 text-[20px]">alternate_email</span>
+<input class="w-full pl-11 pr-36 py-3 rounded-2xl bg-surface-container-low text-on-surface font-body-lg text-body-lg shadow-xs focus:outline-hidden focus:bg-white focus:shadow-md transition-all" id="email-address" type="email" value="sarah.lin@stanford.edu"/>
+<div class="absolute right-3 flex items-center gap-1.5">
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-800 font-label-sm text-label-sm font-bold">
+<span class="material-symbols-outlined text-[13px]">check_circle</span>
+                      Verified
+                    </span>
+<span class="hidden sm:inline-flex px-2 py-1 rounded-full bg-slate-200/80 text-on-surface font-label-sm text-label-sm font-semibold">
+                      Primary
+                    </span>
+</div>
+</div>
+</div>
+<!-- Phone Number -->
+<div class="space-y-2">
+<label class="block font-label-lg text-label-lg font-bold text-on-surface" for="phone-number">Phone Number <span class="font-normal text-on-surface-variant">(Optional)</span></label>
+<div class="relative flex">
+<div class="inline-flex items-center px-3.5 py-3 rounded-l-2xl bg-surface-container text-on-surface font-label-md text-label-md font-semibold select-none">
+                    🇺🇸 +1
+                  </div>
+<input class="w-full px-4 py-3 rounded-r-2xl bg-surface-container-low text-on-surface font-body-lg text-body-lg shadow-xs focus:outline-hidden focus:bg-white focus:shadow-md transition-all" id="phone-number" type="tel" value="415-890-2194"/>
+</div>
+</div>
+<!-- Location / Timezone -->
+<div class="space-y-2">
+<label class="block font-label-lg text-label-lg font-bold text-on-surface" for="timezone">Location &amp; Timezone</label>
+<div class="relative flex items-center">
+<span class="absolute left-4 material-symbols-outlined text-slate-400 text-[20px]">location_on</span>
+<input class="w-full pl-11 pr-4 py-3 rounded-2xl bg-surface-container-low text-on-surface font-body-lg text-body-lg shadow-xs focus:outline-hidden focus:bg-white focus:shadow-md transition-all" id="timezone" type="text" value="San Francisco, CA · Pacific Daylight (UTC-7)"/>
+</div>
+</div>
+<!-- Professional Headline -->
+<div class="space-y-2 md:col-span-2">
+<label class="block font-label-lg text-label-lg font-bold text-on-surface" for="headline">Headline / Academic Role</label>
+<div class="relative">
+<input class="w-full px-4 py-3 rounded-2xl bg-surface-container-low text-on-surface font-body-lg text-body-lg shadow-xs focus:outline-hidden focus:bg-white focus:shadow-md transition-all" id="headline" type="text" value="Lead Machine Learning Researcher &amp; Full-Stack Systems Architect"/>
+</div>
+</div>
+<!-- Bio / About -->
+<div class="space-y-2 md:col-span-2">
+<div class="flex items-center justify-between">
+<label class="block font-label-lg text-label-lg font-bold text-on-surface" for="bio">Bio / Research Summary</label>
+<span class="font-label-mono-sm text-label-mono-sm text-on-surface-variant font-medium" id="char-counter">112 / 500 characters</span>
+</div>
+<textarea class="w-full px-4 py-3 rounded-2xl bg-surface-container-low text-on-surface font-body-lg text-body-lg shadow-xs focus:outline-hidden focus:bg-white focus:shadow-md transition-all resize-y" id="bio" rows="3">Full-Stack Developer passionate about distributed multi-agent systems, reactive LLM pipelines, and high-concurrency web services.</textarea>
+</div>
+</form>
+</section>
+<!-- Section 3: Connected Accounts Island -->
+<section class="space-y-5" id="connected-accounts">
+<div class="flex items-center justify-between pb-1">
+<div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface tracking-tight">Connected Integrations &amp; OAuth 2.0</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mt-0.5">
+                  Synchronize your project assignments, code repositories, and federated Google sign-ins.
+                </p>
+</div>
+<span class="font-label-sm text-label-sm font-bold text-emerald-600 bg-emerald-500/10 px-2.5 py-1 rounded-full">All Secured</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<!-- Google Account Card -->
+<div class="p-5 rounded-3xl bg-surface-container-low/70 backdrop-blur-md flex flex-col justify-between gap-4 transition-all hover:bg-surface-container-low">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-3">
+<!-- Google SVG Logo -->
+<div class="w-11 h-11 rounded-2xl bg-white shadow-xs flex items-center justify-center p-2.5">
+<svg class="w-full h-full" viewbox="0 0 24 24">
+<path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"></path>
+<path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"></path>
+<path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05"></path>
+<path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" fill="#EA4335"></path>
+</svg>
+</div>
+<div>
+<div class="font-title-md text-title-md font-bold text-on-surface">Google Workspace</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant">sarah.lin@stanford.edu</div>
+</div>
+</div>
+<span class="px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-800 font-label-sm text-label-sm font-bold">OAuth 2.0</span>
+</div>
+<div class="flex items-center justify-between pt-2">
+<span class="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                    Calendar &amp; SSO Synchronized
+                  </span>
+<button class="px-3.5 py-1.5 rounded-full bg-white shadow-xs hover:shadow-sm text-on-surface font-label-md text-label-md font-semibold hover:bg-slate-50 transition-all" type="button">
+                    Disconnect
+                  </button>
+</div>
+</div>
+<!-- GitHub Account Card -->
+<div class="p-5 rounded-3xl bg-surface-container-low/70 backdrop-blur-md flex flex-col justify-between gap-4 transition-all hover:bg-surface-container-low">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-3">
+<!-- GitHub SVG Logo -->
+<div class="w-11 h-11 rounded-2xl bg-white shadow-xs flex items-center justify-center p-2.5 text-slate-900">
+<svg class="w-full h-full fill-current" viewbox="0 0 24 24">
+<path clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" fill-rule="evenodd"></path>
+</svg>
+</div>
+<div>
+<div class="font-title-md text-title-md font-bold text-on-surface">GitHub Profile</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant font-mono">@sarahlin-ml</div>
+</div>
+</div>
+<span class="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-800 font-label-sm text-label-sm font-bold">Class Sync</span>
+</div>
+<div class="flex items-center justify-between pt-2">
+<span class="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                    8 Classroom Repositories Synced
+                  </span>
+<button class="px-3.5 py-1.5 rounded-full bg-white shadow-xs hover:shadow-sm text-on-surface font-label-md text-label-md font-semibold hover:bg-slate-50 transition-all" type="button">
+                    Configure
+                  </button>
+</div>
+</div>
+</div>
+</section>
+<!-- Section 4: Privacy & Preferences Compact Strip -->
+<section class="p-6 rounded-3xl bg-gradient-to-r from-violet-500/5 via-cyan-500/5 to-pink-500/5 backdrop-blur-md flex flex-col sm:flex-row items-center justify-between gap-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-2xl bg-white shadow-xs text-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-[22px]">visibility</span>
+</div>
+<div>
+<p class="font-title-md text-title-md font-bold text-on-surface">Public Directory Listing</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Allow fellow enrolled students to find you in peer search</p>
+</div>
+</div>
+<!-- Apple-style Fluid Toggle -->
+<label class="relative inline-flex items-center cursor-pointer select-none">
+<input checked="" class="sr-only peer" id="public-toggle" type="checkbox"/>
+<div class="w-13 h-7 bg-surface-container-highest peer-focus:outline-hidden rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[3px] after:bg-white after:rounded-full after:h-6 after:w-6 after:transition-all after:shadow-sm peer-checked:bg-gradient-to-r peer-checked:from-primary peer-checked:to-cyan-500 transition-colors"></div>
+</label>
+</section>
+</div>
+</main>
+</div>
+<!-- Floating Bottom Action Dock (Apple-style Sticky Island) -->
+<div class="sticky bottom-6 z-40 mt-10 flex justify-center px-4">
+<div class="w-full max-w-3xl rounded-full bg-white/85 backdrop-blur-2xl shadow-[0_20px_50px_-10px_rgba(99,102,241,0.2),0_4px_12px_rgba(15,23,42,0.06)] px-5 py-3 flex flex-col sm:flex-row items-center justify-between gap-3">
+<!-- Status indicator with amber pulse -->
+<div class="flex items-center gap-2.5">
+<span class="relative flex h-3 w-3">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+<span class="relative inline-flex rounded-full h-3 w-3 bg-amber-500"></span>
+</span>
+<span class="font-body-sm text-body-sm text-on-surface font-semibold">Unsaved edits in General Profile</span>
+</div>
+<!-- Buttons group -->
+<div class="flex items-center gap-3 w-full sm:w-auto justify-end">
+<button class="px-5 py-2 rounded-full text-on-surface-variant hover:text-on-surface font-label-lg text-label-lg font-semibold hover:bg-slate-100/60 transition-colors" type="button">
+            Discard
+          </button>
+<button class="px-6 py-2 rounded-full bg-gradient-to-r from-violet-600 via-primary to-cyan-500 text-white font-label-lg text-label-lg font-bold shadow-lg shadow-violet-500/30 hover:shadow-violet-500/40 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-2" id="save-button" type="button">
+<span class="material-symbols-outlined text-[18px]">check</span>
+            Save Changes
+          </button>
+</div>
+</div>
+</div>
+</div>
+<!-- Inline Micro-interactions Script -->
+<script>
+    (function() {
+      const bio = document.getElementById('bio');
+      const counter = document.getElementById('char-counter');
+      const saveBtn = document.getElementById('save-button');
+
+      if (bio && counter) {
+        bio.addEventListener('input', function() {
+          const count = bio.value.length;
+          counter.textContent = `${count} / 500 characters`;
+          if (count > 500) {
+            counter.classList.add('text-error');
+          } else {
+            counter.classList.remove('text-error');
+          }
+        });
+      }
+
+      if (saveBtn) {
+        saveBtn.addEventListener('click', function() {
+          const originalText = saveBtn.innerHTML;
+          saveBtn.innerHTML = `<span class="material-symbols-outlined text-[18px] animate-spin">sync</span> Saving...`;
+          saveBtn.disabled = true;
+          setTimeout(() => {
+            saveBtn.innerHTML = `<span class="material-symbols-outlined text-[18px]">check_circle</span> Saved!`;
+            setTimeout(() => {
+              saveBtn.innerHTML = originalText;
+              saveBtn.disabled = false;
+            }, 1800);
+          }, 600);
+        });
+      }
+    })();
+  </script>
+</div></main><footer class="relative z-10 w-full mt-margin bg-white/70 backdrop-blur-xl border-t border-slate-200/60"><div class="max-w-7xl mx-auto px-gutter-mobile md:px-margin py-space-xl flex flex-col md:flex-row items-center justify-between gap-space-lg"><div class="flex items-center gap-space-sm"><img alt="EduFlow Iridescent Liquid Glyph Logo" class="h-6 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1UVW5muaBBW6EzbhjvttGIl-Xu6R56jfN0HSgB9u5e3zomDvMY8RnjjIaBDmMPHYFuN2eQFygVIZ9oWY0WODsT-GTFwxdcu8ufp2lQi6GCUx_uWvo-Sy7OojoUKUI-blpAlmVIXjuzbQGBT95wMCdU1bezL1PWOYgFB4sahlf6MqnH9bCT8cJ5lE-O2uGL66A1JYEq6s0zoDCDXabQYgSPmNONzq__vBYFT8mDtnrXRp3nKoNUNaDNhtOfD"/><span class="font-headline-sm text-headline-sm text-slate-900 font-bold">EduFlow</span><span class="font-label-mono-sm text-label-mono-sm text-slate-500 font-semibold px-space-xs py-0.5 rounded-full bg-slate-100 border border-slate-200">v2.4 Spatial</span></div><div class="flex flex-wrap items-center justify-center gap-space-md text-slate-600 font-body-sm text-body-sm font-medium"><a class="hover:text-slate-900 transition-colors" data-path="explore-catalog" href="#">Courses</a><a class="hover:text-slate-900 transition-colors" data-path="curriculum" href="#">Syllabus</a><a class="hover:text-slate-900 transition-colors" data-path="pricing" href="#">Membership</a><a class="hover:text-slate-900 transition-colors" data-path="instructors" href="#">Faculty</a></div><div class="font-label-mono-sm text-label-mono-sm text-slate-500 font-medium">© 2025 EduFlow Technologies Inc. All rights reserved.</div></div></footer></body></html>

@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_standard" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=JetBrains+Mono:wght@500;600&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base { html, body { margin: 0; padding: 0; } body { overscroll-behavior: none; } main > :first-child { margin-top: 0 !important; } main > :last-child { margin-bottom: 0 !important; } } ::-webkit-scrollbar { display: none; }
+@keyframes shimmer-light { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+</style><script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "surface-container-highest": "#dae2fd", "on-secondary-container": "#006172", "on-tertiary-container": "#ffdde7", "error": "#ba1a1a", "surface-container-high": "#e2e7ff", "surface-bright": "#faf8ff", "background": "#f8fafc", "error-container": "#ffdad6", "surface-variant": "#dae2fd", "secondary-fixed-dim": "#4cd7f6", "secondary-fixed": "#acedff", "on-error": "#ffffff", "surface-container": "#eaedff", "tertiary-fixed-dim": "#ffb0cd", "surface-dim": "#d2d9f4", "surface-tint": "#732ee4", "on-primary-container": "#ede0ff", "on-primary-fixed-variant": "#5a00c6", "secondary-container": "#57dffe", "on-surface": "#0f172a", "on-surface-variant": "#475569", "on-primary": "#ffffff", "tertiary-container": "#bf2076", "inverse-on-surface": "#eef0ff", "surface-container-lowest": "#ffffff", "outline-variant": "#cbd5e1", "on-secondary-fixed": "#001f26", "primary-fixed-dim": "#d2bbff", "on-background": "#0f172a", "on-tertiary-fixed-variant": "#8c0053", "primary-fixed": "#eaddff", "primary-container": "#7c3aed", "on-tertiary": "#ffffff", "secondary": "#0284c7", "tertiary": "#db2777", "tertiary-fixed": "#ffd9e4", "on-secondary": "#ffffff", "inverse-primary": "#d2bbff", "on-primary-fixed": "#25005a", "on-error-container": "#93000a", "on-secondary-fixed-variant": "#004e5c", "surface-container-low": "#f1f5f9", "surface": "#ffffff", "inverse-surface": "#1e293b", "primary": "#7c3aed", "outline": "#64748b", "on-tertiary-fixed": "#3e0022" }, "borderRadius": { "DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px" }, "spacing": { "space-md": "1rem", "gutter": "1.5rem", "space-sm": "0.5rem", "space-xs": "0.25rem", "space-xl": "2.5rem", "margin-desktop": "3rem", "margin": "2rem", "space-lg": "1.5rem", "gutter-lg": "2rem", "margin-mobile": "1rem", "gutter-sm": "1rem" }, "fontFamily": { "headline-lg": [ "Plus Jakarta Sans" ], "headline-lg-mobile": [ "Plus Jakarta Sans" ], "label-sm": [ "Plus Jakarta Sans" ], "label-lg": [ "Plus Jakarta Sans" ], "label-md": [ "Plus Jakarta Sans" ], "title-lg": [ "Plus Jakarta Sans" ], "display-hero": [ "Plus Jakarta Sans" ], "title-md": [ "Plus Jakarta Sans" ], "headline-md": [ "Plus Jakarta Sans" ], "body-sm": [ "Plus Jakarta Sans" ], "body-md": [ "Plus Jakarta Sans" ], "headline-sm": [ "Plus Jakarta Sans" ], "display-hero-mobile": [ "Plus Jakarta Sans" ], "body-lg": [ "Plus Jakarta Sans" ], "label-mono-sm": [ "JetBrains Mono" ], "label-mono-md": [ "JetBrains Mono" ] } } } };</script></head><body class="bg-[#f8fafc] font-body-md text-[#0f172a] antialiased min-h-screen relative selection:bg-purple-600 selection:text-white"><div class="fixed inset-0 pointer-events-none overflow-hidden z-0"><div class="absolute -top-36 left-1/4 w-[32rem] h-[32rem] rounded-full bg-violet-400/20 blur-[130px]"></div><div class="absolute top-1/3 -right-24 w-[28rem] h-[28rem] rounded-full bg-cyan-400/20 blur-[120px]"></div><div class="absolute bottom-10 left-1/3 w-[34rem] h-[34rem] rounded-full bg-fuchsia-300/15 blur-[140px]"></div><div class="absolute top-2/3 left-10 w-96 h-96 rounded-full bg-blue-300/15 blur-[120px]"></div></div><header class="fixed top-6 left-0 right-0 z-50 px-4 md:px-gutter flex justify-center pointer-events-none"><div class="pointer-events-auto h-16 w-full max-w-5xl rounded-full bg-white/80 backdrop-blur-2xl border border-white/80 shadow-[0_12px_40px_rgba(99,102,241,0.08),0_1px_3px_rgba(0,0,0,0.05)] px-space-md flex items-center justify-between gap-space-sm"><div class="flex items-center gap-space-sm pl-space-xs"><img alt="EduFlow Iridescent Liquid Glyph Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1UVW5muaBBW6EzbhjvttGIl-Xu6R56jfN0HSgB9u5e3zomDvMY8RnjjIaBDmMPHYFuN2eQFygVIZ9oWY0WODsT-GTFwxdcu8ufp2lQi6GCUx_uWvo-Sy7OojoUKUI-blpAlmVIXjuzbQGBT95wMCdU1bezL1PWOYgFB4sahlf6MqnH9bCT8cJ5lE-O2uGL66A1JYEq6s0zoDCDXabQYgSPmNONzq__vBYFT8mDtnrXRp3nKoNUNaDNhtOfD"/><span class="font-headline-sm text-lg text-slate-900 font-bold tracking-tight">EduFlow</span></div><nav class="hidden lg:flex items-center gap-1 p-1 rounded-full bg-slate-100/80 border border-slate-200/50" data-active-classes="bg-white text-purple-700 shadow-sm font-semibold"><a class="px-space-md py-1.5 rounded-full text-slate-600 hover:text-slate-900 hover:bg-white/60 transition-colors text-sm font-medium" data-path="explore-catalog" href="#">Explore Catalog</a><a class="px-space-md py-1.5 rounded-full text-slate-600 hover:text-slate-900 hover:bg-white/60 transition-colors text-sm font-medium" data-path="curriculum" href="#">Curriculum</a><a class="px-space-md py-1.5 rounded-full text-slate-600 hover:text-slate-900 hover:bg-white/60 transition-colors text-sm font-medium" data-path="instructors" href="#">Instructors</a><a class="px-space-md py-1.5 rounded-full text-slate-600 hover:text-slate-900 hover:bg-white/60 transition-colors text-sm font-medium" data-path="pricing" href="#">Pricing</a><a class="px-space-md py-1.5 rounded-full text-slate-600 hover:text-slate-900 hover:bg-white/60 transition-colors text-sm font-medium" data-path="dashboard" href="#">Dashboard</a></nav><div class="flex items-center gap-2"><button class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-100 hover:bg-slate-200/70 text-slate-600 hover:text-slate-900 transition-all border border-slate-200/60" type="button"><span class="material-symbols-outlined text-[18px]">search</span><span class="font-label-mono-sm text-[11px] px-1.5 py-0.5 rounded bg-white text-slate-500 font-semibold shadow-xs">⌘K</span></button><a class="hidden md:inline-flex px-3 py-1.5 text-sm font-semibold text-slate-600 hover:text-slate-900 transition-colors" data-path="login" href="#">Sign In</a><a class="relative inline-flex items-center justify-center p-[1px] rounded-full overflow-hidden shadow-[0_8px_20px_-4px_rgba(124,58,237,0.4)] group" data-path="signup" href="#"><span class="absolute inset-0 bg-gradient-to-r from-purple-600 via-indigo-600 to-cyan-500 transition-all duration-300 group-hover:opacity-90"></span><span class="relative px-4 py-1.5 rounded-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-sm font-semibold hover:bg-transparent transition-all">Get Started</span></a><div class="pl-1"><img alt="Profile" class="w-8 h-8 rounded-full object-cover ring-2 ring-purple-100 shadow-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAeH6bAqM-93WEMb2Sc3tcrQGgzfVnW4T4eorkWD0oNIdqGHkUJhgmF5hMiJdCVvb5by6vW0N17dtYxKHQu85yLQzt-ez9NcN0ODzhR-CJ2F_S1KD_9XJD4fjEfqbf3glH3uE86W5twATYcr4KLzzZCWKelvj6ZL4AaWiXn8dtraglqY3Azhp4jqp3kP16yiud80EPcLdgf0dCNoTSnj8EfygHudJqTKXGKqWHC2dbod8elKJAwpFxb-Q"/></div></div></div></header><main class="relative z-10 w-full pt-20 min-h-screen"><div class="flex flex-col w-full">
+<div class="w-full max-w-7xl mx-auto px-4 md:px-margin space-y-10 pb-20">
+<!-- SUB-HEADER CONTEXT / HERO TITLE & ACTIONS -->
+<div class="relative w-full pt-4">
+<div class="flex flex-col lg:flex-row lg:items-end justify-between gap-6 pb-2">
+<div class="space-y-3">
+<!-- Sub-header badge -->
+<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-surface-container-high/80 backdrop-blur-md shadow-xs">
+<span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+<span class="font-label-sm text-primary tracking-widest uppercase">INSTRUCTOR CONTROL PLANE · STUDIO v3.2</span>
+</div>
+<h1 class="font-display-hero text-display-hero text-on-surface tracking-tight">
+            Instructor Studio <span class="bg-gradient-to-r from-primary via-primary-container to-secondary bg-clip-text text-transparent">&amp; Insights</span>
+</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl">
+            Real-time enrollment telemetry, global revenue analytics, and curriculum orchestration.
+          </p>
+</div>
+<!-- Action Bar -->
+<div class="flex flex-wrap items-center gap-3">
+<div class="flex items-center rounded-full bg-surface-container-lowest/90 backdrop-blur-xl shadow-sm p-1">
+<button class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full font-label-md text-label-md text-on-surface hover:bg-surface-container transition-colors" type="button">
+<span class="material-symbols-outlined text-[16px] text-primary">calendar_month</span>
+              Last 30 Days
+              <span class="material-symbols-outlined text-[14px] text-outline">expand_more</span>
+</button>
+<div class="w-px h-4 bg-outline-variant"></div>
+<span class="flex items-center gap-1 px-3 py-1.5 font-label-sm text-label-sm text-secondary font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary-fixed-dim animate-ping"></span>
+              Live Telemetry
+            </span>
+</div>
+<button class="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-surface-container-lowest/80 hover:bg-surface-container-high/70 backdrop-blur-xl shadow-xs transition-all font-label-md text-label-md text-on-surface font-semibold" type="button">
+<span class="material-symbols-outlined text-[18px] text-on-surface-variant">ios_share</span>
+<span>Export Financials</span>
+</button>
+<button class="relative inline-flex items-center justify-center p-[1px] rounded-full overflow-hidden shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.99] transition-all group" type="button">
+<span class="absolute inset-0 bg-gradient-to-r from-primary via-primary-container to-secondary transition-all"></span>
+<span class="relative flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-primary to-primary-container font-label-md text-label-md text-on-primary font-semibold tracking-wide">
+<span class="material-symbols-outlined text-[18px]">add</span>
+              Create New Course
+            </span>
+</button>
+</div>
+</div>
+</div>
+<!-- TOP METRICS BENTO TILES (Level 1 Glass) -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-gutter">
+<!-- Tile 1: Gross Revenue -->
+<div class="relative overflow-hidden rounded-lg bg-surface-container-lowest/75 backdrop-blur-2xl shadow-sm p-6 flex flex-col justify-between group hover:shadow-md hover:bg-surface-container-lowest/90 transition-all">
+<div class="absolute -top-12 -right-12 w-28 h-28 rounded-full bg-primary/10 blur-2xl group-hover:scale-125 transition-transform"></div>
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md uppercase tracking-wider text-on-surface-variant">Total Gross Revenue</span>
+<div class="w-8 h-8 rounded-full bg-surface-container-high flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[18px]">payments</span>
+</div>
+</div>
+<div class="my-4 space-y-1">
+<div class="font-headline-lg text-headline-lg text-on-surface tracking-tight">$18,450<span class="text-title-lg text-on-surface-variant font-normal">.00</span></div>
+<div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-secondary-fixed/50 text-secondary font-label-sm text-label-sm font-semibold">
+<span class="material-symbols-outlined text-[14px]">trending_up</span>
+            +14.2% vs last month
+          </div>
+</div>
+<div class="pt-3 font-body-sm text-body-sm text-on-surface-variant flex items-center justify-between">
+<span>MRR: <strong class="text-on-surface font-semibold">$6,820</strong></span>
+<span>Refund rate: <strong class="text-on-surface font-semibold">0.4%</strong></span>
+</div>
+</div>
+<!-- Tile 2: Active Students -->
+<div class="relative overflow-hidden rounded-lg bg-surface-container-lowest/75 backdrop-blur-2xl shadow-sm p-6 flex flex-col justify-between group hover:shadow-md hover:bg-surface-container-lowest/90 transition-all">
+<div class="absolute -top-12 -right-12 w-28 h-28 rounded-full bg-secondary-fixed/30 blur-2xl group-hover:scale-125 transition-transform"></div>
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md uppercase tracking-wider text-on-surface-variant">Active Students</span>
+<div class="w-8 h-8 rounded-full bg-secondary-fixed/40 flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-[18px]">group</span>
+</div>
+</div>
+<div class="my-4 space-y-1">
+<div class="font-headline-lg text-headline-lg text-on-surface tracking-tight">1,842 <span class="text-title-lg text-on-surface-variant font-normal">Learners</span></div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Across 4 active cohorts &amp; courses</p>
+</div>
+<div class="pt-3 font-body-sm text-body-sm text-on-surface flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+<span><strong>87.4%</strong> completion velocity (+3.1%)</span>
+</div>
+</div>
+<!-- Tile 3: Average Rating -->
+<div class="relative overflow-hidden rounded-lg bg-surface-container-lowest/75 backdrop-blur-2xl shadow-sm p-6 flex flex-col justify-between group hover:shadow-md hover:bg-surface-container-lowest/90 transition-all">
+<div class="absolute -top-12 -right-12 w-28 h-28 rounded-full bg-tertiary-fixed/30 blur-2xl group-hover:scale-125 transition-transform"></div>
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md uppercase tracking-wider text-on-surface-variant">Average Rating</span>
+<div class="w-8 h-8 rounded-full bg-tertiary-fixed flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+</div>
+<div class="my-4 space-y-1">
+<div class="flex items-baseline gap-2">
+<span class="font-headline-lg text-headline-lg text-on-surface tracking-tight">4.94</span>
+<div class="flex text-amber-500 text-sm">
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">star_half</span>
+</div>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">From 612 verified student reviews</p>
+</div>
+<div class="pt-3 font-body-sm text-body-sm text-on-surface-variant flex items-center justify-between">
+<span class="px-2 py-0.5 rounded-full bg-surface-container-high text-on-surface font-label-sm text-label-sm font-semibold">99.2% Positive Sentiment</span>
+<span class="text-tertiary font-semibold">Top 1% Rank</span>
+</div>
+</div>
+<!-- Tile 4: Next Stripe Payout -->
+<div class="relative overflow-hidden rounded-lg bg-surface-container-lowest/75 backdrop-blur-2xl shadow-sm p-6 flex flex-col justify-between group hover:shadow-md hover:bg-surface-container-lowest/90 transition-all">
+<div class="absolute -top-12 -right-12 w-28 h-28 rounded-full bg-primary-fixed/40 blur-2xl group-hover:scale-125 transition-transform"></div>
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md uppercase tracking-wider text-on-surface-variant">Next Stripe Payout</span>
+<div class="w-8 h-8 rounded-full bg-primary-fixed flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[18px]">account_balance</span>
+</div>
+</div>
+<div class="my-4 space-y-1">
+<div class="font-headline-lg text-headline-lg text-on-surface tracking-tight">$3,240<span class="text-title-lg text-on-surface-variant font-normal">.00</span></div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Scheduled for Oct 1, 2025</p>
+</div>
+<div class="pt-3">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-secondary-fixed/30 text-secondary font-label-sm text-label-sm font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse"></span>
+            Direct Deposit (•••• 8841)
+          </span>
+</div>
+</div>
+</div>
+<!-- ANALYTICS & TELEMETRY SECTION (Bento Graphic Section) -->
+<div class="relative rounded-lg bg-surface-container-lowest/80 backdrop-blur-2xl shadow-md p-6 md:p-8 space-y-6">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+<div>
+<div class="flex items-center gap-2">
+<h2 class="font-title-lg text-title-lg text-on-surface font-bold">Student Growth &amp; Velocity</h2>
+<span class="px-2.5 py-0.5 rounded-full bg-primary/10 text-primary font-label-sm text-label-sm font-semibold">Live Real-Time Flow</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Telemetry tracking new enrollment intake &amp; daily gross volume</p>
+</div>
+<div class="flex items-center gap-2">
+<span class="flex items-center gap-1.5 text-xs text-on-surface-variant font-medium mr-2">
+<span class="w-2.5 h-2.5 rounded-full bg-primary"></span> Enrollments
+          </span>
+<span class="flex items-center gap-1.5 text-xs text-on-surface-variant font-medium">
+<span class="w-2.5 h-2.5 rounded-full bg-secondary"></span> Gross ($)
+          </span>
+<div class="ml-2 flex items-center rounded-full bg-surface-container p-0.5">
+<button class="px-3 py-1 rounded-full bg-surface-container-lowest text-primary shadow-xs font-label-sm text-label-sm">30D</button>
+<button class="px-3 py-1 rounded-full text-on-surface-variant hover:text-on-surface font-label-sm text-label-sm transition-colors">90D</button>
+<button class="px-3 py-1 rounded-full text-on-surface-variant hover:text-on-surface font-label-sm text-label-sm transition-colors">1Y</button>
+</div>
+</div>
+</div>
+<!-- Smoothed SVG Chart -->
+<div class="relative w-full h-64 md:h-72">
+<svg class="w-full h-full overflow-visible" preserveaspectratio="none" viewbox="0 0 1000 240">
+<defs>
+<lineargradient id="chartGradientViolet" x1="0" x2="0" y1="0" y2="1">
+<stop offset="0%" stop-color="#7C3AED" stop-opacity="0.32"></stop>
+<stop offset="100%" stop-color="#7C3AED" stop-opacity="0.0"></stop>
+</lineargradient>
+<lineargradient id="chartLineGradient" x1="0" x2="1" y1="0" y2="0">
+<stop offset="0%" stop-color="#00687a"></stop>
+<stop offset="50%" stop-color="#7C3AED"></stop>
+<stop offset="100%" stop-color="#9b005c"></stop>
+</lineargradient>
+</defs>
+<!-- Subtle Grid Lines -->
+<line stroke="#eaedff" stroke-dasharray="4 4" stroke-width="1" x1="0" x2="1000" y1="40"></line>
+<line stroke="#eaedff" stroke-dasharray="4 4" stroke-width="1" x1="0" x2="1000" y1="100"></line>
+<line stroke="#eaedff" stroke-dasharray="4 4" stroke-width="1" x1="0" x2="1000" y1="160"></line>
+<line stroke="#eaedff" stroke-dasharray="4 4" stroke-width="1" x1="0" x2="1000" y1="220"></line>
+<!-- Area fill -->
+<path d="M 0,190 C 80,185 140,140 220,135 C 300,130 360,165 440,110 C 520,60 580,95 660,65 C 740,35 820,80 900,40 C 940,25 980,20 1000,18 L 1000,230 L 0,230 Z" fill="url(#chartGradientViolet)"></path>
+<!-- Stroke curve -->
+<path d="M 0,190 C 80,185 140,140 220,135 C 300,130 360,165 440,110 C 520,60 580,95 660,65 C 740,35 820,80 900,40 C 940,25 980,20 1000,18" fill="none" stroke="url(#chartLineGradient)" stroke-linecap="round" stroke-linejoin="round" stroke-width="3.5"></path>
+<!-- Interactive Highlight Points -->
+<circle cx="220" cy="135" fill="#faf8ff" r="5" stroke="#00687a" stroke-width="2.5"></circle>
+<circle cx="440" cy="110" fill="#faf8ff" r="5" stroke="#7C3AED" stroke-width="2.5"></circle>
+<circle cx="660" cy="65" fill="#faf8ff" r="6" stroke="#7C3AED" stroke-width="3"></circle>
+<circle cx="900" cy="40" fill="#faf8ff" r="6" stroke="#9b005c" stroke-width="3"></circle>
+<!-- Hover Tooltip Pin at cx=660 -->
+<line stroke="#7C3AED" stroke-dasharray="3 3" stroke-width="1.5" x1="660" x2="660" y1="65" y2="225"></line>
+</svg>
+<!-- Dynamic Floating Glass Tooltip Tag -->
+<div class="absolute left-[62%] -top-4 -translate-x-1/2 rounded-full bg-surface-container-lowest/95 backdrop-blur-md shadow-lg px-3.5 py-1.5 flex items-center gap-2 pointer-events-none transform hover:scale-105 transition-all">
+<span class="w-2 h-2 rounded-full bg-primary animate-ping"></span>
+<span class="font-label-sm text-label-sm text-on-surface font-semibold">Sept 18: <strong>142 enrollments</strong> · <span class="text-primary">$1,840.00</span></span>
+</div>
+</div>
+<!-- Quick Insights Pill Row -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-3 pt-2">
+<div class="flex items-center gap-3 p-3 rounded-full bg-surface-container-low/80 backdrop-blur-md">
+<div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[16px]">bolt</span>
+</div>
+<div class="min-w-0">
+<div class="font-label-sm text-label-sm text-on-surface-variant truncate">Peak Velocity Driver</div>
+<div class="font-label-md text-label-md text-on-surface font-semibold truncate">Django 5 + AI Specialization</div>
+</div>
+</div>
+<div class="flex items-center gap-3 p-3 rounded-full bg-surface-container-low/80 backdrop-blur-md">
+<div class="w-8 h-8 rounded-full bg-secondary/10 flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-[16px]">speed</span>
+</div>
+<div class="min-w-0">
+<div class="font-label-sm text-label-sm text-on-surface-variant truncate">Avg Conversion Lead Time</div>
+<div class="font-label-md text-label-md text-on-surface font-semibold truncate">4.2 hours to first purchase</div>
+</div>
+</div>
+<div class="flex items-center gap-3 p-3 rounded-full bg-surface-container-low/80 backdrop-blur-md">
+<div class="w-8 h-8 rounded-full bg-tertiary/10 flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined text-[16px]">public</span>
+</div>
+<div class="min-w-0">
+<div class="font-label-sm text-label-sm text-on-surface-variant truncate">Global Demographic Lead</div>
+<div class="font-label-md text-label-md text-on-surface font-semibold truncate">NA (44%) · Europe (36%)</div>
+</div>
+</div>
+</div>
+</div>
+<!-- MAIN SECTION: COURSE PERFORMANCE & MANAGEMENT -->
+<div class="space-y-6">
+<!-- Section Controls: Status Tabs & Search -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+<!-- Status Tabs -->
+<div class="flex items-center gap-1.5 p-1 rounded-full bg-surface-container-lowest/80 backdrop-blur-xl shadow-xs overflow-x-auto">
+<button class="px-4 py-1.5 rounded-full bg-primary text-on-primary font-label-md text-label-md font-semibold shadow-sm transition-all" type="button">
+            All Courses (4)
+          </button>
+<button class="px-4 py-1.5 rounded-full text-on-surface-variant hover:text-on-surface font-label-md text-label-md font-medium transition-colors" type="button">
+            Published (3)
+          </button>
+<button class="px-4 py-1.5 rounded-full text-on-surface-variant hover:text-on-surface font-label-md text-label-md font-medium transition-colors" type="button">
+            Drafts (1)
+          </button>
+<button class="px-4 py-1.5 rounded-full text-on-surface-variant hover:text-on-surface font-label-md text-label-md font-medium transition-colors" type="button">
+            Archived (0)
+          </button>
+</div>
+<!-- Search Bar -->
+<div class="relative w-full sm:w-72">
+<div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-outline">
+<span class="material-symbols-outlined text-[18px]">search</span>
+</div>
+<input class="w-full pl-10 pr-12 py-2 rounded-full bg-surface-container-lowest/90 backdrop-blur-xl text-on-surface placeholder:text-outline text-sm shadow-xs focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all" placeholder="Filter curriculum..." type="text"/>
+<div class="absolute inset-y-0 right-0 pr-3 flex items-center">
+<kbd class="px-1.5 py-0.5 text-[10px] font-semibold text-outline-variant bg-surface-container rounded shadow-xs font-mono">⌘K</kbd>
+</div>
+</div>
+</div>
+<!-- Course Cards Roster -->
+<div class="space-y-4">
+<!-- ROW 1: Django 5 & Multi-Agent AI -->
+<div class="group relative rounded-lg bg-surface-container-lowest/80 hover:bg-surface-container-lowest/95 backdrop-blur-2xl shadow-sm hover:shadow-md transition-all p-5 md:p-6 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+<div class="flex items-start md:items-center gap-4 min-w-0">
+<div class="relative w-20 h-20 md:w-24 md:h-24 rounded-2xl overflow-hidden shrink-0 shadow-xs">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="High-tech futuristic circuit architecture board with purple luminous neon glowing conduits representing AI orchestration and microservices network, clean studio shot" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDioG20qv3JfZFnCFhkrFwF7WP_gE1PGqWLNIBMhAVi6goIVGvFcnfG3JXsGvYrObAXOsmMpV1V0D89U83zpiLLAJ46mgSC-qquJU4KvBC9FyhlEllNYhVlPvblQjeQRwZ-lBRHltPZeNIVE7AL3tVG598mMl4xdORchccB_ALcPBsuehiAeFPY8DobErolxIPbrO-zz17VW-JwFyzObU3GWfUd6gMJIe55mAbji_ULSZ63WAs-kxm4vg"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"></div>
+<span class="absolute bottom-1.5 left-1.5 px-1.5 py-0.5 rounded-sm bg-black/60 backdrop-blur-md text-[9px] font-mono text-white">PRO</span>
+</div>
+<div class="space-y-1.5 min-w-0">
+<div class="flex flex-wrap items-center gap-2">
+<span class="px-2.5 py-0.5 rounded-full bg-primary/10 text-primary font-label-sm text-label-sm font-semibold tracking-wide uppercase">Specialization Cohort</span>
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 font-label-sm text-label-sm font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                  PUBLISHED
+                </span>
+</div>
+<h3 class="font-title-lg text-title-lg text-on-surface font-bold truncate group-hover:text-primary transition-colors">
+                Full-Stack Django 5 &amp; Multi-Agent AI Architecture
+              </h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-2">
+<span>Lead Instructor: <strong>You</strong></span>
+<span>•</span>
+<span>48 Modules · 14 Cohort Live Rooms</span>
+</p>
+</div>
+</div>
+<!-- Middle Stats: Progress / Enrollment / Revenue / Rating -->
+<div class="grid grid-cols-3 gap-6 sm:gap-8 items-center shrink-0">
+<div>
+<div class="font-label-sm text-label-sm text-on-surface-variant uppercase">Enrolled</div>
+<div class="font-title-md text-title-md text-on-surface font-bold mt-0.5">842 <span class="font-body-sm text-body-sm text-on-surface-variant font-normal">Learners</span></div>
+<div class="w-24 h-1.5 rounded-full bg-surface-container-high mt-1.5 overflow-hidden">
+<div class="h-full bg-gradient-to-r from-secondary to-primary rounded-full" style="width: 84%;"></div>
+</div>
+</div>
+<div>
+<div class="font-label-sm text-label-sm text-on-surface-variant uppercase">Gross Revenue</div>
+<div class="font-title-md text-title-md text-on-surface font-bold font-mono mt-0.5">$10,860<span class="text-body-sm text-on-surface-variant">.00</span></div>
+<div class="font-body-sm text-body-sm text-secondary font-medium">84% of cohort cap</div>
+</div>
+<div>
+<div class="font-label-sm text-label-sm text-on-surface-variant uppercase">Rating</div>
+<div class="flex items-center gap-1 font-title-md text-title-md text-on-surface font-bold mt-0.5">
+                4.96 <span class="material-symbols-outlined text-[16px] text-amber-500" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant">320 reviews</div>
+</div>
+</div>
+<!-- Actions -->
+<div class="flex items-center gap-2 shrink-0">
+<button class="px-4 py-2 rounded-full bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md text-label-md font-semibold transition-all" type="button">
+              Analytics
+            </button>
+<div class="relative">
+<button class="w-9 h-9 rounded-full bg-surface-container hover:bg-surface-container-high flex items-center justify-center text-on-surface transition-all" type="button">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</div>
+</div>
+</div>
+<!-- ROW 2: Rust & Kafka -->
+<div class="group relative rounded-lg bg-surface-container-lowest/80 hover:bg-surface-container-lowest/95 backdrop-blur-2xl shadow-sm hover:shadow-md transition-all p-5 md:p-6 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+<div class="flex items-start md:items-center gap-4 min-w-0">
+<div class="relative w-20 h-20 md:w-24 md:h-24 rounded-2xl overflow-hidden shrink-0 shadow-xs">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="Abstract luminous data pipeline with glowing cyan streaming nodes on glass plates, symbolizing distributed event streaming and ultra-fast backend systems" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDZe867lOVBjMZaW9KsL-Ku4IIFvObjKlkW3pyi-JWiBNY1YUsIFzOmJ-lIBgFie_St27J3t78898hkenKXj2QEX8nyYhAJUQj-W86cQyIf5t12wc95RGi1xSLX6kk9hf2Tticz1BTerHBN1CpFOp8aoqDyBXFay3vchq1iqQ8Og4HYDjyHTiBx_7g9FRK7Ma7PVMvHdoGGq7LVQjDEs_sCS9pmAw_LjcO6elCkNbipAYEfgVge_gmOpA"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"></div>
+<span class="absolute bottom-1.5 left-1.5 px-1.5 py-0.5 rounded-sm bg-black/60 backdrop-blur-md text-[9px] font-mono text-white">ADV</span>
+</div>
+<div class="space-y-1.5 min-w-0">
+<div class="flex flex-wrap items-center gap-2">
+<span class="px-2.5 py-0.5 rounded-full bg-secondary-fixed/50 text-secondary font-label-sm text-label-sm font-semibold tracking-wide uppercase">Advanced Backend</span>
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 font-label-sm text-label-sm font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                  PUBLISHED
+                </span>
+</div>
+<h3 class="font-title-lg text-title-lg text-on-surface font-bold truncate group-hover:text-secondary transition-colors">
+                Modern Distributed Systems with Rust &amp; Kafka
+              </h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-2">
+<span>Self-Paced Masterclass</span>
+<span>•</span>
+<span>32 Lab Environments</span>
+</p>
+</div>
+</div>
+<div class="grid grid-cols-3 gap-6 sm:gap-8 items-center shrink-0">
+<div>
+<div class="font-label-sm text-label-sm text-on-surface-variant uppercase">Enrolled</div>
+<div class="font-title-md text-title-md text-on-surface font-bold mt-0.5">594 <span class="font-body-sm text-body-sm text-on-surface-variant font-normal">Learners</span></div>
+<div class="w-24 h-1.5 rounded-full bg-surface-container-high mt-1.5 overflow-hidden">
+<div class="h-full bg-secondary rounded-full" style="width: 60%;"></div>
+</div>
+</div>
+<div>
+<div class="font-label-sm text-label-sm text-on-surface-variant uppercase">Gross Revenue</div>
+<div class="font-title-md text-title-md text-on-surface font-bold font-mono mt-0.5">$5,340<span class="text-body-sm text-on-surface-variant">.00</span></div>
+<div class="font-body-sm text-body-sm text-on-surface-variant">Standard Tier</div>
+</div>
+<div>
+<div class="font-label-sm text-label-sm text-on-surface-variant uppercase">Rating</div>
+<div class="flex items-center gap-1 font-title-md text-title-md text-on-surface font-bold mt-0.5">
+                4.92 <span class="material-symbols-outlined text-[16px] text-amber-500" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant">188 reviews</div>
+</div>
+</div>
+<div class="flex items-center gap-2 shrink-0">
+<button class="px-4 py-2 rounded-full bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md text-label-md font-semibold transition-all" type="button">
+              Analytics
+            </button>
+<button class="w-9 h-9 rounded-full bg-surface-container hover:bg-surface-container-high flex items-center justify-center text-on-surface transition-all" type="button">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</div>
+</div>
+<!-- ROW 3: Zero-Knowledge Cryptography -->
+<div class="group relative rounded-lg bg-surface-container-lowest/80 hover:bg-surface-container-lowest/95 backdrop-blur-2xl shadow-sm hover:shadow-md transition-all p-5 md:p-6 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+<div class="flex items-start md:items-center gap-4 min-w-0">
+<div class="relative w-20 h-20 md:w-24 md:h-24 rounded-2xl overflow-hidden shrink-0 shadow-xs">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="Stylized glowing crystalline prism floating over a mathematical cryptographic grid with violet and white laser refractions, premium high-tech minimalism" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBFM1e_qJUOnRCsRHa_Wwwou-TLLNdjyz6_iTvxnnjpkFXB10SgbCFw-G8N88nKYVGfr0pAWAQFJMpvtsJkuo_NDCRHeFO0prEYiQHwo_VdOFRu7zVUQyNHpb8Qa41xAYR2rAwgPjgi1CGfGNY9auA7FidxRvtZEU9Mi6KZACNwED7-6kJK8HwUh1Pat0RBb1vr8TSyRwkCrHAvUamkFEl6vAApoASW-t7KARj48V1gt81vf1O2GY4XmA"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"></div>
+<span class="absolute bottom-1.5 left-1.5 px-1.5 py-0.5 rounded-sm bg-black/60 backdrop-blur-md text-[9px] font-mono text-white">CRYPTO</span>
+</div>
+<div class="space-y-1.5 min-w-0">
+<div class="flex flex-wrap items-center gap-2">
+<span class="px-2.5 py-0.5 rounded-full bg-tertiary-fixed/50 text-tertiary font-label-sm text-label-sm font-semibold tracking-wide uppercase">Security &amp; Identity</span>
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 font-label-sm text-label-sm font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                  PUBLISHED
+                </span>
+</div>
+<h3 class="font-title-lg text-title-lg text-on-surface font-bold truncate group-hover:text-tertiary transition-colors">
+                Zero-Knowledge Cryptography in Production
+              </h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-2">
+<span>Interactive Verification Track</span>
+<span>•</span>
+<span>zk-SNARKs &amp; Circom</span>
+</p>
+</div>
+</div>
+<div class="grid grid-cols-3 gap-6 sm:gap-8 items-center shrink-0">
+<div>
+<div class="font-label-sm text-label-sm text-on-surface-variant uppercase">Enrolled</div>
+<div class="font-title-md text-title-md text-on-surface font-bold mt-0.5">406 <span class="font-body-sm text-body-sm text-on-surface-variant font-normal">Learners</span></div>
+<div class="w-24 h-1.5 rounded-full bg-surface-container-high mt-1.5 overflow-hidden">
+<div class="h-full bg-tertiary-container rounded-full" style="width: 45%;"></div>
+</div>
+</div>
+<div>
+<div class="font-label-sm text-label-sm text-on-surface-variant uppercase">Gross Revenue</div>
+<div class="font-title-md text-title-md text-on-surface font-bold font-mono mt-0.5">$2,250<span class="text-body-sm text-on-surface-variant">.00</span></div>
+<div class="font-body-sm text-body-sm text-on-surface-variant">Cohort B Complete</div>
+</div>
+<div>
+<div class="font-label-sm text-label-sm text-on-surface-variant uppercase">Rating</div>
+<div class="flex items-center gap-1 font-title-md text-title-md text-on-surface font-bold mt-0.5">
+                4.91 <span class="material-symbols-outlined text-[16px] text-amber-500" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant">104 reviews</div>
+</div>
+</div>
+<div class="flex items-center gap-2 shrink-0">
+<button class="px-4 py-2 rounded-full bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md text-label-md font-semibold transition-all" type="button">
+              Analytics
+            </button>
+<button class="w-9 h-9 rounded-full bg-surface-container hover:bg-surface-container-high flex items-center justify-center text-on-surface transition-all" type="button">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</div>
+</div>
+<!-- ROW 4: Autonomous LLM Agents (Draft) -->
+<div class="group relative rounded-lg bg-surface-container-lowest/60 hover:bg-surface-container-lowest/90 backdrop-blur-2xl shadow-xs hover:shadow-sm transition-all p-5 md:p-6 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+<div class="flex items-start md:items-center gap-4 min-w-0">
+<div class="relative w-20 h-20 md:w-24 md:h-24 rounded-2xl overflow-hidden shrink-0 bg-surface-container-high flex items-center justify-center shadow-xs">
+<img class="w-full h-full object-cover opacity-85 group-hover:scale-105 transition-transform duration-500" data-alt="Holographic neon blueprint of an artificial neural network with floating agent memory nodes, clean liquid glass light background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAhp_wML_DdN2MN7vazCuzrxu2sQfsJk_d_Mj1mQFdlc61dYRZN4VVSCA0zyKcNb7yhZmSRAWIY4PObyFm66SQIsEzKWRYgU4-j_4tHvBhL0qQONwU3wzVT8woy9o2ROkyXCtBVHl1CnjO7YEnvjpjkHp1iFSVICr3OvoLZ6TX4pMDs2YW_QEUfNYVm-W30w7Pka4tL-M-Rdp75urJjGkJYb4Q4HyrvlQ1afpXL0EkKdtkSDGeOGrAk7w"/>
+<div class="absolute inset-0 bg-primary/5"></div>
+<span class="absolute bottom-1.5 left-1.5 px-1.5 py-0.5 rounded-sm bg-black/60 backdrop-blur-md text-[9px] font-mono text-white">DRAFT</span>
+</div>
+<div class="space-y-1.5 min-w-0">
+<div class="flex flex-wrap items-center gap-2">
+<span class="px-2.5 py-0.5 rounded-full bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm font-semibold tracking-wide uppercase">AI Labs</span>
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-700 font-label-sm text-label-sm font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                  DRAFT · 75% Complete
+                </span>
+</div>
+<h3 class="font-title-lg text-title-lg text-on-surface font-bold truncate group-hover:text-primary transition-colors">
+                Autonomous LLM Agents with Tool-Use &amp; Memory Systems
+              </h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-2">
+<span>6 of 8 Curriculum Units Finished</span>
+<span>•</span>
+<span>Includes AutoGPT &amp; LangGraph</span>
+</p>
+</div>
+</div>
+<div class="grid grid-cols-3 gap-6 sm:gap-8 items-center shrink-0">
+<div>
+<div class="font-label-sm text-label-sm text-on-surface-variant uppercase">Waitlist Intake</div>
+<div class="font-title-md text-title-md text-on-surface font-bold mt-0.5">310 <span class="font-body-sm text-body-sm text-on-surface-variant font-normal">Pre-enrolled</span></div>
+<div class="w-24 h-1.5 rounded-full bg-surface-container-high mt-1.5 overflow-hidden">
+<div class="h-full bg-amber-500 rounded-full" style="width: 75%;"></div>
+</div>
+</div>
+<div>
+<div class="font-label-sm text-label-sm text-on-surface-variant uppercase">Projected Launch</div>
+<div class="font-title-md text-title-md text-on-surface font-bold font-mono mt-0.5">~$8,500</div>
+<div class="font-body-sm text-body-sm text-emerald-600 font-medium">High demand factor</div>
+</div>
+<div>
+<div class="font-label-sm text-label-sm text-on-surface-variant uppercase">Status</div>
+<div class="font-title-md text-title-md text-on-surface-variant font-semibold mt-0.5">Pending Review</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant">Syllabus in QA</div>
+</div>
+</div>
+<div class="flex items-center gap-2 shrink-0">
+<button class="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-primary text-on-primary font-label-md text-label-md font-semibold hover:shadow-md transition-all" type="button">
+              Continue Editing
+              <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</button>
+<button class="w-9 h-9 rounded-full bg-surface-container hover:bg-surface-container-high flex items-center justify-center text-on-surface transition-all" type="button">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- BOTTOM FLOATING INSTRUCTOR ASSISTANT ISLAND (Level 2 Glass) -->
+<div class="relative overflow-hidden rounded-lg bg-surface-container-lowest/85 backdrop-blur-2xl shadow-lg p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6">
+<div class="absolute -right-10 -bottom-10 w-44 h-44 rounded-full bg-primary-fixed/50 blur-3xl pointer-events-none"></div>
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-full bg-gradient-to-tr from-primary to-secondary flex items-center justify-center text-on-primary shadow-sm shrink-0">
+<span class="material-symbols-outlined text-[24px]">auto_awesome</span>
+</div>
+<div>
+<h4 class="font-title-lg text-title-lg text-on-surface font-bold">Need assistance scaling cohorts or configuring AI grading pipelines?</h4>
+<p class="font-body-md text-body-md text-on-surface-variant">The EduFlow Pedagogical Operations team &amp; AI Curriculum Co-Pilot are active 24/7.</p>
+</div>
+</div>
+<div class="flex flex-wrap items-center gap-3 shrink-0">
+<button class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md text-label-md font-semibold shadow-xs transition-all" type="button">
+<span class="material-symbols-outlined text-[18px] text-primary">forum</span>
+          Open Curriculum Co-Pilot
+        </button>
+<button class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-on-surface text-surface font-label-md text-label-md font-semibold shadow-sm hover:opacity-90 transition-all" type="button">
+<span class="material-symbols-outlined text-[18px]">calendar_today</span>
+          Schedule 1-on-1 Office Hours
+        </button>
+</div>
+</div>
+</div>
+</div></main><footer class="relative z-10 w-full mt-margin bg-white/70 backdrop-blur-xl border-t border-slate-200/70"><div class="max-w-7xl mx-auto px-4 md:px-margin py-8 flex flex-col md:flex-row items-center justify-between gap-4"><div class="flex items-center gap-2"><img alt="EduFlow Iridescent Liquid Glyph Logo" class="h-6 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1UVW5muaBBW6EzbhjvttGIl-Xu6R56jfN0HSgB9u5e3zomDvMY8RnjjIaBDmMPHYFuN2eQFygVIZ9oWY0WODsT-GTFwxdcu8ufp2lQi6GCUx_uWvo-Sy7OojoUKUI-blpAlmVIXjuzbQGBT95wMCdU1bezL1PWOYgFB4sahlf6MqnH9bCT8cJ5lE-O2uGL66A1JYEq6s0zoDCDXabQYgSPmNONzq__vBYFT8mDtnrXRp3nKoNUNaDNhtOfD"/><span class="text-base text-slate-900 font-bold">EduFlow</span><span class="font-label-mono-sm text-[10px] text-purple-700 px-2 py-0.5 rounded-full bg-purple-50 border border-purple-200/60 font-semibold">v2.4 Spatial</span></div><div class="flex flex-wrap items-center justify-center gap-6 text-slate-500 text-sm font-medium"><a class="hover:text-purple-600 transition-colors" data-path="explore-catalog" href="#">Courses</a><a class="hover:text-purple-600 transition-colors" data-path="curriculum" href="#">Syllabus</a><a class="hover:text-purple-600 transition-colors" data-path="pricing" href="#">Membership</a><a class="hover:text-purple-600 transition-colors" data-path="instructors" href="#">Faculty</a></div><div class="font-label-mono-sm text-xs text-slate-400">© 2025 EduFlow Technologies Inc. All rights reserved.</div></div></footer></body></html>

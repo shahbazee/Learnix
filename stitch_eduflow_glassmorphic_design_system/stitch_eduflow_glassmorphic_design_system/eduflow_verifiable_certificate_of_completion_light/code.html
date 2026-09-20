@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_standard" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=JetBrains+Mono:wght@500;600&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base { html, body { margin: 0; padding: 0; } body { overscroll-behavior: none; } main > :first-child { margin-top: 0 !important; } main > :last-child { margin-bottom: 0 !important; } } ::-webkit-scrollbar { display: none; }</style><script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "surface-container-highest": "#e2e8f0", "on-secondary-container": "#006172", "on-tertiary-container": "#831843", "error": "#ba1a1a", "surface-container-high": "#edf2f7", "surface-bright": "#ffffff", "background": "#f8fafc", "error-container": "#ffdad6", "surface-variant": "#e2e8f0", "secondary-fixed-dim": "#06b6d4", "secondary-fixed": "#cffafe", "on-error": "#ffffff", "surface-container": "#f1f5f9", "tertiary-fixed-dim": "#f472b6", "surface-dim": "#e2e8f0", "surface-tint": "#7c3aed", "on-primary-container": "#f5f3ff", "on-primary-fixed-variant": "#5b21b6", "secondary-container": "#06b6d4", "on-surface": "#0f172a", "on-surface-variant": "#475569", "on-primary": "#ffffff", "tertiary-container": "#ec4899", "inverse-on-surface": "#f8fafc", "surface-container-lowest": "#ffffff", "outline-variant": "#cbd5e1", "on-secondary-fixed": "#083344", "primary-fixed-dim": "#a78bfa", "on-background": "#0f172a", "on-tertiary-fixed-variant": "#831843", "primary-fixed": "#ede9fe", "primary-container": "#7c3aed", "on-tertiary": "#ffffff", "secondary": "#0284c7", "tertiary": "#db2777", "tertiary-fixed": "#fce7f3", "on-secondary": "#ffffff", "inverse-primary": "#c4b5fd", "on-primary-fixed": "#2e1065", "on-error-container": "#93000a", "on-secondary-fixed-variant": "#155e75", "surface-container-low": "#f8fafc", "surface": "#ffffff", "inverse-surface": "#1e293b", "primary": "#7c3aed", "outline": "#94a3b8", "on-tertiary-fixed": "#500724" }, "borderRadius": { "DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px" }, "spacing": { "gutter": "1.5rem", "space-xs": "0.25rem", "margin": "3rem", "space-sm": "0.5rem", "margin-mobile": "1.25rem", "space-lg": "1.5rem", "gutter-mobile": "1rem", "space-md": "1rem", "space-xl": "2.5rem" }, "fontFamily": { "display-hero": [ "Plus Jakarta Sans" ], "body-md": [ "Plus Jakarta Sans" ], "display-hero-mobile": [ "Plus Jakarta Sans" ], "headline-lg-mobile": [ "Plus Jakarta Sans" ], "body-lg": [ "Plus Jakarta Sans" ], "body-sm": [ "Plus Jakarta Sans" ], "label-mono-sm": [ "JetBrains Mono" ], "headline-sm": [ "Plus Jakarta Sans" ], "headline-lg": [ "Plus Jakarta Sans" ], "caps-tag": [ "Plus Jakarta Sans" ], "label-mono-md": [ "JetBrains Mono" ], "headline-md": [ "Plus Jakarta Sans" ] }, "fontSize": { "display-hero": [ "56px", { "lineHeight": "64px", "letterSpacing": "-0.03em", "fontWeight": "800" } ], "body-md": [ "15px", { "lineHeight": "24px", "letterSpacing": "-0.005em", "fontWeight": "400" } ], "display-hero-mobile": [ "36px", { "lineHeight": "44px", "letterSpacing": "-0.025em", "fontWeight": "800" } ], "headline-lg-mobile": [ "28px", { "lineHeight": "36px", "letterSpacing": "-0.02em", "fontWeight": "700" } ], "body-lg": [ "18px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "400" } ], "body-sm": [ "13px", { "lineHeight": "20px", "letterSpacing": "0em", "fontWeight": "400" } ], "label-mono-sm": [ "11px", { "lineHeight": "14px", "letterSpacing": "0.02em", "fontWeight": "600" } ], "headline-sm": [ "22px", { "lineHeight": "28px", "letterSpacing": "-0.015em", "fontWeight": "600" } ], "headline-lg": [ "40px", { "lineHeight": "48px", "letterSpacing": "-0.025em", "fontWeight": "700" } ], "caps-tag": [ "11px", { "lineHeight": "14px", "letterSpacing": "0.08em", "fontWeight": "700" } ], "label-mono-md": [ "13px", { "lineHeight": "18px", "letterSpacing": "-0.01em", "fontWeight": "500" } ], "headline-md": [ "28px", { "lineHeight": "36px", "letterSpacing": "-0.02em", "fontWeight": "700" } ] } } } };</script></head><body class="bg-[#f8fafc] font-body-md text-[#0f172a] antialiased min-h-screen relative selection:bg-primary/20 selection:text-primary"><div class="fixed inset-0 pointer-events-none overflow-hidden z-0"><div class="absolute -top-36 left-1/4 w-[600px] h-[600px] rounded-full bg-cyan-400/20 blur-[140px]"></div><div class="absolute top-1/4 -right-24 w-[550px] h-[550px] rounded-full bg-purple-500/20 blur-[150px]"></div><div class="absolute top-2/3 left-1/3 w-[650px] h-[650px] rounded-full bg-pink-400/15 blur-[160px]"></div><div class="absolute bottom-10 -left-20 w-[480px] h-[480px] rounded-full bg-indigo-400/15 blur-[140px]"></div></div><header class="fixed top-6 left-0 right-0 z-50 px-gutter-mobile md:px-gutter flex justify-center pointer-events-none"><div class="pointer-events-auto h-16 w-full max-w-5xl rounded-full bg-white/75 backdrop-blur-2xl border border-white/90 shadow-[0_20px_40px_-10px_rgba(99,102,241,0.12),inset_0_1px_2px_rgba(255,255,255,0.9)] px-space-md flex items-center justify-between gap-space-sm"><div class="flex items-center gap-space-sm pl-space-xs"><img alt="EduFlow Iridescent Liquid Glyph Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1UVW5muaBBW6EzbhjvttGIl-Xu6R56jfN0HSgB9u5e3zomDvMY8RnjjIaBDmMPHYFuN2eQFygVIZ9oWY0WODsT-GTFwxdcu8ufp2lQi6GCUx_uWvo-Sy7OojoUKUI-blpAlmVIXjuzbQGBT95wMCdU1bezL1PWOYgFB4sahlf6MqnH9bCT8cJ5lE-O2uGL66A1JYEq6s0zoDCDXabQYgSPmNONzq__vBYFT8mDtnrXRp3nKoNUNaDNhtOfD"/><span class="font-headline-sm text-headline-sm text-[#0f172a] font-bold tracking-tight">EduFlow</span></div><nav class="hidden lg:flex items-center gap-space-xs p-1 rounded-full bg-slate-100/70 border border-slate-200/50" data-active-classes="bg-white text-slate-900 shadow-sm font-semibold"><a class="px-space-md py-1.5 rounded-full text-slate-600 hover:text-slate-900 hover:bg-white/60 transition-colors font-body-sm text-body-sm" data-path="explore-catalog" href="#">Explore Catalog</a><a class="px-space-md py-1.5 rounded-full text-slate-600 hover:text-slate-900 hover:bg-white/60 transition-colors font-body-sm text-body-sm" data-path="curriculum" href="#">Curriculum</a><a class="px-space-md py-1.5 rounded-full text-slate-600 hover:text-slate-900 hover:bg-white/60 transition-colors font-body-sm text-body-sm" data-path="instructors" href="#">Instructors</a><a class="px-space-md py-1.5 rounded-full text-slate-600 hover:text-slate-900 hover:bg-white/60 transition-colors font-body-sm text-body-sm" data-path="pricing" href="#">Pricing</a><a class="px-space-md py-1.5 rounded-full text-slate-600 hover:text-slate-900 hover:bg-white/60 transition-colors font-body-sm text-body-sm" data-path="dashboard" href="#">Dashboard</a></nav><div class="flex items-center gap-space-xs"><button class="hidden sm:flex items-center gap-space-xs px-space-sm py-1.5 rounded-full bg-slate-100/80 hover:bg-slate-200/80 text-slate-600 hover:text-slate-900 transition-all border border-slate-200/60" type="button"><span class="material-symbols-outlined text-[18px]">search</span><span class="font-label-mono-sm text-label-mono-sm px-1.5 py-0.5 rounded bg-white text-slate-500 shadow-xs border border-slate-200/50">⌘K</span></button><a class="hidden md:inline-flex px-space-sm py-1.5 font-body-sm text-body-sm text-slate-600 hover:text-slate-900 font-medium transition-colors" data-path="login" href="#">Sign In</a><a class="relative inline-flex items-center justify-center p-[1px] rounded-full overflow-hidden shadow-[0_8px_20px_-4px_rgba(124,58,237,0.35)] hover:shadow-[0_12px_24px_-4px_rgba(124,58,237,0.45)] transition-all group" data-path="signup" href="#"><span class="absolute inset-0 bg-gradient-to-r from-violet-600 via-cyan-500 to-pink-500 group-hover:scale-105 transition-transform"></span><span class="relative px-space-md py-1.5 rounded-full bg-white/95 backdrop-blur-md text-slate-900 font-body-sm text-body-sm font-semibold group-hover:bg-transparent group-hover:text-white transition-all">Get Started</span></a><div class="pl-space-xs"><img alt="Profile" class="w-8 h-8 rounded-full object-cover ring-2 ring-violet-500/20 shadow-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAeH6bAqM-93WEMb2Sc3tcrQGgzfVnW4T4eorkWD0oNIdqGHkUJhgmF5hMiJdCVvb5by6vW0N17dtYxKHQu85yLQzt-ez9NcN0ODzhR-CJ2F_S1KD_9XJD4fjEfqbf3glH3uE86W5twATYcr4KLzzZCWKelvj6ZL4AaWiXn8dtraglqY3Azhp4jqp3kP16yiud80EPcLdgf0dCNoTSnj8EfygHudJqTKXGKqWHC2dbod8elKJAwpFxb-Q"/></div></div></div></header><main class="relative z-10 w-full pt-16 min-h-screen"><div class="flex flex-col w-full">
+<div class="relative w-full max-w-7xl mx-auto px-gutter-sm sm:px-gutter md:px-margin-desktop py-space-md sm:py-space-xl">
+<!-- Ambient Luminous Mesh Accents contained within wrapper -->
+<div class="absolute -top-10 left-1/3 w-96 h-96 rounded-full bg-secondary-container/15 blur-3xl pointer-events-none"></div>
+<div class="absolute top-48 right-10 w-96 h-96 rounded-full bg-primary-fixed-dim/20 blur-3xl pointer-events-none"></div>
+<div class="absolute top-96 left-10 w-80 h-80 rounded-full bg-tertiary-fixed-dim/15 blur-3xl pointer-events-none"></div>
+<!-- Header & Navigation Micro-Section -->
+<div class="relative z-10 flex flex-col items-center text-center space-y-space-sm mb-space-lg">
+<!-- Frosted Breadcrumb Pill -->
+<div class="inline-flex items-center gap-space-xs px-space-md py-1.5 rounded-full bg-surface-container-lowest/80 backdrop-blur-md shadow-sm">
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors" href="#">Student Dashboard</a>
+<span class="text-outline-variant font-label-sm text-label-sm">/</span>
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors" href="#">Verifications</a>
+<span class="text-outline-variant font-label-sm text-label-sm">/</span>
+<span class="font-label-md text-label-md text-primary font-semibold">EF-98214-X</span>
+</div>
+<!-- Title & Live Verification Status Badge -->
+<div class="flex flex-wrap items-center justify-center gap-space-sm mt-space-xs">
+<h1 class="font-headline-lg text-headline-lg sm:text-display-hero text-on-surface tracking-tight">
+          Course Completion Certificate
+        </h1>
+<div class="inline-flex items-center gap-1.5 px-space-md py-1 rounded-full bg-emerald-500/10 shadow-xs">
+<span class="relative flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+</span>
+<span class="font-label-sm text-label-sm text-emerald-800 tracking-wider font-bold">VERIFIED ON-CHAIN · 100% AUTHENTIC</span>
+</div>
+</div>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl text-center">
+        Issued on <span class="font-semibold text-on-surface">September 24, 2026</span> to <span class="font-semibold text-on-surface">Sarah Jenkins</span> for mastering Advanced Django 5 &amp; Cloud Architecture.
+      </p>
+</div>
+<!-- Certificate Widescreen Canvas -->
+<div class="relative z-10 w-full mb-space-xl">
+<div class="relative w-full rounded-lg bg-surface-container-lowest/85 backdrop-blur-2xl shadow-xl overflow-hidden p-3 sm:p-6 md:p-10 transition-all duration-300">
+<!-- Subtle Specular Rainbow Rim Simulation -->
+<div class="absolute inset-0 pointer-events-none rounded-lg bg-gradient-to-tr from-cyan-400/10 via-purple-500/10 to-pink-500/10 opacity-70"></div>
+<!-- Certificate Main Frame with Iridescent Double-Rule Inset -->
+<div class="relative w-full h-full rounded-DEFAULT bg-surface-container-lowest/90 backdrop-blur-xl p-6 sm:p-10 md:p-14 flex flex-col justify-between shadow-sm overflow-hidden">
+<!-- Background Fine Watermark Vector Geometry -->
+<div class="absolute inset-0 flex items-center justify-center opacity-5 pointer-events-none">
+<svg class="w-[600px] h-[600px]" fill="none" viewbox="0 0 400 400">
+<circle class="text-primary" cx="200" cy="200" r="180" stroke="currentColor" stroke-dasharray="6 4" stroke-width="1.5"></circle>
+<circle class="text-secondary" cx="200" cy="200" r="140" stroke="currentColor" stroke-width="1"></circle>
+<circle class="text-tertiary" cx="200" cy="200" r="100" stroke="currentColor" stroke-width="2"></circle>
+<path class="text-outline" d="M200 20 L200 380 M20 200 L380 200" stroke="currentColor" stroke-width="0.75"></path>
+<polygon class="text-primary" points="200,40 338,120 338,280 200,360 62,280 62,120" stroke="currentColor" stroke-width="1"></polygon>
+</svg>
+</div>
+<!-- Top Section: Holographic Crest & Institution Title -->
+<div class="flex flex-col items-center text-center space-y-space-xs relative z-10">
+<!-- Metallic Holographic Crest -->
+<div class="relative flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-tr from-primary via-secondary-container to-tertiary shadow-md mb-space-xs">
+<div class="w-14 h-14 rounded-full bg-surface-container-lowest/95 backdrop-blur-md flex items-center justify-center shadow-inner">
+<span class="material-symbols-outlined text-primary text-3xl font-light" style="font-variation-settings: 'FILL' 1;">verified</span>
+</div>
+</div>
+<div class="font-label-md text-label-md tracking-widest text-primary uppercase font-bold">EduFlow Academy of Engineering</div>
+<div class="font-headline-sm text-headline-sm sm:text-headline-md text-on-surface font-semibold tracking-normal">OFFICIAL CERTIFICATE OF ACHIEVEMENT &amp; MASTERY</div>
+<div class="w-24 h-0.5 rounded-full bg-gradient-to-r from-secondary-fixed-dim via-primary to-tertiary-fixed-dim mt-space-xs"></div>
+</div>
+<!-- Central Statement & Recipient Profile Card -->
+<div class="my-space-lg text-center flex flex-col items-center relative z-10">
+<span class="font-label-lg text-label-lg text-on-surface-variant italic mb-space-xs">Proudly Presented to</span>
+<!-- Recipient Name with Luxury Foil Shimmer Gradient -->
+<div class="relative py-space-xs">
+<span class="font-display-hero text-headline-lg sm:text-display-hero text-transparent bg-clip-text bg-gradient-to-r from-on-surface via-primary to-on-surface tracking-tight font-extrabold drop-shadow-sm">
+                Sarah Jenkins
+              </span>
+</div>
+<p class="font-body-md text-body-md sm:text-body-lg text-on-surface-variant max-w-3xl mt-space-sm leading-relaxed">
+              For successfully completing the comprehensive professional curriculum in <span class="font-semibold text-on-surface">Advanced Django Architecture, API Security &amp; Cloud Infrastructure</span> with distinction (<span class="text-primary font-semibold">Top 2% of Cohort Alpha</span>).
+            </p>
+<!-- Key Modules Audited Micro-Pills -->
+<div class="flex flex-wrap justify-center gap-space-xs sm:gap-space-sm mt-space-md max-w-3xl">
+<span class="px-space-md py-1 rounded-full bg-surface-container text-on-surface font-label-md text-label-md shadow-xs flex items-center gap-1">
+<span class="material-symbols-outlined text-primary text-sm">hub</span> ASGI WebSockets &amp; Redis Pub/Sub
+              </span>
+<span class="px-space-md py-1 rounded-full bg-surface-container text-on-surface font-label-md text-label-md shadow-xs flex items-center gap-1">
+<span class="material-symbols-outlined text-secondary text-sm">psychology</span> LangGraph Autonomous Agents
+              </span>
+<span class="px-space-md py-1 rounded-full bg-surface-container text-on-surface font-label-md text-label-md shadow-xs flex items-center gap-1">
+<span class="material-symbols-outlined text-tertiary text-sm">database</span> Vector Search &amp; pgvector
+              </span>
+<span class="px-space-md py-1 rounded-full bg-surface-container text-on-surface font-label-md text-label-md shadow-xs flex items-center gap-1">
+<span class="material-symbols-outlined text-primary text-sm">cloud</span> High-Scale Docker &amp; K8s
+              </span>
+</div>
+</div>
+<!-- Dual Signatures & Verification Authority Grid -->
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-space-lg pt-space-md mb-space-lg relative z-10">
+<!-- Left Signature: Dr. Alex Vance -->
+<div class="flex flex-col items-center sm:items-start text-center sm:text-left">
+<div class="h-12 w-48 mb-1 flex items-end">
+<!-- Digital Signature Flow Vector SVG -->
+<svg class="w-full h-10 text-on-surface/80" fill="none" viewbox="0 0 200 40">
+<path d="M10,25 C30,10 40,35 60,15 C80,0 75,32 95,20 C110,12 120,38 140,18 C155,5 170,25 185,15" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+<path d="M45,28 L150,28" stroke="currentColor" stroke-dasharray="3 3" stroke-width="1.2"></path>
+</svg>
+</div>
+<div class="w-48 h-0.5 bg-surface-container-highest mb-space-xs"></div>
+<div class="font-title-md text-title-md text-on-surface font-bold">Dr. Alex Vance</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant">Lead Research Architect &amp; Instructor</div>
+<div class="font-label-sm text-label-sm text-outline mt-0.5">Signed UTC 2026-09-24 14:22:08</div>
+</div>
+<!-- Right Signature: Elena Rostova -->
+<div class="flex flex-col items-center sm:items-end text-center sm:text-right">
+<div class="h-12 w-48 mb-1 flex items-end justify-center sm:justify-end">
+<!-- Digital Signature Flow Vector SVG -->
+<svg class="w-44 h-10 text-on-surface/80" fill="none" viewbox="0 0 200 40">
+<path d="M15,20 C35,32 50,8 70,25 C85,38 100,5 125,22 C145,35 160,12 185,25" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+<path d="M60,32 C90,32 130,30 170,32" stroke="currentColor" stroke-width="1.2"></path>
+</svg>
+</div>
+<div class="w-48 h-0.5 bg-surface-container-highest mb-space-xs"></div>
+<div class="font-title-md text-title-md text-on-surface font-bold">Elena Rostova</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant">Dean of Engineering Curricula</div>
+<div class="font-label-sm text-label-sm text-outline mt-0.5">Cryptographic Timestamp Validated</div>
+</div>
+</div>
+<!-- Bottom Security Bar: Cryptographic Hash, Embossed Holographic Medallion, QR Code -->
+<div class="pt-space-md rounded-DEFAULT bg-surface-container-low/70 backdrop-blur-md px-space-md py-space-sm flex flex-col md:flex-row items-center justify-between gap-space-md relative z-10">
+<!-- Left: Cryptographic Details -->
+<div class="flex flex-col space-y-1 text-center md:text-left">
+<span class="font-label-sm text-label-sm text-outline uppercase tracking-wider font-bold">SHA-256 Ledger Record</span>
+<div class="inline-flex items-center gap-1 font-label-md text-label-md text-on-surface font-mono bg-surface-container-lowest px-space-sm py-1 rounded-DEFAULT shadow-xs">
+<span class="material-symbols-outlined text-secondary text-sm">lock</span>
+<span>0x7f8a92b8d011c79e...d491c</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">eduflow.com/cert/EF-98214-X</span>
+</div>
+<!-- Center: Luxury Multi-Faceted Holographic Medallion Seal -->
+<div class="relative flex items-center justify-center">
+<div class="w-20 h-20 rounded-full bg-gradient-to-tr from-amber-400 via-purple-500 to-cyan-400 p-0.5 shadow-md animate-pulse">
+<div class="w-full h-full rounded-full bg-surface-container-lowest flex flex-col items-center justify-center p-1 text-center shadow-inner">
+<span class="material-symbols-outlined text-primary text-xl">workspace_premium</span>
+<span class="font-label-sm text-label-sm text-on-surface font-extrabold uppercase scale-90 leading-tight">EDUFLOW</span>
+<span class="font-label-sm text-[8px] text-on-surface-variant font-bold">2026 VERIFIED</span>
+</div>
+</div>
+</div>
+<!-- Right: 2D QR Code Container with Camera Verification Hint -->
+<div class="flex items-center gap-space-sm">
+<div class="flex flex-col text-right hidden sm:flex">
+<span class="font-label-sm text-label-sm text-on-surface font-bold uppercase">Instant Scan</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Public Ledger API</span>
+</div>
+<!-- Clean Scalable Vector QR Code -->
+<div class="p-1.5 rounded-DEFAULT bg-surface-container-lowest shadow-sm flex items-center justify-center">
+<svg class="w-16 h-16 text-on-surface" fill="currentColor" viewbox="0 0 100 100">
+<!-- Outer Anchor 1 -->
+<path d="M5,5 h30 v30 h-30 z M10,10 v20 h20 v-20 z M15,15 h10 v10 h-10 z"></path>
+<!-- Outer Anchor 2 -->
+<path d="M65,5 h30 v30 h-30 z M70,10 v20 h20 v-20 z M75,15 h10 v10 h-10 z"></path>
+<!-- Outer Anchor 3 -->
+<path d="M5,65 h30 v30 h-30 z M10,70 v20 h20 v-20 z M15,75 h10 v10 h-10 z"></path>
+<!-- Random Synthetic QR Data Matrices -->
+<rect height="8" width="8" x="45" y="10"></rect>
+<rect height="12" width="6" x="40" y="25"></rect>
+<rect height="6" width="10" x="52" y="32"></rect>
+<rect height="8" width="8" x="12" y="45"></rect>
+<rect height="6" width="12" x="25" y="45"></rect>
+<rect height="14" width="14" x="45" y="45"></rect>
+<rect height="12" width="8" x="68" y="45"></rect>
+<rect height="6" width="8" x="82" y="45"></rect>
+<rect height="8" width="10" x="45" y="70"></rect>
+<rect height="18" width="8" x="60" y="68"></rect>
+<rect height="8" width="15" x="75" y="65"></rect>
+<rect height="12" width="12" x="78" y="80"></rect>
+<rect height="8" width="8" x="25" y="82"></rect>
+</svg>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- External Sharing & Action Floating Pill Toolbar -->
+<div class="relative z-20 flex justify-center -mt-space-lg mb-space-xl px-space-xs">
+<div class="inline-flex flex-wrap items-center justify-center gap-space-xs sm:gap-space-sm p-1.5 sm:p-2 rounded-full bg-surface-container-lowest/90 backdrop-blur-2xl shadow-xl">
+<!-- Primary Action: Download PDF -->
+<button class="inline-flex items-center gap-2 px-space-md py-2 rounded-full bg-gradient-to-r from-primary via-primary-container to-secondary text-on-primary font-label-lg text-label-lg font-semibold shadow-md hover:opacity-95 hover:scale-[1.02] active:scale-[0.98] transition-all" id="downloadPdfBtn" type="button">
+<span class="material-symbols-outlined text-lg">download</span>
+<span>Download High-Res PDF</span>
+</button>
+<!-- Secondary Action: Add to LinkedIn -->
+<a class="inline-flex items-center gap-2 px-space-md py-2 rounded-full bg-surface-container text-on-surface hover:bg-surface-container-high font-label-lg text-label-lg font-medium transition-all" href="https://www.linkedin.com" rel="noopener noreferrer" target="_blank">
+<!-- LinkedIn SVG Logo Icon -->
+<svg class="w-4 h-4 fill-[#0A66C2]" viewbox="0 0 24 24">
+<path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"></path>
+</svg>
+<span class="hidden sm:inline">Add to LinkedIn</span>
+<span class="sm:hidden">LinkedIn</span>
+</a>
+<!-- Copy Verification Link with Toast Trigger -->
+<button class="inline-flex items-center gap-2 px-space-md py-2 rounded-full bg-surface-container text-on-surface hover:bg-surface-container-high font-label-lg text-label-lg font-medium transition-all" id="copyLinkBtn" type="button">
+<span class="material-symbols-outlined text-lg text-primary" id="copyIcon">link</span>
+<span id="copyText">Copy Link</span>
+</button>
+<!-- Embed Badge Micro-Action -->
+<button class="inline-flex items-center gap-1.5 px-space-sm sm:px-space-md py-2 rounded-full bg-surface-container-low text-on-surface-variant hover:text-on-surface hover:bg-surface-container font-label-md text-label-md transition-all" id="embedBadgeBtn" type="button">
+<span class="material-symbols-outlined text-base">code</span>
+<span class="hidden md:inline">Embed Badge</span>
+</button>
+</div>
+</div>
+<!-- Metadata & Accreditation Bento Tray -->
+<div class="relative z-10 grid grid-cols-1 md:grid-cols-3 gap-space-md mt-space-md">
+<!-- Card 1: CEUs -->
+<div class="p-space-lg rounded-DEFAULT bg-surface-container-lowest/80 backdrop-blur-md shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between mb-space-sm">
+<span class="font-label-lg text-label-lg text-on-surface font-semibold">Accredited CEUs</span>
+<span class="p-2 rounded-full bg-secondary-container/20 text-on-secondary-container">
+<span class="material-symbols-outlined text-lg">school</span>
+</span>
+</div>
+<div>
+<div class="font-headline-sm text-headline-sm text-on-surface font-bold">4.5 CEUs</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">48 Hands-on Production Lab Hours evaluated by European Engineering Board standards.</p>
+</div>
+<div class="mt-space-md pt-space-xs">
+<div class="w-full bg-surface-container rounded-full h-1.5 overflow-hidden">
+<div class="bg-secondary h-full rounded-full" style="width: 100%"></div>
+</div>
+</div>
+</div>
+<!-- Card 2: Blockchain Verification -->
+<div class="p-space-lg rounded-DEFAULT bg-surface-container-lowest/80 backdrop-blur-md shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between mb-space-sm">
+<span class="font-label-lg text-label-lg text-on-surface font-semibold">Blockchain Proof</span>
+<span class="p-2 rounded-full bg-primary-fixed/40 text-primary">
+<span class="material-symbols-outlined text-lg">token</span>
+</span>
+</div>
+<div>
+<div class="font-headline-sm text-headline-sm text-on-surface font-bold">Polygon PoS</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Block #68,912,401 · Immutable Merkle leaf cryptographically hashed and publicly auditable.</p>
+</div>
+<div class="mt-space-md flex items-center justify-between font-label-sm text-label-sm text-primary font-semibold">
+<span>Contract 0x882b...A92</span>
+<span class="inline-flex items-center gap-0.5">
+            Confirmed <span class="material-symbols-outlined text-sm">done_all</span>
+</span>
+</div>
+</div>
+<!-- Card 3: Grade & Performance Assessment -->
+<div class="p-space-lg rounded-DEFAULT bg-surface-container-lowest/80 backdrop-blur-md shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between mb-space-sm">
+<span class="font-label-lg text-label-lg text-on-surface font-semibold">Grade &amp; Performance</span>
+<span class="p-2 rounded-full bg-tertiary-fixed/40 text-tertiary">
+<span class="material-symbols-outlined text-lg">insights</span>
+</span>
+</div>
+<div>
+<div class="font-headline-sm text-headline-sm text-on-surface font-bold">98.4% Aggregate</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Calculated across 14 rigorous CI/CD stress-tests, zero CVE tolerance sandbox audits.</p>
+</div>
+<div class="mt-space-md pt-space-xs">
+<div class="flex items-center justify-between font-label-sm text-label-sm text-on-surface-variant mb-1">
+<span>Cohort Average: 84.1%</span>
+<span class="text-tertiary font-bold">+14.3%</span>
+</div>
+<div class="w-full bg-surface-container rounded-full h-1.5 overflow-hidden">
+<div class="bg-gradient-to-r from-primary to-tertiary h-full rounded-full" style="width: 98.4%"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Interactive Embed Code Drawer (Collapsible) -->
+<div class="hidden mt-space-md p-space-md rounded-DEFAULT bg-surface-container-lowest/90 backdrop-blur-md shadow-md" id="embedSnippet">
+<div class="flex items-center justify-between mb-space-xs">
+<span class="font-title-md text-title-md text-on-surface font-semibold">Embed Badge Snippet</span>
+<button class="text-on-surface-variant hover:text-on-surface" id="closeEmbedBtn" type="button">
+<span class="material-symbols-outlined text-lg">close</span>
+</button>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-space-xs">Paste this lightweight HTML iframe into your portfolio, resume, or blog:</p>
+<div class="bg-surface-container p-space-sm rounded-DEFAULT font-mono text-body-sm text-on-surface overflow-x-auto select-all">
+        &lt;iframe src="https://eduflow.com/embed/cert/EF-98214-X" width="480" height="270" frameborder="0" loading="lazy"&gt;&lt;/iframe&gt;
+      </div>
+</div>
+</div>
+<!-- Inline Micro-Interactions Script -->
+<script>
+    (function initCertificateInteractions() {
+      const copyBtn = document.getElementById('copyLinkBtn');
+      const copyIcon = document.getElementById('copyIcon');
+      const copyText = document.getElementById('copyText');
+      
+      const embedBtn = document.getElementById('embedBadgeBtn');
+      const embedSnippet = document.getElementById('embedSnippet');
+      const closeEmbedBtn = document.getElementById('closeEmbedBtn');
+      const downloadPdfBtn = document.getElementById('downloadPdfBtn');
+
+      if (copyBtn) {
+        copyBtn.addEventListener('click', () => {
+          const dummyUrl = 'https://eduflow.com/cert/EF-98214-X';
+          navigator.clipboard ? navigator.clipboard.writeText(dummyUrl) : null;
+          
+          copyIcon.textContent = 'check';
+          copyText.textContent = 'Copied!';
+          copyBtn.classList.add('bg-emerald-500/10', 'text-emerald-700');
+          
+          setTimeout(() => {
+            copyIcon.textContent = 'link';
+            copyText.textContent = 'Copy Link';
+            copyBtn.classList.remove('bg-emerald-500/10', 'text-emerald-700');
+          }, 2400);
+        });
+      }
+
+      if (embedBtn && embedSnippet) {
+        embedBtn.addEventListener('click', () => {
+          embedSnippet.classList.toggle('hidden');
+        });
+      }
+
+      if (closeEmbedBtn && embedSnippet) {
+        closeEmbedBtn.addEventListener('click', () => {
+          embedSnippet.classList.add('hidden');
+        });
+      }
+
+      if (downloadPdfBtn) {
+        downloadPdfBtn.addEventListener('click', () => {
+          const originalText = downloadPdfBtn.querySelector('span:last-child').textContent;
+          downloadPdfBtn.querySelector('span:last-child').textContent = 'Preparing PDF...';
+          setTimeout(() => {
+            downloadPdfBtn.querySelector('span:last-child').textContent = 'PDF Generated!';
+            setTimeout(() => {
+              downloadPdfBtn.querySelector('span:last-child').textContent = originalText;
+            }, 2000);
+          }, 1200);
+        });
+      }
+    })();
+  </script>
+</div></main><footer class="relative z-10 w-full mt-margin bg-white/75 backdrop-blur-xl border-t border-slate-200/60"><div class="max-w-7xl mx-auto px-gutter-mobile md:px-margin py-space-xl flex flex-col md:flex-row items-center justify-between gap-space-lg"><div class="flex items-center gap-space-sm"><img alt="EduFlow Iridescent Liquid Glyph Logo" class="h-6 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1UVW5muaBBW6EzbhjvttGIl-Xu6R56jfN0HSgB9u5e3zomDvMY8RnjjIaBDmMPHYFuN2eQFygVIZ9oWY0WODsT-GTFwxdcu8ufp2lQi6GCUx_uWvo-Sy7OojoUKUI-blpAlmVIXjuzbQGBT95wMCdU1bezL1PWOYgFB4sahlf6MqnH9bCT8cJ5lE-O2uGL66A1JYEq6s0zoDCDXabQYgSPmNONzq__vBYFT8mDtnrXRp3nKoNUNaDNhtOfD"/><span class="font-headline-sm text-headline-sm text-slate-900 font-bold">EduFlow</span><span class="font-label-mono-sm text-label-mono-sm text-slate-600 px-space-xs py-0.5 rounded-full bg-slate-100 border border-slate-200 font-semibold">v2.4 Spatial</span></div><div class="flex flex-wrap items-center justify-center gap-space-md text-slate-600 font-body-sm text-body-sm font-medium"><a class="hover:text-slate-900 transition-colors" data-path="explore-catalog" href="#">Courses</a><a class="hover:text-slate-900 transition-colors" data-path="curriculum" href="#">Syllabus</a><a class="hover:text-slate-900 transition-colors" data-path="pricing" href="#">Membership</a><a class="hover:text-slate-900 transition-colors" data-path="instructors" href="#">Faculty</a></div><div class="font-label-mono-sm text-label-mono-sm text-slate-500 font-medium">© 2025 EduFlow Technologies Inc. All rights reserved.</div></div></footer></body></html>

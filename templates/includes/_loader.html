@@ -1,0 +1,28 @@
+{% load static %}
+<!-- Learnix Global Loading Component (Stitch Compass Star Asset) -->
+<div id="learnixGlobalLoader" class="learnix-loader-overlay" aria-hidden="true" role="status" aria-live="polite" data-icon-url="{% static 'images/loader-icon.png' %}">
+  <div class="learnix-loader-card">
+    
+    <!-- Learnix Stitch Compass Star Loading Indicator Asset -->
+    <div class="learnix-loader-icon-wrapper">
+      <div class="learnix-loader-icon-glow"></div>
+      <img src="{% static 'images/loader-icon.png' %}" 
+           alt="Loading..." 
+           class="learnix-loader-icon-img"
+           width="52" 
+           height="52" />
+    </div>
+
+    <!-- Status Metadata Pill -->
+    <div class="mt-2.5 flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-slate-100/70 border border-slate-200/50 shadow-2xs">
+      <span class="relative flex h-1.5 w-1.5">
+        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-violet-400 opacity-75"></span>
+        <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-violet-600"></span>
+      </span>
+      <span id="learnixLoaderStatusText" class="font-mono text-[10px] text-slate-600 tracking-wider font-semibold uppercase">
+        Processing...
+      </span>
+    </div>
+
+  </div>
+</div>

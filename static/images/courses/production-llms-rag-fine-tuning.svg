@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" width="100%" height="100%">
+  <defs>
+    <linearGradient id="llmBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#021f18"/>
+      <stop offset="60%" stop-color="#06382b"/>
+      <stop offset="100%" stop-color="#01140f"/>
+    </linearGradient>
+    <linearGradient id="greenGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#10b981"/>
+      <stop offset="100%" stop-color="#06b6d4"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="450" fill="url(#llmBg)"/>
+  <circle cx="400" cy="190" r="140" fill="url(#greenGlow)" opacity="0.16" filter="blur(50px)"/>
+  <!-- Fluid Waveform Matrix -->
+  <path d="M 150 200 Q 250 120 350 200 T 550 200 T 700 200" fill="none" stroke="#10b981" stroke-width="3" opacity="0.8"/>
+  <path d="M 150 200 Q 250 260 350 200 T 550 200 T 700 200" fill="none" stroke="#06b6d4" stroke-width="2.5" opacity="0.7"/>
+  <path d="M 150 200 Q 250 160 350 200 T 550 200 T 700 200" fill="none" stroke="#34d399" stroke-width="1.5" opacity="0.5"/>
+  <circle cx="350" cy="200" r="8" fill="#10b981"/>
+  <circle cx="450" cy="200" r="10" fill="#06b6d4"/>
+  <circle cx="550" cy="200" r="8" fill="#34d399"/>
+  <text x="400" y="350" text-anchor="middle" font-family="'Plus Jakarta Sans', sans-serif" font-size="22" font-weight="800" fill="#ffffff">PRODUCTION LLMS: RAG &amp; FINE-TUNING</text>
+  <text x="400" y="378" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="12" fill="#6ee7b7" letter-spacing="2">QLORA · HYBRID DENSE/SPARSE RETRIEVAL · EVALUATION</text>
+</svg>

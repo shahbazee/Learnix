@@ -1,0 +1,22 @@
+<!-- Flash Alert Messages for Learnix -->
+{% if messages %}
+<div class="fixed top-24 left-1/2 -translate-x-1/2 z-50 w-full max-w-md px-4 pointer-events-none flex flex-col gap-2">
+  {% for message in messages %}
+  <div class="pointer-events-auto rounded-2xl px-4 py-3 flex items-center gap-3 backdrop-blur-2xl shadow-lg border text-xs font-semibold
+    {% if message.tags == 'error' %}
+      bg-red-50/90 border-red-200 text-red-800
+    {% elif message.tags == 'warning' %}
+      bg-amber-50/90 border-amber-200 text-amber-800
+    {% elif message.tags == 'success' %}
+      bg-emerald-50/90 border-emerald-200 text-emerald-800
+    {% else %}
+      bg-violet-50/90 border-violet-200 text-violet-800
+    {% endif %}">
+    <span class="material-symbols-outlined text-[18px]">
+      {% if message.tags == 'error' %}error{% elif message.tags == 'warning' %}warning{% elif message.tags == 'success' %}check_circle{% else %}info{% endif %}
+    </span>
+    <span class="flex-1">{{ message }}</span>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}

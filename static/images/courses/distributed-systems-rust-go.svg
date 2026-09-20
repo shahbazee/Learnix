@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" width="100%" height="100%">
+  <defs>
+    <linearGradient id="distBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#04121d"/>
+      <stop offset="60%" stop-color="#082838"/>
+      <stop offset="100%" stop-color="#021019"/>
+    </linearGradient>
+    <linearGradient id="cyanGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#06b6d4"/>
+      <stop offset="100%" stop-color="#3b82f6"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="450" fill="url(#distBg)"/>
+  <!-- Isometric Grid -->
+  <g stroke="rgba(6,182,212,0.15)" stroke-width="1">
+    <line x1="100" y1="200" x2="400" y2="50"/>
+    <line x1="200" y1="250" x2="500" y2="100"/>
+    <line x1="300" y1="300" x2="600" y2="150"/>
+    <line x1="400" y1="350" x2="700" y2="200"/>
+    <line x1="700" y1="200" x2="400" y2="50"/>
+    <line x1="600" y1="250" x2="300" y2="100"/>
+    <line x1="500" y1="300" x2="200" y2="150"/>
+  </g>
+  <!-- Distributed Nodes -->
+  <circle cx="400" cy="180" r="130" fill="url(#cyanGlow)" opacity="0.12" filter="blur(50px)"/>
+  <rect x="360" y="140" width="80" height="80" rx="16" fill="rgba(6,182,212,0.15)" stroke="#06b6d4" stroke-width="2"/>
+  <rect x="220" y="190" width="60" height="60" rx="12" fill="rgba(59,130,246,0.15)" stroke="#3b82f6" stroke-width="2"/>
+  <rect x="520" y="190" width="60" height="60" rx="12" fill="rgba(59,130,246,0.15)" stroke="#3b82f6" stroke-width="2"/>
+  <path d="M 280 220 L 360 180 M 440 180 L 520 220" stroke="#06b6d4" stroke-width="2" stroke-dasharray="4,4"/>
+  <text x="400" y="185" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="12" font-weight="700" fill="#22d3ee">RAFT</text>
+  <text x="250" y="225" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="700" fill="#93c5fd">NODE A</text>
+  <text x="550" y="225" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="700" fill="#93c5fd">NODE B</text>
+  <text x="400" y="350" text-anchor="middle" font-family="'Plus Jakarta Sans', sans-serif" font-size="22" font-weight="800" fill="#ffffff">DISTRIBUTED SYSTEMS IN RUST &amp; GO</text>
+  <text x="400" y="378" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="12" fill="#38bdf8" letter-spacing="2">RAFT CONSENSUS · SHARDING · ACTOR MODELS</text>
+</svg>
