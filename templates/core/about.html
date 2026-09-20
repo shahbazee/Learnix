@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block title %}About {{ SITE_NAME }} — Architectural Excellence{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-6 py-12">
+  <div class="rounded-[2.5rem] bg-white/80 backdrop-blur-2xl border border-white/90 p-8 md:p-12 shadow-sm">
+    <div class="flex items-center gap-3 mb-4">
+      {% include 'includes/_logo.html' with size="w-10 h-10" unique_id="about" %}
+      <span class="text-xs font-mono uppercase tracking-wider text-violet-600 font-bold">// PLATFORM MANIFESTO</span>
+    </div>
+    <h1 class="text-4xl font-extrabold text-[#0f172a] mb-6">About {{ SITE_NAME }}</h1>
+    
+    <p class="text-slate-600 text-base leading-relaxed mb-6">
+      {{ SITE_NAME }} is an enterprise e-learning engineering platform created to bridge the chasm between academic theory and hyper-scale systems engineering. Our curricula are designed by principal engineers and architects from Tier-1 laboratories.
+    </p>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-8 pt-8 border-t border-slate-100">
+      <div class="p-6 rounded-2xl bg-slate-50/70 border border-slate-200/50">
+        <h3 class="text-base font-bold text-[#0f172a] mb-2">Battle-Tested Curricula</h3>
+        <p class="text-xs text-slate-500">Every lesson is verified against production systems handling tens of thousands of requests per second.</p>
+      </div>
+      <div class="p-6 rounded-2xl bg-slate-50/70 border border-slate-200/50">
+        <h3 class="text-base font-bold text-[#0f172a] mb-2">Direct Instructor Access</h3>
+        <p class="text-xs text-slate-500">Engage in asynchronous code reviews and technical office hours with staff architects.</p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
