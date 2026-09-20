@@ -1,0 +1,14 @@
+# Learnix E-Learning Platform - Dependencies
+Django>=5.0,<6.1
+psycopg[binary]>=3.2.0
+psycopg2-binary>=2.9.10
+python-decouple>=3.8
+whitenoise>=6.8.0
+Pillow>=10.4.0
+django-allauth>=65.0.0
+stripe>=10.0.0
+xhtml2pdf>=0.2.16
+reportlab>=4.2.0
+gunicorn>=23.0.0
+requests>=2.32.0
+dj-database-url>=2.1.0
