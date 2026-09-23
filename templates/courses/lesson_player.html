@@ -1,0 +1,253 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load course_extras %}
+
+{% block title %}{{ lesson.title }} — {{ course.title }} | Learnix{% endblock %}
+
+{% block content %}
+<div class="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 pt-4 pb-20">
+
+  <!-- Top Navigation & Breadcrumb Bar -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+    <div class="flex items-center gap-2 text-xs sm:text-sm font-medium text-slate-500 flex-wrap">
+      <a href="{% url 'courses:dashboard' %}" class="flex items-center gap-1 text-violet-600 hover:text-violet-800 font-semibold transition-colors">
+        <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+        <span>Dashboard</span>
+      </a>
+      <span>/</span>
+      <a href="{% url 'courses:course_detail' course.slug %}" class="hover:text-slate-800 truncate max-w-[200px]">{{ course.title }}</a>
+      <span>/</span>
+      <span class="text-slate-900 font-bold truncate max-w-[220px]">Module {{ lesson.module.order_number }}: {{ lesson.title }}</span>
+    </div>
+
+    <div class="flex items-center gap-3">
+      <div class="flex items-center gap-2 font-mono text-xs text-slate-600 px-3 py-1.5 rounded-full bg-white/90 border border-slate-200/80 shadow-xs">
+        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+        <span>Course Progress: <strong id="headerProgressPct" class="text-violet-700 font-bold">{{ enrollment.progress_percent|default:0 }}%</strong></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Grid: Player + Syllabus Sidebar -->
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+
+    <!-- ================= LEFT: VIDEO PLAYER & LESSON CONTENT (Span 8) ================= -->
+    <div class="lg:col-span-8 flex flex-col gap-6">
+
+      <!-- Video Player Stream Card -->
+      <div class="rounded-3xl bg-slate-900 overflow-hidden shadow-2xl border border-slate-800 relative group/player">
+        <div class="w-full aspect-video bg-black flex items-center justify-center relative overflow-hidden">
+          {% if lesson.video_url %}
+            <video id="lessonVideoPlayer" class="w-full h-full object-cover" controls preload="metadata" poster="{{ course.get_thumbnail_url }}">
+              <source src="{{ lesson.video_url }}" type="video/mp4">
+              Your browser does not support HTML5 video streaming.
+            </video>
+          {% else %}
+            <!-- Simulated High-Fidelity Architectural Stream -->
+            <div class="w-full h-full bg-cover bg-center opacity-80" style="background-image: url('{{ course.get_thumbnail_url }}');"></div>
+            <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-900/60 to-transparent flex flex-col items-center justify-center p-6 text-center">
+              <div class="w-20 h-20 rounded-full bg-white/90 backdrop-blur-xl flex items-center justify-center text-slate-900 shadow-[0_0_40px_rgba(6,182,212,0.8)] mb-4 cursor-pointer hover:scale-110 transition-transform" onclick="simulateStreamPlay()">
+                <span id="simPlayIcon" class="material-symbols-outlined text-[42px] text-violet-600 ml-1" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+              </div>
+              <h3 class="text-xl font-bold text-white tracking-tight">{{ lesson.title }}</h3>
+              <p class="text-xs sm:text-sm text-cyan-300 font-mono mt-1">4K Architectural Stream · {{ lesson.formatted_duration }}</p>
+              <div id="simStreamingBadge" class="hidden mt-3 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 text-xs font-mono font-bold flex items-center gap-1.5 animate-pulse">
+                <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                <span>Active 1080p WebRTC Session</span>
+              </div>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Lesson Metadata & Action Strip -->
+      <div class="rounded-3xl bg-white/90 backdrop-blur-xl border border-white p-6 sm:p-8 shadow-sm flex flex-col gap-6">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+          <div class="flex flex-col gap-1">
+            <span class="font-mono text-xs font-bold text-cyan-700 uppercase tracking-wider">
+              Lesson {{ current_lesson_number }} of {{ total_lessons_count }} · {{ lesson.formatted_duration }}
+            </span>
+            <h1 class="text-2xl sm:text-3xl font-extrabold text-[#0f172a]">{{ lesson.title }}</h1>
+          </div>
+
+          <!-- Mark Complete Toggle Button -->
+          <button type="button" id="markCompleteBtn" onclick="toggleLessonComplete({{ lesson.id }})"
+                  class="px-5 py-2.5 rounded-full font-mono text-xs font-bold flex items-center gap-2 transition-all cursor-pointer shadow-sm {% if lesson_progress.is_completed %}bg-emerald-100 text-emerald-800 border border-emerald-300{% else %}bg-gradient-to-r from-violet-600 to-cyan-500 text-white shadow-violet-500/25 hover:shadow-violet-500/40 hover:scale-105{% endif %}">
+            <span class="material-symbols-outlined text-[18px]" id="markCompleteIcon">
+              {% if lesson_progress.is_completed %}check_circle{% else %}radio_button_unchecked{% endif %}
+            </span>
+            <span id="markCompleteText">
+              {% if lesson_progress.is_completed %}Completed{% else %}Mark as Complete{% endif %}
+            </span>
+          </button>
+        </div>
+
+        <!-- Lesson Detailed Notes & Instructions -->
+        <div class="prose max-w-none text-slate-700 text-sm sm:text-base leading-relaxed flex flex-col gap-4">
+          {% if lesson.content %}
+            <p>{{ lesson.content|linebreaks }}</p>
+          {% else %}
+            <p>Welcome to this comprehensive architectural session. In this lesson, we break down core system fundamentals, production edge cases, and asynchronous worker orchestration patterns.</p>
+            <div class="p-4 rounded-2xl bg-slate-900 text-slate-100 font-mono text-xs overflow-x-auto shadow-inner border border-slate-800" data-lenis-prevent>
+              <div class="flex items-center justify-between pb-2 mb-2 border-b border-slate-800 text-slate-400">
+                <span>python_runtime // runner.py</span>
+                <span>Python 3.12</span>
+              </div>
+              <pre class="text-emerald-400"><code>from dataclasses import dataclass
+from typing import AsyncGenerator
+
+@dataclass
+class TelemetryEvent:
+    trace_id: str
+    status: str = "PROVISIONED"
+
+async def stream_agent_execution() -> AsyncGenerator[TelemetryEvent, None]:
+    yield TelemetryEvent(trace_id="learnix-0x89f")</code></pre>
+            </div>
+            <p>Execute tests against your local PostgreSQL instance and verify transaction isolation levels before moving on to the next unit.</p>
+          {% endif %}
+        </div>
+
+        <!-- Navigation Buttons: Previous & Next Lesson -->
+        <div class="flex items-center justify-between pt-4 border-t border-slate-100">
+          {% if prev_lesson %}
+            <a href="{% url 'courses:lesson_view' course.slug prev_lesson.id %}" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-mono text-xs font-bold transition-all">
+              <span class="material-symbols-outlined text-[16px]">arrow_back</span>
+              <span class="hidden sm:inline">Previous: {{ prev_lesson.title|truncatechars:20 }}</span>
+              <span class="sm:hidden">Prev</span>
+            </a>
+          {% else %}
+            <div></div>
+          {% endif %}
+
+          {% if next_lesson %}
+            <a href="{% url 'courses:lesson_view' course.slug next_lesson.id %}" class="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-gradient-to-r from-violet-600 to-cyan-500 hover:scale-105 text-white font-mono text-xs font-bold transition-all shadow-md">
+              <span class="hidden sm:inline">Next: {{ next_lesson.title|truncatechars:20 }}</span>
+              <span class="sm:hidden">Next</span>
+              <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+            </a>
+          {% else %}
+            <a href="{% url 'courses:dashboard' %}" class="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-emerald-600 text-white font-mono text-xs font-bold transition-all shadow-md">
+              <span>Track Completed (Dashboard)</span>
+              <span class="material-symbols-outlined text-[16px]">emoji_events</span>
+            </a>
+          {% endif %}
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ================= RIGHT: CURRICULUM SYLLABUS SIDEBAR (Span 4) ================= -->
+    <div class="lg:col-span-4 flex flex-col gap-6">
+
+      <!-- Course Progress Card -->
+      <div class="rounded-3xl bg-white/90 backdrop-blur-xl border border-white p-6 shadow-sm flex flex-col gap-4">
+        <div class="flex items-center justify-between">
+          <span class="font-mono text-xs font-bold text-slate-500 uppercase tracking-wider">Curriculum Progress</span>
+          <span class="font-mono text-xs font-bold text-cyan-700" id="sidebarProgressPct">{{ enrollment.progress_percent|default:0 }}% Complete</span>
+        </div>
+        <div class="w-full h-2.5 rounded-full bg-slate-100 overflow-hidden p-0.5 border border-slate-200/50">
+          <div id="sidebarProgressBar" class="h-full rounded-full bg-gradient-to-r from-violet-600 via-cyan-500 to-teal-400 transition-all duration-500" style="width: {{ enrollment.progress_percent|default:0 }}%;"></div>
+        </div>
+        <div class="flex items-center justify-between text-xs text-slate-500 font-mono pt-1">
+          <span id="sidebarCompletedLessons">{{ enrollment.completed_lessons_count|default:0 }} of {{ total_lessons_count }} Lessons</span>
+          <span class="text-emerald-600 font-bold">Verified Track</span>
+        </div>
+      </div>
+
+      <!-- Modules Accordion Checklist -->
+      <div class="rounded-3xl bg-white/90 backdrop-blur-xl border border-white p-6 shadow-sm flex flex-col gap-4">
+        <h3 class="font-bold text-slate-900 text-base flex items-center justify-between">
+          <span>Modules Checklist</span>
+          <span class="font-mono text-xs text-slate-400 font-normal">{{ modules.count }} Modules</span>
+        </h3>
+
+        <div class="flex flex-col gap-3 max-h-[600px] overflow-y-auto pr-1" data-lenis-prevent>
+          {% for mod in modules %}
+            <div class="rounded-2xl border border-slate-200/70 overflow-hidden bg-slate-50/50">
+              <div class="p-3 bg-slate-100/70 font-mono text-xs font-bold text-slate-700 flex items-center justify-between">
+                <span>Module {{ mod.order_number }}: {{ mod.title }}</span>
+                <span class="text-slate-500">{{ mod.lessons.count }} lessons</span>
+              </div>
+              <div class="p-2 flex flex-col gap-1">
+                {% for les in mod.lessons.all %}
+                  <a href="{% url 'courses:lesson_view' course.slug les.id %}"
+                     class="flex items-center justify-between p-2 rounded-xl text-xs transition-colors {% if les.id == lesson.id %}bg-violet-100/80 text-violet-900 font-bold border border-violet-200{% else %}hover:bg-white text-slate-700{% endif %}">
+                    <div class="flex items-center gap-2 min-w-0">
+                      <span class="material-symbols-outlined text-[16px] shrink-0 {% if les.id in completed_lesson_ids %}text-emerald-600{% elif les.id == lesson.id %}text-violet-600{% else %}text-slate-400{% endif %}"
+                            style="font-variation-settings: 'FILL' 1;">
+                        {% if les.id in completed_lesson_ids %}check_circle{% elif les.id == lesson.id %}play_circle{% else %}circle{% endif %}
+                      </span>
+                      <span class="truncate">{{ mod.order_number }}.{{ les.order_number }} {{ les.title }}</span>
+                    </div>
+                    <span class="font-mono text-[11px] text-slate-400 shrink-0 ml-2">{{ les.formatted_duration }}</span>
+                  </a>
+                {% endfor %}
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+<script>
+  function simulateStreamPlay() {
+    const icon = document.getElementById('simPlayIcon');
+    const badge = document.getElementById('simStreamingBadge');
+    if (badge) badge.classList.remove('hidden');
+    if (icon) icon.textContent = 'pause';
+  }
+
+  function toggleLessonComplete(lessonId) {
+    const btn = document.getElementById('markCompleteBtn');
+    const icon = document.getElementById('markCompleteIcon');
+    const text = document.getElementById('markCompleteText');
+    const isCurrentlyDone = text.textContent.trim() === 'Completed';
+    const nextState = !isCurrentlyDone;
+
+    const csrfToken = '{{ csrf_token }}';
+
+    fetch('/courses/lesson/' + lessonId + '/complete/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'X-CSRFToken': csrfToken
+      },
+      body: 'is_completed=' + nextState
+    })
+    .then(r => r.json())
+    .then(data => {
+      if (data.success) {
+        if (data.is_completed) {
+          btn.className = "px-5 py-2.5 rounded-full font-mono text-xs font-bold flex items-center gap-2 transition-all cursor-pointer shadow-sm bg-emerald-100 text-emerald-800 border border-emerald-300";
+          icon.textContent = "check_circle";
+          text.textContent = "Completed";
+        } else {
+          btn.className = "px-5 py-2.5 rounded-full font-mono text-xs font-bold flex items-center gap-2 transition-all cursor-pointer shadow-sm bg-gradient-to-r from-violet-600 to-cyan-500 text-white shadow-violet-500/25 hover:shadow-violet-500/40 hover:scale-105";
+          icon.textContent = "radio_button_unchecked";
+          text.textContent = "Mark as Complete";
+        }
+
+        // Update progress counters in UI
+        const pctStr = data.progress_percent + '%';
+        const headPct = document.getElementById('headerProgressPct');
+        const sidePct = document.getElementById('sidebarProgressPct');
+        const sideBar = document.getElementById('sidebarProgressBar');
+        const sideLessons = document.getElementById('sidebarCompletedLessons');
+
+        if (headPct) headPct.textContent = pctStr;
+        if (sidePct) sidePct.textContent = pctStr + ' Complete';
+        if (sideBar) sideBar.style.width = pctStr;
+        if (sideLessons) sideLessons.textContent = data.completed_count + ' of ' + data.total_count + ' Lessons';
+      }
+    })
+    .catch(err => {
+      console.error("Error updating lesson progress:", err);
+    });
+  }
+</script>
+{% endblock %}
