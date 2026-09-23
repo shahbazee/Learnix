@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8"/>
+<title>Certificate {{ certificate.certificate_id }} — Learnix</title>
+<style>
+  @page {
+    size: letter landscape;
+    margin: 1cm;
+    @bottom-right {
+      content: "Document ID: {{ certificate.certificate_id }} · Page " counter(page);
+      font-size: 8px;
+      color: #94a3b8;
+      font-family: Helvetica, Arial, sans-serif;
+    }
+  }
+
+  body {
+    font-family: Helvetica, Arial, sans-serif;
+    color: #0f172a;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+  }
+
+  .cert-border-outer {
+    border: 3px solid #7c3aed;
+    padding: 6px;
+    background-color: #faf5ff;
+  }
+
+  .cert-border-inner {
+    border: 1px solid #c084fc;
+    padding: 24px 30px;
+    background-color: #ffffff;
+  }
+
+  .brand-header {
+    font-size: 13px;
+    font-weight: bold;
+    color: #7c3aed;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  .cert-title {
+    font-size: 24px;
+    font-weight: bold;
+    color: #0f172a;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin: 0;
+    padding: 0;
+  }
+
+  .divider-line {
+    width: 140px;
+    height: 3px;
+    background-color: #7c3aed;
+    margin: 10px auto 16px auto;
+  }
+
+  .presented-to {
+    font-size: 13px;
+    font-style: italic;
+    color: #64748b;
+    margin-bottom: 8px;
+  }
+
+  .recipient-name {
+    font-size: 32px;
+    font-weight: bold;
+    color: #1e1b4b;
+    margin-bottom: 12px;
+    letter-spacing: -0.5px;
+  }
+
+  .citation {
+    font-size: 12px;
+    color: #334155;
+    line-height: 1.6;
+    max-width: 650px;
+    margin: 0 auto 16px auto;
+  }
+
+  .course-title {
+    font-weight: bold;
+    color: #7c3aed;
+  }
+
+  .modules-box {
+    display: inline-block;
+    padding: 6px 14px;
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 4px;
+    font-size: 10px;
+    color: #475569;
+    margin-bottom: 24px;
+  }
+
+  .signatures-table {
+    width: 100%;
+    margin-top: 10px;
+    margin-bottom: 20px;
+  }
+
+  .signature-col {
+    width: 35%;
+    vertical-align: bottom;
+    text-align: center;
+  }
+
+  .seal-col {
+    width: 30%;
+    vertical-align: middle;
+    text-align: center;
+  }
+
+  .signature-line {
+    width: 180px;
+    border-bottom: 1px solid #94a3b8;
+    margin: 0 auto 6px auto;
+    height: 25px;
+  }
+
+  .sign-name {
+    font-size: 11px;
+    font-weight: bold;
+    color: #0f172a;
+  }
+
+  .sign-title {
+    font-size: 9px;
+    color: #64748b;
+  }
+
+  .seal-box {
+    display: inline-block;
+    width: 80px;
+    height: 80px;
+    border: 2px dashed #7c3aed;
+    border-radius: 50%;
+    padding: 6px;
+    background-color: #faf5ff;
+  }
+
+  .seal-inner {
+    font-size: 9px;
+    font-weight: bold;
+    color: #7c3aed;
+    padding-top: 18px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .footer-meta-table {
+    width: 100%;
+    border-top: 1px solid #e2e8f0;
+    padding-top: 10px;
+    font-size: 9px;
+    color: #64748b;
+    text-align: left;
+  }
+</style>
+</head>
+<body>
+
+<div class="cert-border-outer">
+  <div class="cert-border-inner">
+    
+    <div class="brand-header">LEARNIX ACADEMY OF ENGINEERING</div>
+    <div class="cert-title">CERTIFICATE OF ACHIEVEMENT &amp; MASTERY</div>
+    <div class="divider-line"></div>
+
+    <div class="presented-to">This academic credential is authenticated and awarded to</div>
+    <div class="recipient-name">{{ user.get_full_name|default:user.username }}</div>
+
+    <div class="citation">
+      For successfully mastering and demonstrating 100% curriculum completion in the professional engineering masterclass:<br/>
+      <span class="course-title">{{ course.title }}</span><br/>
+      evaluated under rigorous continuing engineering education standards with <strong>{{ certificate.ceus }} Accredited CEUs</strong>.
+    </div>
+
+    <div class="modules-box">
+      Scope: Distributed Microservices · ASGI Event Routing · Vector Memory · High-Throughput Cloud Containers
+    </div>
+
+    <!-- Signatures and Gold Seal -->
+    <table class="signatures-table" cellpadding="0" cellspacing="0">
+      <tr>
+        <td class="signature-col">
+          <div class="signature-line" style="font-family: Georgia, serif; font-style: italic; font-size: 14px; color: #4338ca;">
+            {{ course.instructor.get_full_name|default:course.instructor.username }}
+          </div>
+          <div class="sign-name">{{ course.instructor.get_full_name|default:course.instructor.username }}</div>
+          <div class="sign-title">Faculty Lead &amp; Principal Research Architect</div>
+        </td>
+        <td class="seal-col">
+          <div class="seal-box">
+            <div class="seal-inner">
+              &bull; LEARNIX &bull;<br/>
+              VERIFIED<br/>
+              {{ certificate.issued_at|date:"Y" }}
+            </div>
+          </div>
+        </td>
+        <td class="signature-col">
+          <div class="signature-line" style="font-family: Georgia, serif; font-style: italic; font-size: 14px; color: #4338ca;">
+            Elena Vance, Ph.D.
+          </div>
+          <div class="sign-name">Dr. Elena Vance</div>
+          <div class="sign-title">Dean of Advanced Engineering Curricula</div>
+        </td>
+      </tr>
+    </table>
+
+    <!-- Ledger & Verification Metadata -->
+    <table class="footer-meta-table" cellpadding="0" cellspacing="0">
+      <tr>
+        <td style="width: 50%;">
+          <strong>Certificate ID:</strong> {{ certificate.certificate_id }}<br/>
+          <strong>Issued:</strong> {{ certificate.issued_at|date:"F d, Y" }} · <strong>Student ID:</strong> usr_{{ user.id }}
+        </td>
+        <td style="width: 50%; text-align: right;">
+          <strong>SHA-256 Ledger Record:</strong> {{ certificate.verification_hash }}<br/>
+          <strong>Verify Online:</strong> https://learnix.com/courses/certificates/{{ certificate.certificate_id }}/
+        </td>
+      </tr>
+    </table>
+
+  </div>
+</div>
+
+</body>
+</html>
