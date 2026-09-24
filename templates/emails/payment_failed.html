@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Payment Incomplete - {{ site_name }}</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f8fafc; color: #0f172a; margin: 0; padding: 24px; }
+    .card { max-width: 560px; margin: 0 auto; background: #ffffff; border-radius: 20px; border: 1px solid #e2e8f0; padding: 36px; box-shadow: 0 10px 30px rgba(0,0,0,0.04); }
+    .header { text-align: center; border-bottom: 1px solid #f1f5f9; padding-bottom: 24px; margin-bottom: 24px; }
+    .brand { font-size: 26px; font-weight: 800; color: #7c3aed; }
+    .badge { display: inline-block; padding: 4px 14px; border-radius: 9999px; background: #fee2e2; color: #b91c1c; font-size: 11px; font-weight: 700; text-transform: uppercase; margin-top: 8px; }
+    .error-box { background: #fef2f2; border-radius: 14px; padding: 18px; margin: 24px 0; border: 1px solid #fecaca; font-size: 13px; line-height: 1.6; color: #991b1b; }
+    .btn { display: inline-block; background: #7c3aed; color: #ffffff !important; padding: 14px 32px; border-radius: 9999px; text-decoration: none; font-weight: 700; font-size: 14px; text-align: center; margin-top: 16px; }
+    .footer { font-size: 12px; color: #94a3b8; text-align: center; margin-top: 32px; line-height: 1.5; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="header">
+      <div class="brand">{{ site_name }}</div>
+      <div class="badge">Payment Unsuccessful</div>
+      <h2 style="margin: 14px 0 6px 0; font-size: 22px; color: #0f172a;">Payment Incomplete</h2>
+      <p style="margin: 0; color: #64748b; font-size: 14px;">Action Required for {{ course.title }}</p>
+    </div>
+
+    <p style="font-size: 14px; line-height: 1.6; color: #334155;">
+      Hello <strong>{{ user.first_name|default:user.username }}</strong>,<br>
+      We were unable to process your payment for <strong>{{ course.title }}</strong>. Your credit card has not been billed for this enrollment.
+    </p>
+
+    <div class="error-box">
+      <strong>Reason:</strong> {{ error_reason|default:'The card issuer declined the transaction or the payment session expired.' }}<br>
+      No funds were deducted from your account.
+    </div>
+
+    <p style="font-size: 13px; color: #64748b;">
+      To complete your enrollment and secure your seat in this masterclass cohort, please retry with a different card or payment method:
+    </p>
+
+    <div style="text-align: center;">
+      <a href="https://learnix.com/courses/{{ course.slug }}/" class="btn">Retry Course Purchase</a>
+    </div>
+
+    <div class="footer">
+      If you need assistance, contact our concierge at {{ support_email }}<br>
+      &copy; 2026 {{ site_name }} Technologies Inc. All rights reserved.
+    </div>
+  </div>
+</body>
+</html>

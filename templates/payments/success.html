@@ -1,0 +1,291 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Enrollment &amp; Payment Confirmed | Learnix{% endblock %}
+
+{% block content %}
+<!-- Ambient Radiant Light Pools -->
+<div class="fixed inset-0 pointer-events-none overflow-hidden z-0">
+  <div class="absolute -top-36 left-1/4 w-[36rem] h-[36rem] rounded-full bg-cyan-400/20 blur-[130px]"></div>
+  <div class="absolute top-1/4 -right-20 w-[32rem] h-[32rem] rounded-full bg-fuchsia-400/20 blur-[130px]"></div>
+  <div class="absolute bottom-10 left-1/3 w-[36rem] h-[36rem] rounded-full bg-violet-500/15 blur-[140px]"></div>
+  <div class="absolute top-2/3 -left-20 w-96 h-96 rounded-full bg-emerald-400/15 blur-[120px]"></div>
+</div>
+
+<!-- Canvas Confetti Container -->
+<canvas id="confetti-canvas" class="fixed inset-0 pointer-events-none z-50"></canvas>
+
+<div class="relative z-10 w-full max-w-4xl mx-auto px-4 sm:px-6 pt-6 pb-20 flex flex-col items-center">
+
+  <!-- ================= CELEBRATION HERO CARD ================= -->
+  <div class="w-full rounded-3xl bg-white/85 backdrop-blur-2xl border border-white shadow-[0_20px_60px_-15px_rgba(99,102,241,0.2)] p-6 sm:p-10 flex flex-col items-center text-center gap-6 relative overflow-hidden">
+    <!-- Top radiant light pool -->
+    <div class="absolute -top-24 left-1/2 -translate-x-1/2 w-80 h-80 rounded-full bg-emerald-400/20 blur-3xl pointer-events-none"></div>
+
+    <!-- Animated Glowing Success Checkmark -->
+    <div class="relative w-20 h-20 rounded-full bg-gradient-to-tr from-emerald-400 via-teal-500 to-cyan-500 p-1 shadow-[0_0_35px_rgba(16,185,129,0.5)] animate-bounce duration-1000">
+      <div class="w-full h-full rounded-full bg-white flex items-center justify-center">
+        <span class="material-symbols-outlined text-[44px] text-emerald-500" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+      </div>
+    </div>
+
+    <!-- Titles & Metadata -->
+    <div class="flex flex-col items-center gap-2 max-w-2xl">
+      <span class="px-3.5 py-1 rounded-full bg-emerald-100/90 text-emerald-800 border border-emerald-200 font-mono text-[11px] font-extrabold uppercase tracking-wider shadow-xs">
+        TRANSACTION CONFIRMED · COHORT ALPHA
+      </span>
+      <h1 class="text-3xl sm:text-4xl font-extrabold text-[#0f172a] tracking-tight">
+        Enrollment &amp; Transaction Confirmed
+      </h1>
+      <p class="text-sm sm:text-base text-slate-600 font-medium">
+        Your seat in <strong class="text-slate-900 font-bold">{{ course.title|default:"Masterclass Track" }}</strong> is now fully active. All architectural modules, ASGI notebooks, and interactive sandboxes are unlocked.
+      </p>
+    </div>
+
+    <!-- ================= 3 SUMMARY TILES ================= -->
+    <div class="w-full grid grid-cols-1 sm:grid-cols-3 gap-3.5 my-2 text-left">
+      <!-- Tile 1: Amount Paid -->
+      <div class="p-4 rounded-2xl bg-white/95 border border-slate-100 shadow-xs flex flex-col justify-between">
+        <span class="font-mono text-[11px] text-slate-500 uppercase tracking-wider font-bold">Amount Paid</span>
+        <div class="text-2xl font-black text-slate-900 tracking-tight my-1">
+          ${{ transaction.amount|default:"89.00" }} <span class="text-xs font-mono font-medium text-slate-500">{{ transaction.currency|default:"USD" }}</span>
+        </div>
+        <div class="flex items-center gap-1.5 font-mono text-[11px] font-bold text-emerald-700">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          <span>PAID IN FULL</span>
+        </div>
+      </div>
+
+      <!-- Tile 2: Payment Instrument -->
+      <div class="p-4 rounded-2xl bg-white/95 border border-slate-100 shadow-xs flex flex-col justify-between">
+        <span class="font-mono text-[11px] text-slate-500 uppercase tracking-wider font-bold">Payment Source</span>
+        <div class="flex items-center gap-2 my-1">
+          <div class="w-8 h-5 rounded bg-slate-900 text-white flex items-center justify-center font-mono text-[9px] font-bold tracking-tighter">
+            {{ card_brand|default:"VISA" }}
+          </div>
+          <span class="text-sm font-bold text-slate-800">ending in {{ card_last4|default:"4242" }}</span>
+        </div>
+        <span class="font-mono text-[11px] text-slate-400">Auth Code: {{ auth_code|default:"#89102-OK" }}</span>
+      </div>
+
+      <!-- Tile 3: Transaction Reference -->
+      <div class="p-4 rounded-2xl bg-white/95 border border-slate-100 shadow-xs flex flex-col justify-between">
+        <span class="font-mono text-[11px] text-slate-500 uppercase tracking-wider font-bold">Transaction Reference</span>
+        <div class="flex items-center justify-between my-1">
+          <code class="font-mono text-xs font-bold text-violet-700 bg-violet-50 px-2 py-1 rounded" id="txn-code">{{ transaction_code|default:"txn_3M9x882194aL" }}</code>
+          <button type="button" onclick="copyTxn()" class="p-1 rounded-lg text-slate-400 hover:text-violet-600 hover:bg-violet-50 transition-colors cursor-pointer" title="Copy Transaction ID">
+            <span class="material-symbols-outlined text-[18px]" id="copyIcon">content_copy</span>
+          </button>
+        </div>
+        <div class="flex items-center gap-1 font-mono text-[11px] text-cyan-700 font-semibold">
+          <span class="material-symbols-outlined text-[14px]">verified_user</span>
+          <span>30-Day Guarantee Active</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= ACTION SUITE ================= -->
+    <div class="w-full flex flex-col sm:flex-row items-center gap-3 pt-2">
+      <!-- Primary Launch Button -->
+      {% if first_lesson %}
+        <a href="{% url 'courses:lesson_view' course.slug first_lesson.id %}"
+           class="w-full sm:flex-1 h-13 rounded-full bg-gradient-to-r from-violet-600 via-indigo-600 to-cyan-500 text-white font-bold text-sm sm:text-base flex items-center justify-center gap-2 shadow-[0_10px_25px_-5px_rgba(124,58,237,0.45)] hover:shadow-[0_14px_30px_-4px_rgba(124,58,237,0.6)] hover:scale-[1.01] active:scale-[0.99] transition-all">
+          <span>Launch Course Classroom</span>
+          <span class="material-symbols-outlined text-[20px]">arrow_forward</span>
+        </a>
+      {% else %}
+        <a href="{% url 'courses:dashboard' %}"
+           class="w-full sm:flex-1 h-13 rounded-full bg-gradient-to-r from-violet-600 via-indigo-600 to-cyan-500 text-white font-bold text-sm sm:text-base flex items-center justify-center gap-2 shadow-[0_10px_25px_-5px_rgba(124,58,237,0.45)] hover:shadow-[0_14px_30px_-4px_rgba(124,58,237,0.6)] hover:scale-[1.01] active:scale-[0.99] transition-all">
+          <span>Go to Student Dashboard</span>
+          <span class="material-symbols-outlined text-[20px]">arrow_forward</span>
+        </a>
+      {% endif %}
+
+      <!-- Secondary PDF Download Button -->
+      {% if invoice %}
+        <a href="{% url 'payments:download_invoice' invoice.invoice_number %}"
+           class="w-full sm:w-auto h-13 px-6 rounded-full bg-white hover:bg-slate-50 text-slate-700 hover:text-slate-900 border border-slate-200 font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-xs transition-all">
+          <span class="material-symbols-outlined text-violet-600 text-[18px]">download</span>
+          <span>Download Tax Invoice (PDF)</span>
+        </a>
+      {% elif transaction %}
+        <a href="{% url 'payments:download_receipt' transaction.order_number %}"
+           class="w-full sm:w-auto h-13 px-6 rounded-full bg-white hover:bg-slate-50 text-slate-700 hover:text-slate-900 border border-slate-200 font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-xs transition-all">
+          <span class="material-symbols-outlined text-cyan-600 text-[18px]">download</span>
+          <span>Download Receipt (PDF)</span>
+        </a>
+      {% else %}
+        <a href="{% url 'payments:billing_hub' %}"
+           class="w-full sm:w-auto h-13 px-6 rounded-full bg-white hover:bg-slate-50 text-slate-700 hover:text-slate-900 border border-slate-200 font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-xs transition-all">
+          <span class="material-symbols-outlined text-violet-600 text-[18px]">receipt_long</span>
+          <span>View Invoices Hub</span>
+        </a>
+      {% endif %}
+    </div>
+
+    <!-- Quick Auxiliary Strip -->
+    <div class="flex flex-wrap items-center justify-center sm:justify-between gap-4 pt-2 text-xs font-semibold text-slate-500 w-full border-t border-slate-100">
+      <a href="#" onclick="event.preventDefault(); showReceiptToast('Calendar invite added.');" class="inline-flex items-center gap-1.5 hover:text-violet-600 transition-colors">
+        <span class="material-symbols-outlined text-violet-500 text-[16px]">calendar_add_on</span>
+        <span>Add Weekly Live Labs to Calendar (.ics)</span>
+      </a>
+      <a href="#" onclick="event.preventDefault(); showReceiptToast('Discord role @Cohort-Alpha assigned.');" class="inline-flex items-center gap-1.5 hover:text-indigo-600 transition-colors">
+        <span class="material-symbols-outlined text-indigo-500 text-[16px]">forum</span>
+        <span>Join Private Cohort Discord Server</span>
+      </a>
+    </div>
+
+  </div>
+
+  <!-- ================= ORDER METADATA TRAY ================= -->
+  <div class="w-full mt-4 px-6 py-3.5 rounded-2xl bg-white/70 backdrop-blur-xl border border-white/80 shadow-xs flex flex-col sm:flex-row items-center justify-between text-xs text-slate-600 gap-2">
+    <div class="flex items-center gap-3 flex-wrap justify-center sm:justify-start">
+      <span>Order: <strong class="text-slate-900 font-mono font-bold">#{{ transaction.order_number|default:"LRN-98214" }}</strong></span>
+      <span class="text-slate-300">•</span>
+      <span>Date: <strong class="text-slate-900">{{ transaction.created_at|date:"M d, Y · h:i A"|default:"Today" }} UTC</strong></span>
+    </div>
+    <a href="{% url 'courses:dashboard' %}" class="text-violet-600 hover:text-violet-800 font-bold inline-flex items-center gap-1 hover:underline">
+      <span>Dashboard &amp; Billing History</span>
+      <span class="material-symbols-outlined text-[14px]">open_in_new</span>
+    </a>
+  </div>
+
+  <!-- ================= ONBOARDING GUIDE PILL CARDS ================= -->
+  <div class="w-full mt-8">
+    <div class="flex items-center justify-between mb-4 px-1">
+      <h3 class="text-base sm:text-lg font-bold text-slate-900 tracking-tight flex items-center gap-2">
+        <span class="material-symbols-outlined text-violet-600 text-[20px]">flag</span>
+        <span>Recommended Next Steps for Onboarding</span>
+      </h3>
+      <span class="font-mono text-xs text-slate-400">Step 1 of 3</span>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <!-- Step 1 Card -->
+      <div class="group p-5 rounded-2xl bg-white/80 backdrop-blur-xl border border-white shadow-xs hover:shadow-md transition-all flex flex-col justify-between cursor-pointer" onclick="showReceiptToast('Discord role linked to your Learnix account.')">
+        <div>
+          <div class="w-8 h-8 rounded-xl bg-violet-100 text-violet-700 flex items-center justify-center font-bold text-xs mb-3 group-hover:bg-violet-600 group-hover:text-white transition-colors">
+            01
+          </div>
+          <h4 class="text-sm font-bold text-slate-900 mb-1">Verify Discord Access</h4>
+          <p class="text-xs text-slate-500 leading-relaxed">Connect your Discord account to claim the exclusive <span class="font-semibold text-slate-700">@Cohort-Alpha</span> student channels.</p>
+        </div>
+        <div class="mt-4 flex items-center text-xs font-bold text-violet-600 group-hover:translate-x-1 transition-transform">
+          <span>Link Discord</span>
+          <span class="material-symbols-outlined text-[14px] ml-1">chevron_right</span>
+        </div>
+      </div>
+
+      <!-- Step 2 Card -->
+      <div class="group p-5 rounded-2xl bg-white/80 backdrop-blur-xl border border-white shadow-xs hover:shadow-md transition-all flex flex-col justify-between cursor-pointer" onclick="showReceiptToast('API Key generated: lrn_live_99x821')">
+        <div>
+          <div class="w-8 h-8 rounded-xl bg-cyan-100 text-cyan-800 flex items-center justify-center font-bold text-xs mb-3 group-hover:bg-cyan-600 group-hover:text-white transition-colors">
+            02
+          </div>
+          <h4 class="text-sm font-bold text-slate-900 mb-1">Configure CLI Sandbox</h4>
+          <p class="text-xs text-slate-500 leading-relaxed">Run <code class="font-mono text-[11px] bg-slate-100 px-1.5 py-0.5 rounded text-slate-800">learnix auth login</code> to configure your local terminal API keys and model tokens.</p>
+        </div>
+        <div class="mt-4 flex items-center text-xs font-bold text-cyan-700 group-hover:translate-x-1 transition-transform">
+          <span>CLI Setup Guide</span>
+          <span class="material-symbols-outlined text-[14px] ml-1">chevron_right</span>
+        </div>
+      </div>
+
+      <!-- Step 3 Card -->
+      <div class="group p-5 rounded-2xl bg-white/80 backdrop-blur-xl border border-white shadow-xs hover:shadow-md transition-all flex flex-col justify-between cursor-pointer" onclick="showReceiptToast('GitHub repository invite sent.')">
+        <div>
+          <div class="w-8 h-8 rounded-xl bg-pink-100 text-pink-700 flex items-center justify-center font-bold text-xs mb-3 group-hover:bg-pink-600 group-hover:text-white transition-colors">
+            03
+          </div>
+          <h4 class="text-sm font-bold text-slate-900 mb-1">Clone Repo Blueprint</h4>
+          <p class="text-xs text-slate-500 leading-relaxed">Access production architecture repositories and deployment blueprints on private GitHub repos.</p>
+        </div>
+        <div class="mt-4 flex items-center text-xs font-bold text-pink-600 group-hover:translate-x-1 transition-transform">
+          <span>View GitHub Repo</span>
+          <span class="material-symbols-outlined text-[14px] ml-1">chevron_right</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Floating Notification Toast -->
+<div id="receiptToast" class="fixed bottom-6 right-6 z-50 transform translate-y-24 opacity-0 transition-all duration-300 pointer-events-none">
+  <div class="px-4 py-3 rounded-2xl bg-slate-900/90 backdrop-blur-xl text-white font-mono text-xs shadow-2xl border border-slate-700 flex items-center gap-3">
+    <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+    <span id="receiptToastMsg">Notification</span>
+  </div>
+</div>
+
+<script>
+  function copyTxn() {
+    const code = document.getElementById('txn-code').innerText;
+    navigator.clipboard.writeText(code).then(() => {
+      document.getElementById('copyIcon').innerText = 'check';
+      showReceiptToast('Transaction reference copied to clipboard!');
+      setTimeout(() => {
+        document.getElementById('copyIcon').innerText = 'content_copy';
+      }, 2000);
+    });
+  }
+
+  function showReceiptToast(msg = 'PDF invoice generated & queued for download.') {
+    const toast = document.getElementById('receiptToast');
+    const toastMsg = document.getElementById('receiptToastMsg');
+    if (toast && toastMsg) {
+      toastMsg.innerText = msg;
+      toast.classList.remove('translate-y-24', 'opacity-0');
+      setTimeout(() => {
+        toast.classList.add('translate-y-24', 'opacity-0');
+      }, 3500);
+    }
+  }
+
+  // Celebratory Confetti Simulation
+  (function runConfetti() {
+    const canvas = document.getElementById('confetti-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const pieces = [];
+    const colors = ['#7c3aed', '#06b6d4', '#ec4899', '#10b981', '#f59e0b'];
+
+    for (let i = 0; i < 70; i++) {
+      pieces.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * -canvas.height * 0.5,
+        size: Math.random() * 8 + 4,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        speed: Math.random() * 3 + 2,
+        rotation: Math.random() * 360,
+        rotSpeed: Math.random() * 4 - 2
+      });
+    }
+
+    let frame = 0;
+    function render() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      pieces.forEach(p => {
+        p.y += p.speed;
+        p.rotation += p.rotSpeed;
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate((p.rotation * Math.PI) / 180);
+        ctx.fillStyle = p.color;
+        ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.6);
+        ctx.restore();
+      });
+      frame++;
+      if (frame < 180) {
+        requestAnimationFrame(render);
+      } else {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      }
+    }
+    requestAnimationFrame(render);
+  })();
+</script>
+{% endblock %}
