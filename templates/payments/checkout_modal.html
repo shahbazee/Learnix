@@ -1,0 +1,278 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Checkout &amp; Tuition Summary — {{ course.title }} | Learnix{% endblock %}
+
+{% block content %}
+<!-- Multi-layered subtle ambient glowing blur orbs -->
+<div class="fixed inset-0 pointer-events-none overflow-hidden z-0">
+  <div class="absolute -top-36 left-1/4 w-[32rem] h-[32rem] rounded-full bg-violet-400/20 blur-[130px]"></div>
+  <div class="absolute top-1/4 -right-24 w-96 h-96 rounded-full bg-cyan-300/25 blur-[120px]"></div>
+  <div class="absolute bottom-20 left-1/3 w-[30rem] h-[30rem] rounded-full bg-fuchsia-300/20 blur-[140px]"></div>
+  <div class="absolute top-2/3 -left-32 w-80 h-80 rounded-full bg-blue-300/20 blur-[130px]"></div>
+</div>
+
+<div class="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 pb-20 pt-4">
+
+  <!-- Top System Breadcrumbs & Session Meta -->
+  <div class="flex flex-wrap items-center justify-between gap-3 py-4">
+    <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/80 backdrop-blur-xl border border-white shadow-sm flex-wrap">
+      <span class="font-mono text-xs text-cyan-700 flex items-center gap-1.5 font-bold">
+        <span class="inline-block w-2 h-2 rounded-full bg-cyan-500 animate-pulse"></span>
+        ENCRYPTED LINK
+      </span>
+      <span class="text-slate-300 font-mono text-xs font-semibold">//</span>
+      <span class="text-xs text-slate-600 font-medium">Billing &amp; Checkout</span>
+      <span class="text-slate-300 font-mono text-xs font-semibold">/</span>
+      <span class="font-mono text-xs text-violet-700 font-bold">Tier 1 Spatial Node</span>
+      <span class="text-slate-300 font-mono text-xs font-semibold">/</span>
+      <span class="font-mono text-xs text-slate-800 font-semibold">Order #{{ transaction.order_number }}</span>
+    </div>
+
+    <!-- Quick Status Indicators -->
+    <div class="flex items-center gap-2 font-mono text-xs text-slate-600">
+      <span class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/80 backdrop-blur-md border border-slate-200/60 shadow-sm text-cyan-800 font-medium">
+        <span class="material-symbols-outlined text-[15px] text-cyan-600">verified_user</span>
+        TLS 1.3 Strict · 256-bit AES
+      </span>
+      <span class="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/80 backdrop-blur-md border border-slate-200/60 shadow-sm text-slate-700 font-medium">
+        <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+        Stripe Sandbox Verified
+      </span>
+    </div>
+  </div>
+
+  <!-- Main Checkout Gateway Container (Split View) -->
+  <div class="rounded-3xl bg-white/85 backdrop-blur-2xl border border-white shadow-[0_20px_50px_-15px_rgba(99,102,241,0.15)] overflow-hidden grid grid-cols-1 lg:grid-cols-12">
+
+    <!-- ================= LEFT COLUMN: COURSE SUMMARY & BREAKDOWN (Col 5) ================= -->
+    <div class="lg:col-span-5 p-6 sm:p-8 bg-slate-50/70 border-b lg:border-b-0 lg:border-r border-slate-200/70 flex flex-col justify-between gap-6">
+      <div class="flex flex-col gap-6">
+        <!-- Card Course Header -->
+        <div class="flex flex-col gap-3">
+          <div class="relative w-full aspect-video rounded-2xl overflow-hidden bg-slate-900 shadow-md">
+            <img src="{{ course.get_thumbnail_url }}" alt="{{ course.title }}" class="w-full h-full object-cover opacity-90" />
+            <div class="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent"></div>
+            <div class="absolute bottom-3 left-3 right-3 flex items-center justify-between">
+              <span class="font-mono text-xs uppercase px-2.5 py-1 rounded-full bg-cyan-500/90 text-white font-bold backdrop-blur-md shadow-sm">
+                {{ course.category.name|default:"Architectural Track" }}
+              </span>
+              <span class="font-mono text-xs text-slate-800 bg-white/90 backdrop-blur-md px-2.5 py-1 rounded-full font-bold shadow-sm">
+                Cohort Alpha
+              </span>
+            </div>
+          </div>
+
+          <div class="flex flex-col gap-2 pt-1">
+            <h2 class="text-xl sm:text-2xl font-extrabold text-[#0f172a] leading-tight">
+              {{ course.title }}
+            </h2>
+            <p class="text-xs sm:text-sm text-slate-600 line-clamp-2">
+              {{ course.short_description }}
+            </p>
+
+            <!-- Instructor Pill -->
+            <div class="pt-2 flex items-center justify-between">
+              <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-violet-600 to-cyan-500 text-white flex items-center justify-center font-bold text-xs shadow-sm">
+                  {{ course.instructor.first_name|slice:":1"|default:"L" }}
+                </div>
+                <div>
+                  <div class="flex items-center gap-1 text-xs font-bold text-slate-900">
+                    <span>{{ course.instructor.get_full_name|default:course.instructor.username }}</span>
+                    <span class="material-symbols-outlined text-cyan-600 text-[14px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                  </div>
+                  <div class="font-mono text-[11px] text-slate-500">{{ course.instructor.profile.headline|default:"Staff Architect · Learnix Faculty" }}</div>
+                </div>
+              </div>
+              <span class="font-mono text-[11px] px-2.5 py-0.5 rounded-full bg-violet-100 text-violet-800 font-bold border border-violet-200">Masterclass</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Itemized Pricing Breakdown -->
+        <div class="rounded-2xl bg-white/90 border border-slate-200/80 p-5 flex flex-col gap-3 shadow-xs">
+          <div class="flex justify-between items-center text-xs sm:text-sm">
+            <span class="text-slate-600 font-medium">Course Base Tuition</span>
+            <span class="font-mono font-semibold text-slate-900">${{ course.price }} USD</span>
+          </div>
+          <div class="flex justify-between items-center text-xs sm:text-sm">
+            <span class="text-slate-600 flex items-center gap-1.5 font-medium">
+              Interactive Cloud GPU Lab
+              <span class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold font-mono">Lifetime</span>
+            </span>
+            <span class="font-mono text-emerald-700 font-bold">Free</span>
+          </div>
+          <div class="flex justify-between items-center text-xs sm:text-sm">
+            <span class="text-slate-600 font-medium">Sales Tax &amp; Platform Gate (0%)</span>
+            <span class="font-mono text-slate-500 font-medium">$0.00 USD</span>
+          </div>
+
+          <!-- Divider -->
+          <div class="h-px w-full bg-slate-200 my-1"></div>
+
+          <div class="flex justify-between items-end pt-1">
+            <div>
+              <div class="font-mono text-[11px] uppercase text-slate-500 font-bold">Total Amount Due</div>
+              <div class="font-mono text-xs text-violet-700 font-bold">Immediate Access Granted</div>
+            </div>
+            <div class="text-right">
+              <div class="text-2xl sm:text-3xl font-extrabold text-[#0f172a] tracking-tight">${{ course.price }}</div>
+              <span class="font-mono text-xs text-slate-400 font-semibold">USD Currency</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom Confidence Pledge -->
+      <div class="pt-2">
+        <div class="flex items-start gap-3 p-3.5 rounded-2xl bg-violet-50/80 border border-violet-100 text-slate-800 text-xs shadow-xs">
+          <span class="material-symbols-outlined text-cyan-600 text-[20px] shrink-0 mt-0.5" style="font-variation-settings: 'FILL' 1;">verified</span>
+          <div>
+            <strong class="font-bold text-slate-900">30-Day Unconditional Guarantee:</strong>
+            Full refund anytime if the curriculum blueprints and sandbox architecture don’t exceed production standards.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= RIGHT COLUMN: PAYMENT DETAILS (Col 7) ================= -->
+    <div class="lg:col-span-7 p-6 sm:p-10 flex flex-col justify-between bg-white/80 backdrop-blur-xl gap-6">
+      <div>
+        <!-- Section Header -->
+        <div class="flex items-center justify-between mb-6 flex-wrap gap-2">
+          <div>
+            <h3 class="text-xl sm:text-2xl font-extrabold text-[#0f172a]">Payment Details</h3>
+            <p class="text-xs sm:text-sm text-slate-500">Choose express digital wallet or standard payment instrument.</p>
+          </div>
+          <div class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 font-mono text-xs text-emerald-800 font-bold shadow-xs">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span>Stripe Elements Live</span>
+          </div>
+        </div>
+
+        <!-- Express Pay Segment -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
+          <button type="button" onclick="quickFillCard()" class="py-2.5 px-4 rounded-full bg-white hover:bg-slate-50 transition-all flex items-center justify-center gap-2 shadow-xs border border-slate-200 cursor-pointer">
+            <svg class="h-4 w-auto fill-current text-slate-900" viewBox="0 0 170 170">
+              <path d="M150.37 130.25c-2.45 5.66-5.35 10.87-8.71 15.66-4.58 6.53-8.33 11.05-11.22 13.56-4.48 4.12-9.28 6.23-14.42 6.35-3.69 0-8.14-1.05-13.32-3.18-5.19-2.12-9.97-3.17-14.34-3.17-4.58 0-9.49 1.05-14.75 3.17-5.26 2.13-9.5 3.24-12.74 3.35-4.35.13-9.16-1.9-14.41-6.08-3.69-3.04-7.67-7.81-11.96-14.34-6.1-9.26-10.74-19.8-13.93-31.62-3.19-11.82-4.79-22.77-4.79-32.86 0-14.99 3.84-27.17 11.51-36.56 7.68-9.39 17.1-14.16 28.27-14.33 4.46 0 9.4 1.14 14.81 3.42 5.41 2.29 9.3 3.49 11.66 3.61 2.27-.12 6.22-1.32 11.85-3.61 5.62-2.28 10.37-3.34 14.23-3.18 10.45.52 19.12 4.45 26.01 11.78-9.24 5.61-13.75 13.52-13.53 23.73.23 8.01 3.23 14.75 9.01 20.21 5.79 5.46 12.67 8.52 20.65 9.17-2.03 6.07-4.32 11.96-6.86 17.68zM119.22 33.15c0-6.42 2.37-12.44 7.1-18.06 4.73-5.62 10.59-9.39 17.58-11.31.25 1.54.37 2.9.37 4.09 0 6.32-2.46 12.44-7.39 18.36-4.93 5.92-10.87 9.46-17.82 10.62-.24-1.22-.36-2.45-.36-3.7z"></path>
+            </svg>
+            <span class="text-xs font-bold text-slate-900">Apple Pay Express</span>
+          </button>
+          <button type="button" onclick="quickFillCard()" class="py-2.5 px-4 rounded-full bg-white hover:bg-slate-50 transition-all flex items-center justify-center gap-2 shadow-xs border border-slate-200 cursor-pointer">
+            <svg class="h-4 w-auto" viewBox="0 0 48 48">
+              <path d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z" fill="#EA4335"></path>
+              <path d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z" fill="#4285F4"></path>
+              <path d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.79l7.97-6.2z" fill="#FBBC05"></path>
+              <path d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z" fill="#34A853"></path>
+            </svg>
+            <span class="text-xs font-bold text-slate-800">Google Pay</span>
+          </button>
+        </div>
+
+        <!-- Divider -->
+        <div class="relative flex items-center justify-center my-6">
+          <div class="w-full h-px bg-slate-200"></div>
+          <span class="absolute px-3 rounded-full bg-white text-slate-500 font-mono text-[11px] uppercase tracking-widest font-semibold border border-slate-200/60 shadow-xs">
+            Or pay with card
+          </span>
+        </div>
+
+        <!-- Interactive Stripe Test Form -->
+        <form method="post" action="{% url 'payments:checkout_modal' course.slug %}" class="flex flex-col gap-4" id="checkoutForm">
+          {% csrf_token %}
+
+          <!-- Cardholder Name -->
+          <div class="flex flex-col gap-1.5">
+            <label class="block font-mono text-xs uppercase tracking-wider text-slate-700 font-bold">Cardholder Name</label>
+            <div class="relative">
+              <span class="material-symbols-outlined absolute left-3.5 top-3 text-[18px] text-slate-400">badge</span>
+              <input type="text" name="cardholder_name" id="cardName" required value="{{ user.get_full_name|default:user.username }}"
+                     class="w-full bg-white/90 text-slate-900 text-sm pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:border-violet-500 focus:ring-4 focus:ring-violet-500/10 placeholder-slate-400 transition-all shadow-xs" />
+            </div>
+          </div>
+
+          <!-- Card Number with Multi-Brand Micro Badges -->
+          <div class="flex flex-col gap-1.5">
+            <div class="flex items-center justify-between">
+              <label class="block font-mono text-xs uppercase tracking-wider text-slate-700 font-bold">Card Number (Stripe Sandbox)</label>
+              <div class="flex items-center gap-1.5">
+                <span class="font-mono text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 font-bold border border-slate-200">VISA</span>
+                <span class="font-mono text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 font-bold border border-slate-200">MC</span>
+                <span class="font-mono text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 font-bold border border-slate-200">AMEX</span>
+              </div>
+            </div>
+            <div class="relative">
+              <span class="material-symbols-outlined absolute left-3.5 top-3 text-[18px] text-slate-400">credit_card</span>
+              <input type="text" name="card_number" id="cardNumber" required value="4242 4242 4242 4242" maxlength="19"
+                     class="w-full bg-white/90 text-slate-900 font-mono text-sm pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:border-violet-500 focus:ring-4 focus:ring-violet-500/10 transition-all shadow-xs" />
+            </div>
+          </div>
+
+          <!-- Expiry & CVC Grid -->
+          <div class="grid grid-cols-2 gap-3">
+            <div class="flex flex-col gap-1.5">
+              <label class="block font-mono text-xs uppercase tracking-wider text-slate-700 font-bold">Expiry Date</label>
+              <div class="relative">
+                <span class="material-symbols-outlined absolute left-3.5 top-3 text-[18px] text-slate-400">calendar_today</span>
+                <input type="text" name="expiry" id="cardExpiry" required value="12 / 28" maxlength="7"
+                       class="w-full bg-white/90 text-slate-900 font-mono text-sm pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:border-violet-500 focus:ring-4 focus:ring-violet-500/10 transition-all shadow-xs" />
+              </div>
+            </div>
+            <div class="flex flex-col gap-1.5">
+              <div class="flex items-center justify-between">
+                <label class="block font-mono text-xs uppercase tracking-wider text-slate-700 font-bold">CVC / CWW</label>
+                <span class="font-mono text-[11px] text-slate-400">3 digits</span>
+              </div>
+              <div class="relative">
+                <span class="material-symbols-outlined absolute left-3.5 top-3 text-[18px] text-slate-400">lock</span>
+                <input type="text" name="cvc" id="cardCvc" required value="342" maxlength="4"
+                       class="w-full bg-white/90 text-slate-900 font-mono text-sm pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:border-violet-500 focus:ring-4 focus:ring-violet-500/10 transition-all shadow-xs" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Save Card Checkbox -->
+          <div class="flex items-center gap-2 pt-1">
+            <input type="checkbox" id="saveCard" checked class="w-4 h-4 rounded text-violet-600 focus:ring-violet-500 border-slate-300" />
+            <label for="saveCard" class="text-xs text-slate-600 font-medium">Save card securely for seamless single-click lab extensions</label>
+          </div>
+
+          <!-- Submit Payment Button -->
+          <button type="submit" id="payBtn"
+                  class="mt-3 w-full py-3.5 px-6 rounded-full bg-gradient-to-r from-violet-600 via-purple-600 to-cyan-500 hover:scale-[1.01] active:scale-[0.99] text-white font-bold text-sm shadow-[0_12px_28px_-4px_rgba(124,58,237,0.45)] transition-all flex items-center justify-center gap-2 cursor-pointer">
+            <span class="material-symbols-outlined text-[18px]">lock</span>
+            <span>Authorize Payment · ${{ course.price }} USD</span>
+            <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+          </button>
+        </form>
+      </div>
+
+      <!-- Trust Badges Strip -->
+      <div class="pt-4 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3 text-slate-400 font-mono text-[11px]">
+        <div class="flex items-center gap-3">
+          <span class="flex items-center gap-1 text-slate-600">
+            <span class="material-symbols-outlined text-cyan-600 text-[14px]">shield</span>
+            <span>PCI-DSS Level 1</span>
+          </span>
+          <span>•</span>
+          <span class="flex items-center gap-1 text-slate-600">
+            <span class="material-symbols-outlined text-violet-600 text-[14px]">encrypted</span>
+            <span>Stripe 256-bit AES</span>
+          </span>
+        </div>
+        <span class="text-slate-400">Learnix Billing Gateway v2.4</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  function quickFillCard() {
+    document.getElementById('cardNumber').value = "4242 4242 4242 4242";
+    document.getElementById('cardExpiry').value = "12 / 28";
+    document.getElementById('cardCvc').value = "342";
+  }
+</script>
+{% endblock %}
