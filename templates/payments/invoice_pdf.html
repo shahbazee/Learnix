@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8"/>
+<title>Tax Invoice {{ invoice.invoice_number }} — Learnix</title>
+<style>
+  @page {
+    size: letter portrait;
+    margin-top: 1.2cm;
+    margin-bottom: 1.2cm;
+    margin-left: 1.5cm;
+    margin-right: 1.5cm;
+    @bottom-right {
+      content: "Page " counter(page) " of " counter(pages);
+      font-size: 9px;
+      color: #94a3b8;
+      font-family: Helvetica, Arial, sans-serif;
+    }
+  }
+
+  body {
+    font-family: Helvetica, Arial, sans-serif;
+    color: #0f172a;
+    font-size: 11px;
+    line-height: 1.5;
+    margin: 0;
+    padding: 0;
+  }
+
+  .accent-bar {
+    height: 4px;
+    background-color: #7c3aed;
+    margin-bottom: 20px;
+  }
+
+  .header-table {
+    width: 100%;
+    margin-bottom: 24px;
+  }
+
+  .brand-title {
+    font-size: 20px;
+    font-weight: bold;
+    color: #0f172a;
+    letter-spacing: -0.5px;
+    margin: 0;
+    padding: 0;
+  }
+
+  .brand-sub {
+    font-size: 10px;
+    color: #64748b;
+    margin-top: 3px;
+  }
+
+  .doc-title {
+    font-size: 22px;
+    font-weight: bold;
+    color: #7c3aed;
+    text-align: right;
+    margin: 0;
+    padding: 0;
+  }
+
+  .doc-meta {
+    font-size: 10px;
+    color: #475569;
+    text-align: right;
+    margin-top: 4px;
+  }
+
+  .status-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    background-color: #ecfdf5;
+    color: #047857;
+    font-weight: bold;
+    font-size: 10px;
+    border: 1px solid #a7f3d0;
+    text-align: center;
+    margin-top: 6px;
+  }
+
+  .meta-grid {
+    width: 100%;
+    margin-bottom: 24px;
+    border-top: 1px solid #e2e8f0;
+    border-bottom: 1px solid #e2e8f0;
+  }
+
+  .meta-col {
+    vertical-align: top;
+    padding: 12px 6px;
+  }
+
+  .section-label {
+    font-size: 9px;
+    font-weight: bold;
+    text-transform: uppercase;
+    color: #64748b;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+  }
+
+  .meta-value-title {
+    font-size: 12px;
+    font-weight: bold;
+    color: #0f172a;
+  }
+
+  .meta-value-sub {
+    font-size: 10px;
+    color: #475569;
+    line-height: 1.4;
+  }
+
+  .line-items-table {
+    width: 100%;
+    margin-bottom: 20px;
+  }
+
+  .line-items-table th {
+    background-color: #f8fafc;
+    color: #475569;
+    font-size: 9px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 8px 10px;
+    border-bottom: 2px solid #cbd5e1;
+    text-align: left;
+  }
+
+  .line-items-table td {
+    padding: 12px 10px;
+    border-bottom: 1px solid #e2e8f0;
+    font-size: 11px;
+    vertical-align: top;
+  }
+
+  .item-title {
+    font-size: 12px;
+    font-weight: bold;
+    color: #0f172a;
+  }
+
+  .item-desc {
+    font-size: 9px;
+    color: #64748b;
+    margin-top: 2px;
+  }
+
+  .totals-table {
+    width: 100%;
+    margin-bottom: 24px;
+  }
+
+  .totals-box {
+    width: 250px;
+    margin-left: auto;
+    border: 1px solid #e2e8f0;
+    background-color: #f8fafc;
+  }
+
+  .totals-row td {
+    padding: 6px 12px;
+    font-size: 11px;
+  }
+
+  .grand-total-row td {
+    padding: 10px 12px;
+    font-size: 14px;
+    font-weight: bold;
+    color: #0f172a;
+    border-top: 2px solid #7c3aed;
+    background-color: #ede9fe;
+  }
+
+  .payment-info-box {
+    background-color: #f1f5f9;
+    border-left: 4px solid #0891b2;
+    padding: 10px 14px;
+    margin-bottom: 24px;
+    font-size: 10px;
+    color: #334155;
+  }
+
+  .disclaimer {
+    font-size: 9px;
+    color: #94a3b8;
+    line-height: 1.4;
+    border-top: 1px solid #e2e8f0;
+    padding-top: 12px;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+  <!-- Top Brand Accent Strip -->
+  <div class="accent-bar"></div>
+
+  <!-- Header: Brand & Document Meta -->
+  <table class="header-table" cellpadding="0" cellspacing="0">
+    <tr>
+      <td style="vertical-align: top; width: 55%;">
+        <div class="brand-title">LEARNIX ACADEMY</div>
+        <div class="brand-sub">Advanced Software Architecture &amp; AI Engineering Cohort</div>
+        <div class="brand-sub" style="margin-top: 4px;">100 Innovation Way, Suite 400 · San Francisco, CA 94105</div>
+        <div class="brand-sub">Tax ID / EIN: US-88-4920194 · Email: {{ support_email }}</div>
+      </td>
+      <td style="vertical-align: top; width: 45%; text-align: right;">
+        <div class="doc-title">TAX INVOICE</div>
+        <div class="doc-meta"><strong>Invoice #:</strong> {{ invoice.invoice_number }}</div>
+        <div class="doc-meta"><strong>Order Ref:</strong> #{{ invoice.transaction.order_number }}</div>
+        <div class="doc-meta"><strong>Issue Date:</strong> {{ invoice.issued_at|date:"F d, Y" }}</div>
+        <div class="doc-meta">
+          <span class="status-badge">PAID IN FULL · SETTLED</span>
+        </div>
+      </td>
+    </tr>
+  </table>
+
+  <!-- Meta Information Table (Billed To vs Payment Method) -->
+  <table class="meta-grid" cellpadding="0" cellspacing="0">
+    <tr>
+      <td class="meta-col" style="width: 50%;">
+        <div class="section-label">Billed To (Student)</div>
+        <div class="meta-value-title">{{ invoice.billing_name }}</div>
+        <div class="meta-value-sub">Email: {{ invoice.billing_email }}</div>
+        <div class="meta-value-sub">Account ID: cus_00{{ invoice.transaction.user.id }} (@{{ invoice.transaction.user.username }})</div>
+      </td>
+      <td class="meta-col" style="width: 50%;">
+        <div class="section-label">Payment &amp; Fiscal Details</div>
+        <div class="meta-value-title">Stripe Checkout (Card)</div>
+        <div class="meta-value-sub">Settlement Currency: {{ invoice.transaction.currency }} (USD)</div>
+        <div class="meta-value-sub">Auth Ref: {{ invoice.transaction.stripe_payment_intent_id|default:invoice.transaction.order_number }}</div>
+      </td>
+    </tr>
+  </table>
+
+  <!-- Itemized Curriculum Table -->
+  <table class="line-items-table" cellpadding="0" cellspacing="0">
+    <thead>
+      <tr>
+        <th style="width: 55%;">Curriculum Item &amp; Access Scope</th>
+        <th style="width: 15%; text-align: center;">Qty</th>
+        <th style="width: 15%; text-align: right;">Unit Price</th>
+        <th style="width: 15%; text-align: right;">Total</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>
+          <div class="item-title">{{ invoice.transaction.course.title }}</div>
+          <div class="item-desc">
+            Level: {{ invoice.transaction.course.get_level_display }} · Lifetime Classroom &amp; Sandbox Access · Cohort Verification
+          </div>
+        </td>
+        <td style="text-align: center;">1</td>
+        <td style="text-align: right;">${{ invoice.subtotal }}</td>
+        <td style="text-align: right; font-weight: bold;">${{ invoice.subtotal }}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Totals Section -->
+  <table class="totals-table" cellpadding="0" cellspacing="0">
+    <tr>
+      <td style="width: 55%; vertical-align: top;">
+        <div class="payment-info-box">
+          <strong>Fiscal Verification:</strong><br/>
+          This transaction was verified via Stripe Gateway. All coursework materials, project repositories, and instructor-reviewed milestone assessments are unlocked for the lifetime of the account.
+        </div>
+      </td>
+      <td style="width: 45%; vertical-align: top;">
+        <table class="totals-box" cellpadding="0" cellspacing="0" align="right">
+          <tr class="totals-row">
+            <td style="color: #64748b;">Subtotal:</td>
+            <td style="text-align: right; font-weight: bold;">${{ invoice.subtotal }}</td>
+          </tr>
+          <tr class="totals-row">
+            <td style="color: #64748b;">Tax / VAT (0.00%):</td>
+            <td style="text-align: right; font-weight: bold;">${{ invoice.tax_amount }}</td>
+          </tr>
+          <tr class="grand-total-row">
+            <td>Total Paid:</td>
+            <td style="text-align: right;">${{ invoice.total_amount }} <span style="font-size: 10px; font-weight: normal;">{{ invoice.transaction.currency }}</span></td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+
+  <!-- Official Footer & Legal Statement -->
+  <div class="disclaimer">
+    This is an authentic, computer-generated tax invoice issued by Learnix Technologies Inc. for continuing professional education.<br/>
+    Retain this document for your personal tax filing, corporate tuition assistance, or continuing educational deductions.<br/>
+    For fiscal inquiries, reverse-charge VAT validation, or billing support, contact <strong>{{ support_email }}</strong>.<br/>
+    © 2026 Learnix Technologies Inc. All rights reserved.
+  </div>
+
+</body>
+</html>

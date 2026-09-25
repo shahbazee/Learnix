@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8"/>
+<title>Receipt #{{ transaction.order_number }} — Learnix</title>
+<style>
+  @page {
+    size: letter portrait;
+    margin-top: 1.2cm;
+    margin-bottom: 1.2cm;
+    margin-left: 1.5cm;
+    margin-right: 1.5cm;
+    @bottom-right {
+      content: "Page " counter(page) " of " counter(pages);
+      font-size: 9px;
+      color: #94a3b8;
+      font-family: Helvetica, Arial, sans-serif;
+    }
+  }
+
+  body {
+    font-family: Helvetica, Arial, sans-serif;
+    color: #0f172a;
+    font-size: 11px;
+    line-height: 1.5;
+    margin: 0;
+    padding: 0;
+  }
+
+  .accent-bar {
+    height: 4px;
+    background-color: #0891b2;
+    margin-bottom: 20px;
+  }
+
+  .header-table {
+    width: 100%;
+    margin-bottom: 24px;
+  }
+
+  .brand-title {
+    font-size: 20px;
+    font-weight: bold;
+    color: #0f172a;
+    letter-spacing: -0.5px;
+    margin: 0;
+    padding: 0;
+  }
+
+  .brand-sub {
+    font-size: 10px;
+    color: #64748b;
+    margin-top: 3px;
+  }
+
+  .doc-title {
+    font-size: 22px;
+    font-weight: bold;
+    color: #0891b2;
+    text-align: right;
+    margin: 0;
+    padding: 0;
+  }
+
+  .doc-meta {
+    font-size: 10px;
+    color: #475569;
+    text-align: right;
+    margin-top: 4px;
+  }
+
+  .status-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    background-color: #ecfeff;
+    color: #0e7490;
+    font-weight: bold;
+    font-size: 10px;
+    border: 1px solid #a5f3fc;
+    text-align: center;
+    margin-top: 6px;
+  }
+
+  .meta-grid {
+    width: 100%;
+    margin-bottom: 24px;
+    border-top: 1px solid #e2e8f0;
+    border-bottom: 1px solid #e2e8f0;
+  }
+
+  .meta-col {
+    vertical-align: top;
+    padding: 12px 6px;
+  }
+
+  .section-label {
+    font-size: 9px;
+    font-weight: bold;
+    text-transform: uppercase;
+    color: #64748b;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+  }
+
+  .meta-value-title {
+    font-size: 12px;
+    font-weight: bold;
+    color: #0f172a;
+  }
+
+  .meta-value-sub {
+    font-size: 10px;
+    color: #475569;
+    line-height: 1.4;
+  }
+
+  .line-items-table {
+    width: 100%;
+    margin-bottom: 20px;
+  }
+
+  .line-items-table th {
+    background-color: #f8fafc;
+    color: #475569;
+    font-size: 9px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 8px 10px;
+    border-bottom: 2px solid #cbd5e1;
+    text-align: left;
+  }
+
+  .line-items-table td {
+    padding: 12px 10px;
+    border-bottom: 1px solid #e2e8f0;
+    font-size: 11px;
+    vertical-align: top;
+  }
+
+  .item-title {
+    font-size: 12px;
+    font-weight: bold;
+    color: #0f172a;
+  }
+
+  .item-desc {
+    font-size: 9px;
+    color: #64748b;
+    margin-top: 2px;
+  }
+
+  .totals-table {
+    width: 100%;
+    margin-bottom: 24px;
+  }
+
+  .totals-box {
+    width: 250px;
+    margin-left: auto;
+    border: 1px solid #e2e8f0;
+    background-color: #f8fafc;
+  }
+
+  .totals-row td {
+    padding: 6px 12px;
+    font-size: 11px;
+  }
+
+  .grand-total-row td {
+    padding: 10px 12px;
+    font-size: 14px;
+    font-weight: bold;
+    color: #0f172a;
+    border-top: 2px solid #0891b2;
+    background-color: #cffafe;
+  }
+
+  .payment-info-box {
+    background-color: #f8fafc;
+    border-left: 4px solid #7c3aed;
+    padding: 10px 14px;
+    margin-bottom: 24px;
+    font-size: 10px;
+    color: #334155;
+  }
+
+  .disclaimer {
+    font-size: 9px;
+    color: #94a3b8;
+    line-height: 1.4;
+    border-top: 1px solid #e2e8f0;
+    padding-top: 12px;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+  <!-- Top Brand Accent Strip -->
+  <div class="accent-bar"></div>
+
+  <!-- Header: Brand & Document Meta -->
+  <table class="header-table" cellpadding="0" cellspacing="0">
+    <tr>
+      <td style="vertical-align: top; width: 55%;">
+        <div class="brand-title">LEARNIX ACADEMY</div>
+        <div class="brand-sub">Modern Online Education &amp; Cloud Sandboxes</div>
+        <div class="brand-sub" style="margin-top: 4px;">100 Innovation Way, Suite 400 · San Francisco, CA 94105</div>
+        <div class="brand-sub">Email: {{ support_email }} · Web: https://learnix.com</div>
+      </td>
+      <td style="vertical-align: top; width: 45%; text-align: right;">
+        <div class="doc-title">PAYMENT RECEIPT</div>
+        <div class="doc-meta"><strong>Receipt / Order:</strong> #{{ transaction.order_number }}</div>
+        <div class="doc-meta"><strong>Date &amp; Time:</strong> {{ transaction.created_at|date:"F d, Y · H:i e" }}</div>
+        <div class="doc-meta"><strong>Status:</strong> {{ transaction.status }}</div>
+        <div class="doc-meta">
+          <span class="status-badge">PAYMENT SUCCESSFUL</span>
+        </div>
+      </td>
+    </tr>
+  </table>
+
+  <!-- Meta Information Table (Paid By vs Gateway) -->
+  <table class="meta-grid" cellpadding="0" cellspacing="0">
+    <tr>
+      <td class="meta-col" style="width: 50%;">
+        <div class="section-label">Paid By</div>
+        <div class="meta-value-title">{{ transaction.user.get_full_name|default:transaction.user.username }}</div>
+        <div class="meta-value-sub">Email: {{ transaction.user.email }}</div>
+        <div class="meta-value-sub">Username: @{{ transaction.user.username }}</div>
+      </td>
+      <td class="meta-col" style="width: 50%;">
+        <div class="section-label">Processing Channel</div>
+        <div class="meta-value-title">Stripe Checkout Engine</div>
+        <div class="meta-value-sub">Transaction ID: {{ transaction.stripe_payment_intent_id|default:transaction.order_number }}</div>
+        <div class="meta-value-sub">Settlement: Automated instant clearance</div>
+      </td>
+    </tr>
+  </table>
+
+  <!-- Itemized Course Payment -->
+  <table class="line-items-table" cellpadding="0" cellspacing="0">
+    <thead>
+      <tr>
+        <th style="width: 60%;">Description</th>
+        <th style="width: 15%; text-align: center;">Qty</th>
+        <th style="width: 25%; text-align: right;">Amount</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>
+          <div class="item-title">{{ transaction.course.title }}</div>
+          <div class="item-desc">
+            Category: {{ transaction.course.category.name|default:"Computer Science" }} · Lifetime Verified Access
+          </div>
+        </td>
+        <td style="text-align: center;">1</td>
+        <td style="text-align: right; font-weight: bold;">${{ transaction.amount }} {{ transaction.currency }}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Totals Section -->
+  <table class="totals-table" cellpadding="0" cellspacing="0">
+    <tr>
+      <td style="width: 55%; vertical-align: top;">
+        <div class="payment-info-box">
+          <strong>Thank You for Learning with Learnix!</strong><br/>
+          Your enrollment is active immediately. You can access your lessons, interactive cloud runtimes, and community discussions directly in your student workspace.
+        </div>
+      </td>
+      <td style="width: 45%; vertical-align: top;">
+        <table class="totals-box" cellpadding="0" cellspacing="0" align="right">
+          <tr class="totals-row">
+            <td style="color: #64748b;">Subtotal:</td>
+            <td style="text-align: right; font-weight: bold;">${{ transaction.amount }}</td>
+          </tr>
+          <tr class="grand-total-row">
+            <td>Total Paid:</td>
+            <td style="text-align: right;">${{ transaction.amount }} <span style="font-size: 10px; font-weight: normal;">{{ transaction.currency }}</span></td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+
+  <!-- Official Footer & Support Statement -->
+  <div class="disclaimer">
+    This electronic receipt confirms your payment for educational services at Learnix.<br/>
+    If you require assistance or have questions regarding this payment, please email <strong>{{ support_email }}</strong> quoting Order #{{ transaction.order_number }}.<br/>
+    © 2026 Learnix Technologies Inc. All rights reserved.
+  </div>
+
+</body>
+</html>
