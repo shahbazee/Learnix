@@ -1,0 +1,590 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Instructor Studio &amp; Telemetry Insights | Learnix{% endblock %}
+
+{% block content %}
+<!-- Ambient Radiant Light Pools (Spatial Glassmorphism) -->
+<div class="fixed inset-0 pointer-events-none overflow-hidden z-0">
+  <div class="absolute -top-36 left-1/4 w-[32rem] h-[32rem] rounded-full bg-violet-400/20 blur-[130px]"></div>
+  <div class="absolute top-1/3 -right-24 w-[28rem] h-[28rem] rounded-full bg-cyan-400/20 blur-[120px]"></div>
+  <div class="absolute bottom-10 left-1/3 w-[34rem] h-[34rem] rounded-full bg-fuchsia-300/15 blur-[140px]"></div>
+  <div class="absolute top-2/3 left-10 w-96 h-96 rounded-full bg-blue-300/15 blur-[120px]"></div>
+</div>
+
+<div class="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10">
+
+  <!-- ================= SUB-HEADER CONTEXT / HERO TITLE & ACTIONS ================= -->
+  <div class="relative w-full pt-2">
+    <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-6 pb-2">
+      <div class="space-y-3">
+        <!-- Sub-header badge -->
+        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/80 backdrop-blur-md shadow-xs border border-white">
+          <span class="w-2 h-2 rounded-full bg-violet-600 animate-pulse"></span>
+          <span class="font-mono text-xs text-violet-700 tracking-wider font-extrabold uppercase">INSTRUCTOR CONTROL PLANE · STUDIO v3.2</span>
+        </div>
+        <h1 class="text-3xl sm:text-4xl md:text-5xl font-extrabold text-[#0f172a] tracking-tight">
+          Instructor Studio <span class="bg-gradient-to-r from-violet-600 via-purple-600 to-cyan-500 bg-clip-text text-transparent">&amp; Insights</span>
+        </h1>
+        <p class="text-sm sm:text-base text-slate-600 max-w-2xl leading-relaxed">
+          Real-time enrollment telemetry, global revenue analytics, and curriculum authoring orchestration.
+        </p>
+      </div>
+
+      <!-- Action Bar -->
+      <div class="flex flex-wrap items-center gap-3">
+        <!-- Time Filter Pill -->
+        <div class="flex items-center rounded-full bg-white/80 backdrop-blur-xl shadow-xs border border-white p-1">
+          <button type="button" onclick="showStudioToast('Displaying 30-day verified ledger telemetry.')" class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer">
+            <span class="material-symbols-outlined text-[16px] text-violet-600">calendar_month</span>
+            Last 30 Days
+            <span class="material-symbols-outlined text-[14px] text-slate-400">expand_more</span>
+          </button>
+          <div class="w-px h-4 bg-slate-200"></div>
+          <span class="flex items-center gap-1 px-3 py-1.5 text-xs text-cyan-700 font-bold font-mono">
+            <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping"></span>
+            Live Telemetry
+          </span>
+        </div>
+
+        <!-- Export Financials CSV -->
+        <a href="{% url 'courses:export_financials_csv' %}" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-white/80 hover:bg-white backdrop-blur-xl shadow-xs border border-white transition-all text-xs sm:text-sm font-semibold text-slate-700 hover:text-slate-900">
+          <span class="material-symbols-outlined text-[18px] text-violet-600">ios_share</span>
+          <span>Export Financials</span>
+        </a>
+
+        <!-- Create New Course -->
+        <a href="{% url 'courses:instructor_course_create' %}" class="relative inline-flex items-center justify-center p-[1px] rounded-full overflow-hidden shadow-lg shadow-violet-500/25 hover:shadow-xl hover:scale-[1.02] active:scale-[0.99] transition-all group">
+          <span class="absolute inset-0 bg-gradient-to-r from-violet-600 via-indigo-600 to-cyan-500 transition-all"></span>
+          <span class="relative flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-semibold text-xs sm:text-sm tracking-wide">
+            <span class="material-symbols-outlined text-[18px]">add</span>
+            Create New Course
+          </span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= TOP METRICS BENTO TILES (Screen 10) ================= -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+
+    <!-- Tile 1: Gross Revenue -->
+    <div class="relative overflow-hidden rounded-3xl bg-white/80 backdrop-blur-2xl border border-white shadow-sm p-6 flex flex-col justify-between group hover:shadow-md transition-all">
+      <div class="absolute -top-12 -right-12 w-28 h-28 rounded-full bg-violet-500/10 blur-2xl group-hover:scale-125 transition-transform"></div>
+      <div class="flex items-center justify-between">
+        <span class="text-xs font-mono uppercase tracking-wider text-slate-500 font-bold">Total Gross Revenue</span>
+        <div class="w-8 h-8 rounded-full bg-violet-100 flex items-center justify-center text-violet-600">
+          <span class="material-symbols-outlined text-[18px]">payments</span>
+        </div>
+      </div>
+      <div class="my-4 space-y-1">
+        <div class="text-2xl sm:text-3xl font-extrabold text-[#0f172a] tracking-tight font-mono">
+          ${{ total_gross }}
+        </div>
+        <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-xs font-semibold">
+          <span class="material-symbols-outlined text-[14px]">trending_up</span>
+          +14.2% vs last month
+        </div>
+      </div>
+      <div class="pt-3 border-t border-slate-100 text-xs text-slate-500 flex items-center justify-between">
+        <span>MRR: <strong class="text-slate-900 font-semibold font-mono">$6,820</strong></span>
+        <span>Refund rate: <strong class="text-slate-900 font-semibold font-mono">0.4%</strong></span>
+      </div>
+    </div>
+
+    <!-- Tile 2: Active Students -->
+    <div class="relative overflow-hidden rounded-3xl bg-white/80 backdrop-blur-2xl border border-white shadow-sm p-6 flex flex-col justify-between group hover:shadow-md transition-all">
+      <div class="absolute -top-12 -right-12 w-28 h-28 rounded-full bg-cyan-500/10 blur-2xl group-hover:scale-125 transition-transform"></div>
+      <div class="flex items-center justify-between">
+        <span class="text-xs font-mono uppercase tracking-wider text-slate-500 font-bold">Active Students</span>
+        <div class="w-8 h-8 rounded-full bg-cyan-100 flex items-center justify-center text-cyan-600">
+          <span class="material-symbols-outlined text-[18px]">group</span>
+        </div>
+      </div>
+      <div class="my-4 space-y-1">
+        <div class="text-2xl sm:text-3xl font-extrabold text-[#0f172a] tracking-tight">
+          {{ total_students }} <span class="text-base text-slate-500 font-normal">Learners</span>
+        </div>
+        <p class="text-xs text-slate-500">Across {{ total_courses_count }} active cohorts &amp; courses</p>
+      </div>
+      <div class="pt-3 border-t border-slate-100 text-xs text-slate-600 flex items-center gap-1.5">
+        <span class="w-2 h-2 rounded-full bg-cyan-500"></span>
+        <span><strong class="text-slate-900">87.4%</strong> completion velocity (+3.1%)</span>
+      </div>
+    </div>
+
+    <!-- Tile 3: Average Rating -->
+    <div class="relative overflow-hidden rounded-3xl bg-white/80 backdrop-blur-2xl border border-white shadow-sm p-6 flex flex-col justify-between group hover:shadow-md transition-all">
+      <div class="absolute -top-12 -right-12 w-28 h-28 rounded-full bg-pink-500/10 blur-2xl group-hover:scale-125 transition-transform"></div>
+      <div class="flex items-center justify-between">
+        <span class="text-xs font-mono uppercase tracking-wider text-slate-500 font-bold">Average Rating</span>
+        <div class="w-8 h-8 rounded-full bg-pink-100 flex items-center justify-center text-pink-600">
+          <span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">star</span>
+        </div>
+      </div>
+      <div class="my-4 space-y-1">
+        <div class="flex items-baseline gap-2">
+          <span class="text-2xl sm:text-3xl font-extrabold text-[#0f172a] tracking-tight">{{ avg_rating }}</span>
+          <div class="flex text-amber-500 text-xs">
+            <span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+            <span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+            <span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+            <span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+            <span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">star_half</span>
+          </div>
+        </div>
+        <p class="text-xs text-slate-500">From verified enrolled student reviews</p>
+      </div>
+      <div class="pt-3 border-t border-slate-100 text-xs text-slate-600 flex items-center justify-between">
+        <span class="px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 font-semibold text-[11px]">99.2% Positive</span>
+        <span class="text-pink-600 font-bold text-[11px]">Top 1% Rank</span>
+      </div>
+    </div>
+
+    <!-- Tile 4: Next Stripe Payout -->
+    <div class="relative overflow-hidden rounded-3xl bg-white/80 backdrop-blur-2xl border border-white shadow-sm p-6 flex flex-col justify-between group hover:shadow-md transition-all">
+      <div class="absolute -top-12 -right-12 w-28 h-28 rounded-full bg-indigo-500/10 blur-2xl group-hover:scale-125 transition-transform"></div>
+      <div class="flex items-center justify-between">
+        <span class="text-xs font-mono uppercase tracking-wider text-slate-500 font-bold">Next Stripe Payout</span>
+        <div class="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600">
+          <span class="material-symbols-outlined text-[18px]">account_balance</span>
+        </div>
+      </div>
+      <div class="my-4 space-y-1">
+        <div class="text-2xl sm:text-3xl font-extrabold text-[#0f172a] tracking-tight font-mono">
+          ${{ next_payout }}
+        </div>
+        <p class="text-xs text-slate-500">Scheduled direct deposit settlement</p>
+      </div>
+      <div class="pt-3 border-t border-slate-100">
+        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-cyan-50 text-cyan-800 text-xs font-semibold">
+          <span class="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse"></span>
+          Direct Deposit (•••• 8841)
+        </span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ================= ANALYTICS & TELEMETRY SECTION (Smoothed SVG Chart) ================= -->
+  <div class="relative rounded-3xl bg-white/80 backdrop-blur-2xl border border-white shadow-md p-6 md:p-8 space-y-6">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div>
+        <div class="flex items-center gap-2">
+          <h2 class="text-lg sm:text-xl font-bold text-[#0f172a]">Student Growth &amp; Telemetry Velocity</h2>
+          <span class="px-2.5 py-0.5 rounded-full bg-violet-100 text-violet-800 text-xs font-bold font-mono">Live Real-Time Flow</span>
+        </div>
+        <p class="text-xs sm:text-sm text-slate-500 mt-1">Telemetry tracking daily new enrollment intake and gross masterclass volume</p>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <span class="flex items-center gap-1.5 text-xs text-slate-600 font-medium">
+          <span class="w-2.5 h-2.5 rounded-full bg-violet-600"></span> Enrollments
+        </span>
+        <span class="flex items-center gap-1.5 text-xs text-slate-600 font-medium">
+          <span class="w-2.5 h-2.5 rounded-full bg-cyan-500"></span> Gross ($)
+        </span>
+        <div class="ml-2 flex items-center rounded-full bg-slate-100 p-0.5 text-xs font-semibold">
+          <button type="button" onclick="setChartRange('30D')" id="btn30D" class="px-3 py-1 rounded-full bg-white text-violet-700 shadow-xs cursor-pointer">30D</button>
+          <button type="button" onclick="setChartRange('90D')" id="btn90D" class="px-3 py-1 rounded-full text-slate-600 hover:text-slate-900 transition-colors cursor-pointer">90D</button>
+          <button type="button" onclick="setChartRange('1Y')" id="btn1Y" class="px-3 py-1 rounded-full text-slate-600 hover:text-slate-900 transition-colors cursor-pointer">1Y</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Smoothed SVG Chart -->
+    <div class="relative w-full h-64 md:h-72">
+      <svg class="w-full h-full overflow-visible" preserveAspectRatio="none" viewBox="0 0 1000 240">
+        <defs>
+          <linearGradient id="chartGradientViolet" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0%" stop-color="#7C3AED" stop-opacity="0.32"></stop>
+            <stop offset="100%" stop-color="#7C3AED" stop-opacity="0.0"></stop>
+          </linearGradient>
+          <linearGradient id="chartLineGradient" x1="0" x2="1" y1="0" y2="0">
+            <stop offset="0%" stop-color="#06B6D4"></stop>
+            <stop offset="50%" stop-color="#7C3AED"></stop>
+            <stop offset="100%" stop-color="#EC4899"></stop>
+          </linearGradient>
+        </defs>
+        <!-- Subtle Grid Lines -->
+        <line stroke="#f1f5f9" stroke-dasharray="4 4" stroke-width="1" x1="0" x2="1000" y1="40"></line>
+        <line stroke="#f1f5f9" stroke-dasharray="4 4" stroke-width="1" x1="0" x2="1000" y1="100"></line>
+        <line stroke="#f1f5f9" stroke-dasharray="4 4" stroke-width="1" x1="0" x2="1000" y1="160"></line>
+        <line stroke="#f1f5f9" stroke-dasharray="4 4" stroke-width="1" x1="0" x2="1000" y1="220"></line>
+        <!-- Area fill -->
+        <path d="M 0,190 C 80,185 140,140 220,135 C 300,130 360,165 440,110 C 520,60 580,95 660,65 C 740,35 820,80 900,40 C 940,25 980,20 1000,18 L 1000,230 L 0,230 Z" fill="url(#chartGradientViolet)"></path>
+        <!-- Stroke curve -->
+        <path d="M 0,190 C 80,185 140,140 220,135 C 300,130 360,165 440,110 C 520,60 580,95 660,65 C 740,35 820,80 900,40 C 940,25 980,20 1000,18" fill="none" stroke="url(#chartLineGradient)" stroke-linecap="round" stroke-linejoin="round" stroke-width="3.5"></path>
+        <!-- Interactive Highlight Points -->
+        <circle cx="220" cy="135" fill="#faf8ff" r="5" stroke="#06B6D4" stroke-width="2.5"></circle>
+        <circle cx="440" cy="110" fill="#faf8ff" r="5" stroke="#7C3AED" stroke-width="2.5"></circle>
+        <circle cx="660" cy="65" fill="#faf8ff" r="6" stroke="#7C3AED" stroke-width="3"></circle>
+        <circle cx="900" cy="40" fill="#faf8ff" r="6" stroke="#EC4899" stroke-width="3"></circle>
+        <!-- Hover Tooltip Pin at cx=660 -->
+        <line stroke="#7C3AED" stroke-dasharray="3 3" stroke-width="1.5" x1="660" x2="660" y1="65" y2="225"></line>
+      </svg>
+      <!-- Dynamic Floating Glass Tooltip Tag -->
+      <div class="absolute left-[62%] -top-4 -translate-x-1/2 rounded-full bg-slate-900/90 text-white backdrop-blur-md shadow-lg px-4 py-1.5 flex items-center gap-2 pointer-events-none transform hover:scale-105 transition-all text-xs font-semibold">
+        <span class="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span>
+        <span>Recent Peak: <strong>142 enrollments</strong> · <span class="text-cyan-400 font-mono">$1,840.00</span></span>
+      </div>
+    </div>
+
+    <!-- Quick Insights Pill Row -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 pt-2">
+      <div class="flex items-center gap-3 p-3 rounded-2xl bg-slate-50/80 border border-slate-100">
+        <div class="w-8 h-8 rounded-full bg-violet-100 flex items-center justify-center text-violet-600 shrink-0">
+          <span class="material-symbols-outlined text-[16px]">bolt</span>
+        </div>
+        <div class="min-w-0">
+          <div class="text-[11px] font-mono text-slate-500 uppercase tracking-wider font-bold">Peak Velocity Driver</div>
+          <div class="text-xs sm:text-sm font-bold text-slate-900 truncate">Django 5 + Multi-Agent AI Specialization</div>
+        </div>
+      </div>
+      <div class="flex items-center gap-3 p-3 rounded-2xl bg-slate-50/80 border border-slate-100">
+        <div class="w-8 h-8 rounded-full bg-cyan-100 flex items-center justify-center text-cyan-600 shrink-0">
+          <span class="material-symbols-outlined text-[16px]">speed</span>
+        </div>
+        <div class="min-w-0">
+          <div class="text-[11px] font-mono text-slate-500 uppercase tracking-wider font-bold">Avg Conversion Lead Time</div>
+          <div class="text-xs sm:text-sm font-bold text-slate-900 truncate">4.2 hours to enrollment verification</div>
+        </div>
+      </div>
+      <div class="flex items-center gap-3 p-3 rounded-2xl bg-slate-50/80 border border-slate-100">
+        <div class="w-8 h-8 rounded-full bg-pink-100 flex items-center justify-center text-pink-600 shrink-0">
+          <span class="material-symbols-outlined text-[16px]">public</span>
+        </div>
+        <div class="min-w-0">
+          <div class="text-[11px] font-mono text-slate-500 uppercase tracking-wider font-bold">Global Demographic Lead</div>
+          <div class="text-xs sm:text-sm font-bold text-slate-900 truncate">NA (44%) · Europe (36%) · APAC (20%)</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= MAIN SECTION: COURSE PERFORMANCE & MANAGEMENT ================= -->
+  <div class="space-y-6">
+    <!-- Section Controls: Status Tabs & Search -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <!-- Status Tabs -->
+      <div class="flex items-center gap-1.5 p-1 rounded-full bg-white/80 backdrop-blur-xl border border-white shadow-xs overflow-x-auto text-xs font-semibold">
+        <button type="button" onclick="filterCourses('ALL')" id="tabAll" class="px-4 py-1.5 rounded-full bg-violet-600 text-white shadow-xs transition-all cursor-pointer">
+          All Courses ({{ total_courses_count }})
+        </button>
+        <button type="button" onclick="filterCourses('PUBLISHED')" id="tabPublished" class="px-4 py-1.5 rounded-full text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer">
+          Published ({{ published_courses_count }})
+        </button>
+        <button type="button" onclick="filterCourses('DRAFT')" id="tabDraft" class="px-4 py-1.5 rounded-full text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer">
+          Drafts ({{ draft_courses_count }})
+        </button>
+      </div>
+
+      <!-- Search Bar -->
+      <div class="relative w-full sm:w-72">
+        <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+          <span class="material-symbols-outlined text-[18px]">search</span>
+        </div>
+        <input id="courseRosterFilter" oninput="searchCourses(this.value)" class="w-full pl-10 pr-12 py-2 rounded-full bg-white/90 backdrop-blur-xl text-slate-900 placeholder:text-slate-400 text-xs shadow-xs border border-white focus:outline-none focus:ring-2 focus:ring-violet-500/40 transition-all" placeholder="Filter curriculum..." type="text"/>
+        <div class="absolute inset-y-0 right-0 pr-3 flex items-center">
+          <kbd class="px-1.5 py-0.5 text-[10px] font-semibold text-slate-400 bg-slate-100 rounded shadow-xs font-mono">⌘K</kbd>
+        </div>
+      </div>
+    </div>
+
+    <!-- Course Cards Roster -->
+    <div class="space-y-4" id="courseRosterContainer">
+      {% for item in course_data %}
+        <div class="course-roster-row group relative rounded-3xl bg-white/80 hover:bg-white/95 backdrop-blur-2xl border border-white shadow-sm hover:shadow-md transition-all p-5 md:p-6 flex flex-col lg:flex-row lg:items-center justify-between gap-6"
+             data-status="{{ item.status }}" data-title="{{ item.course.title|lower }}">
+          <div class="flex items-start md:items-center gap-4 min-w-0">
+            <div class="relative w-20 h-20 md:w-24 md:h-24 rounded-2xl overflow-hidden shrink-0 shadow-xs border border-slate-100">
+              <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="{{ item.course.get_thumbnail_url }}" alt="{{ item.course.title }}" />
+              <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"></div>
+              <span class="absolute bottom-1.5 left-1.5 px-1.5 py-0.5 rounded-sm bg-black/60 backdrop-blur-md text-[9px] font-mono text-white">{{ item.course.get_level_display|upper|slice:":3" }}</span>
+            </div>
+            <div class="space-y-1.5 min-w-0">
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="px-2.5 py-0.5 rounded-full bg-violet-100 text-violet-800 text-[10px] font-bold tracking-wide uppercase">
+                  {{ item.course.category.name|default:"Specialization" }}
+                </span>
+                {% if item.status == 'PUBLISHED' %}
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                    PUBLISHED
+                  </span>
+                {% else %}
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[10px] font-bold">
+                    <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                    DRAFT
+                  </span>
+                {% endif %}
+              </div>
+              <h3 class="text-base sm:text-lg font-bold text-slate-900 truncate group-hover:text-violet-700 transition-colors">
+                <a href="{% url 'courses:course_detail' item.course.slug %}">{{ item.course.title }}</a>
+              </h3>
+              <p class="text-xs text-slate-500 flex items-center gap-2">
+                <span>Lead Instructor: <strong>{{ item.course.instructor.get_full_name|default:item.course.instructor.username }}</strong></span>
+                <span>•</span>
+                <span>{{ item.lessons_count }} Lessons · Lifetime Access</span>
+              </p>
+            </div>
+          </div>
+
+          <!-- Middle Stats: Progress / Enrollment / Revenue / Rating -->
+          <div class="grid grid-cols-3 gap-6 sm:gap-8 items-center shrink-0">
+            <div>
+              <div class="text-[11px] font-mono text-slate-400 uppercase tracking-wider font-bold">Enrolled</div>
+              <div class="text-base sm:text-lg font-bold text-slate-900 mt-0.5 font-mono">
+                {{ item.enrolled_count }} <span class="text-xs text-slate-500 font-normal">Learners</span>
+              </div>
+              <div class="w-24 h-1.5 rounded-full bg-slate-100 mt-1.5 overflow-hidden">
+                <div class="h-full bg-gradient-to-r from-cyan-500 to-violet-600 rounded-full" style="width: 84%;"></div>
+              </div>
+            </div>
+
+            <div>
+              <div class="text-[11px] font-mono text-slate-400 uppercase tracking-wider font-bold">Gross Revenue</div>
+              <div class="text-base sm:text-lg font-bold text-slate-900 font-mono mt-0.5">
+                ${{ item.gross_revenue|floatformat:2 }}
+              </div>
+              <div class="text-[11px] text-cyan-700 font-semibold font-mono">Verified Payout</div>
+            </div>
+
+            <div>
+              <div class="text-[11px] font-mono text-slate-400 uppercase tracking-wider font-bold">Rating</div>
+              <div class="flex items-center gap-1 text-base sm:text-lg font-bold text-slate-900 mt-0.5">
+                {{ item.rating }} <span class="material-symbols-outlined text-[16px] text-amber-500" style="font-variation-settings: 'FILL' 1;">star</span>
+              </div>
+              <div class="text-[11px] text-slate-400 font-mono">{{ item.reviews_count }} reviews</div>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="flex items-center gap-2 shrink-0">
+            <a href="{% url 'courses:instructor_course_students' item.course.slug %}" class="inline-flex items-center gap-1 px-3 py-2 rounded-full bg-cyan-50 hover:bg-cyan-100 text-cyan-800 text-xs font-bold transition-all" title="View Enrolled Students">
+              <span class="material-symbols-outlined text-[16px]">group</span>
+              <span>Learners</span>
+            </a>
+            <a href="{% url 'courses:instructor_course_edit' item.course.slug %}" class="p-2 rounded-full bg-slate-100 hover:bg-violet-100 text-slate-600 hover:text-violet-700 transition-all flex items-center justify-center" title="Edit Course in Studio">
+              <span class="material-symbols-outlined text-[18px]">edit</span>
+            </a>
+            <a href="{% url 'courses:course_detail' item.course.slug %}" class="px-3.5 py-2 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold transition-all" title="Curriculum View">
+              <span>View</span>
+            </a>
+          </div>
+        </div>
+      {% empty %}
+        <div class="p-12 text-center rounded-3xl bg-white/80 border border-white">
+          <span class="material-symbols-outlined text-4xl text-slate-300">school</span>
+          <p class="text-sm font-semibold text-slate-600 mt-2">No masterclass courses authored yet.</p>
+          <a href="{% url 'courses:instructor_course_create' %}" class="mt-4 inline-block px-5 py-2.5 rounded-full bg-violet-600 text-white text-xs font-bold shadow-md">Create Your First Course</a>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- ================= BOTTOM FLOATING INSTRUCTOR ASSISTANT ISLAND ================= -->
+  <div class="relative overflow-hidden rounded-3xl bg-white/85 backdrop-blur-2xl border border-white shadow-lg p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6">
+    <div class="absolute -right-10 -bottom-10 w-44 h-44 rounded-full bg-violet-400/20 blur-3xl pointer-events-none"></div>
+    <div class="flex items-center gap-4">
+      <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-violet-600 to-cyan-500 flex items-center justify-center text-white shadow-md shadow-violet-500/25 shrink-0">
+        <span class="material-symbols-outlined text-[24px]">auto_awesome</span>
+      </div>
+      <div>
+        <h4 class="text-base sm:text-lg font-bold text-slate-900">Need assistance scaling cohorts or configuring AI grading pipelines?</h4>
+        <p class="text-xs sm:text-sm text-slate-600">The Learnix Pedagogical Operations team &amp; AI Curriculum Co-Pilot are active 24/7.</p>
+      </div>
+    </div>
+    <div class="flex flex-wrap items-center gap-3 shrink-0">
+      <button type="button" onclick="openCopilotModal()" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-900 text-xs sm:text-sm font-bold shadow-2xs transition-all cursor-pointer">
+        <span class="material-symbols-outlined text-[18px] text-violet-600">forum</span>
+        <span>Open Curriculum Co-Pilot</span>
+      </button>
+      <button type="button" onclick="openOfficeHoursModal()" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-slate-900 hover:bg-slate-800 text-white text-xs sm:text-sm font-bold shadow-md transition-all cursor-pointer">
+        <span class="material-symbols-outlined text-[18px]">calendar_today</span>
+        <span>Schedule 1-on-1 Office Hours</span>
+      </button>
+    </div>
+  </div>
+
+</div>
+
+<!-- ================= INTERACTIVE MODALS & TOASTS ================= -->
+
+<!-- Create Course Modal -->
+<div id="createCourseModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-4">
+  <div class="w-full max-w-lg rounded-3xl bg-white/95 backdrop-blur-2xl border border-white p-6 sm:p-8 shadow-2xl flex flex-col gap-5">
+    <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+      <div class="flex items-center gap-2">
+        <span class="material-symbols-outlined text-violet-600">add_box</span>
+        <h3 class="text-lg font-bold text-slate-900">Create New Masterclass</h3>
+      </div>
+      <button type="button" onclick="closeCreateCourseModal()" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 hover:text-slate-900 cursor-pointer">
+        <span class="material-symbols-outlined text-[18px]">close</span>
+      </button>
+    </div>
+    <p class="text-xs text-slate-600">Initialize a new course curriculum or launch directly into the Learnix Studio visual course builder.</p>
+    <div class="space-y-3">
+      <div>
+        <label class="block text-xs font-mono uppercase tracking-wider text-slate-500 font-bold mb-1">Course Title</label>
+        <input type="text" id="newCourseTitle" placeholder="e.g. Production Distributed Systems in Go" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500" />
+      </div>
+      <div>
+        <label class="block text-xs font-mono uppercase tracking-wider text-slate-500 font-bold mb-1">Difficulty Level</label>
+        <select class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500 bg-white">
+          <option>Beginner (Fundamentals)</option>
+          <option selected>Intermediate (Production Lab)</option>
+          <option>Advanced (Architecture &amp; Scaling)</option>
+        </select>
+      </div>
+    </div>
+    <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+      <button type="button" onclick="closeCreateCourseModal()" class="px-4 py-2 rounded-full border border-slate-200 text-slate-600 text-xs font-bold hover:bg-slate-50 cursor-pointer">Cancel</button>
+      <a href="{% url 'courses:instructor_course_create' %}" class="px-5 py-2 rounded-full bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold shadow-md">Open Visual Builder</a>
+    </div>
+  </div>
+</div>
+
+<!-- Curriculum Co-Pilot Modal -->
+<div id="copilotModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-4">
+  <div class="w-full max-w-xl rounded-3xl bg-white/95 backdrop-blur-2xl border border-white p-6 sm:p-8 shadow-2xl flex flex-col gap-4">
+    <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+      <div class="flex items-center gap-2">
+        <span class="material-symbols-outlined text-violet-600">smart_toy</span>
+        <h3 class="text-lg font-bold text-slate-900">AI Curriculum Co-Pilot</h3>
+      </div>
+      <button type="button" onclick="closeCopilotModal()" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 hover:text-slate-900 cursor-pointer">
+        <span class="material-symbols-outlined text-[18px]">close</span>
+      </button>
+    </div>
+    <div class="p-4 rounded-2xl bg-slate-900 text-white space-y-2">
+      <div class="flex items-center gap-2 text-cyan-400 text-xs font-mono font-bold">
+        <span class="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span>
+        <span>Curriculum Optimization Agent</span>
+      </div>
+      <p class="text-xs text-slate-300 leading-relaxed">
+        "I have analyzed your curriculum completion velocity. Students who complete Lab 4 in less than 25 minutes are 94% more likely to score above 90% on the final verification challenge."
+      </p>
+    </div>
+    <div class="flex items-center justify-end">
+      <button type="button" onclick="closeCopilotModal(); showStudioToast('Optimization suggestions exported to your curriculum draft.')" class="px-5 py-2.5 rounded-full bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold shadow-md cursor-pointer">Apply Suggestions</button>
+    </div>
+  </div>
+</div>
+
+<!-- Office Hours Modal -->
+<div id="officeHoursModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-4">
+  <div class="w-full max-w-md rounded-3xl bg-white/95 backdrop-blur-2xl border border-white p-6 sm:p-8 shadow-2xl flex flex-col gap-4">
+    <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+      <div class="flex items-center gap-2">
+        <span class="material-symbols-outlined text-cyan-600">event_available</span>
+        <h3 class="text-lg font-bold text-slate-900">1-on-1 Office Hours</h3>
+      </div>
+      <button type="button" onclick="closeOfficeHoursModal()" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 hover:text-slate-900 cursor-pointer">
+        <span class="material-symbols-outlined text-[18px]">close</span>
+      </button>
+    </div>
+    <p class="text-xs text-slate-600">Book an advisory session with Learnix Lead Academic Engineers for curriculum accreditation review.</p>
+    <div class="p-3 rounded-2xl bg-cyan-50 border border-cyan-200 text-xs text-cyan-900">
+      Next open slot: Tomorrow at 2:00 PM UTC with Dr. Marcus Vance.
+    </div>
+    <div class="flex items-center justify-end gap-2">
+      <button type="button" onclick="closeOfficeHoursModal()" class="px-4 py-2 rounded-full border border-slate-200 text-slate-600 text-xs font-bold hover:bg-slate-50 cursor-pointer">Close</button>
+      <button type="button" onclick="closeOfficeHoursModal(); showStudioToast('Office hours confirmed. Calendar invite dispatched.')" class="px-5 py-2 rounded-full bg-cyan-600 hover:bg-cyan-700 text-white text-xs font-bold shadow-md cursor-pointer">Confirm Booking</button>
+    </div>
+  </div>
+</div>
+
+<!-- Studio Toast Notification -->
+<div id="studioToast" class="fixed bottom-6 right-6 z-50 hidden transition-all duration-300">
+  <div class="px-4 py-3 rounded-2xl bg-slate-900/95 backdrop-blur-md text-white text-xs font-semibold shadow-2xl flex items-center gap-2.5 border border-slate-800">
+    <span class="material-symbols-outlined text-[18px] text-emerald-400">check_circle</span>
+    <span id="studioToastMsg">Notification</span>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  function showStudioToast(msg) {
+    const toast = document.getElementById('studioToast');
+    const msgEl = document.getElementById('studioToastMsg');
+    if (!toast || !msgEl) return;
+    msgEl.textContent = msg;
+    toast.classList.remove('hidden');
+    setTimeout(() => {
+      toast.classList.add('hidden');
+    }, 3500);
+  }
+
+  function setChartRange(range) {
+    ['btn30D', 'btn90D', 'btn1Y'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.className = 'px-3 py-1 rounded-full text-slate-600 hover:text-slate-900 transition-colors cursor-pointer';
+      }
+    });
+    const active = document.getElementById('btn' + range);
+    if (active) {
+      active.className = 'px-3 py-1 rounded-full bg-white text-violet-700 shadow-xs cursor-pointer';
+    }
+    showStudioToast(`Updated chart telemetry to ${range} window.`);
+  }
+
+  function filterCourses(status) {
+    const rows = document.querySelectorAll('.course-roster-row');
+    rows.forEach(r => {
+      if (status === 'ALL' || r.dataset.status === status) {
+        r.style.display = '';
+      } else {
+        r.style.display = 'none';
+      }
+    });
+
+    ['tabAll', 'tabPublished', 'tabDraft'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.className = 'px-4 py-1.5 rounded-full text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer';
+      }
+    });
+    if (status === 'ALL') document.getElementById('tabAll').className = 'px-4 py-1.5 rounded-full bg-violet-600 text-white shadow-xs transition-all cursor-pointer';
+    if (status === 'PUBLISHED') document.getElementById('tabPublished').className = 'px-4 py-1.5 rounded-full bg-violet-600 text-white shadow-xs transition-all cursor-pointer';
+    if (status === 'DRAFT') document.getElementById('tabDraft').className = 'px-4 py-1.5 rounded-full bg-violet-600 text-white shadow-xs transition-all cursor-pointer';
+  }
+
+  function searchCourses(val) {
+    const q = val.toLowerCase().trim();
+    const rows = document.querySelectorAll('.course-roster-row');
+    rows.forEach(r => {
+      const title = r.dataset.title || '';
+      if (!q || title.includes(q)) {
+        r.style.display = '';
+      } else {
+        r.style.display = 'none';
+      }
+    });
+  }
+
+  function openCreateCourseModal() {
+    document.getElementById('createCourseModal').classList.remove('hidden');
+  }
+  function closeCreateCourseModal() {
+    document.getElementById('createCourseModal').classList.add('hidden');
+  }
+
+  function openCopilotModal() {
+    document.getElementById('copilotModal').classList.remove('hidden');
+  }
+  function closeCopilotModal() {
+    document.getElementById('copilotModal').classList.add('hidden');
+  }
+
+  function openOfficeHoursModal() {
+    document.getElementById('officeHoursModal').classList.remove('hidden');
+  }
+  function closeOfficeHoursModal() {
+    document.getElementById('officeHoursModal').classList.add('hidden');
+  }
+</script>
+{% endblock %}

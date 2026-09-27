@@ -1,0 +1,220 @@
+<!-- Floating Pill Header / Navigation for Learnix -->
+<header class="fixed top-6 left-0 right-0 z-40 px-4 md:px-6 flex justify-center pointer-events-none transform-gpu" style="transform: translate3d(0, 0, 0); will-change: transform;">
+  <div class="pointer-events-auto h-16 w-full max-w-5xl rounded-full bg-white/80 backdrop-blur-2xl border border-white/90 shadow-[0_20px_40px_-10px_rgba(99,102,241,0.12),inset_0_1px_2px_rgba(255,255,255,0.9)] px-4 flex items-center justify-between gap-3">
+    
+    <!-- Brand Logo -->
+    <a href="{% url 'core:home' %}" class="flex items-center gap-2.5 pl-2 group">
+      {% include 'includes/_logo.html' with size="w-8 h-8" unique_id="nav" %}
+      <span class="text-xl font-extrabold tracking-tight text-[#0f172a] group-hover:text-violet-700 transition-colors">{{ SITE_NAME }}</span>
+    </a>
+
+    <!-- Desktop Navigation Pills -->
+    <nav class="hidden lg:flex items-center gap-1 p-1 rounded-full bg-slate-100/70 border border-slate-200/50 text-sm font-medium">
+      <a href="{% url 'courses:course_list' %}" class="px-4 py-1.5 rounded-full transition-all {% if request.resolver_match.view_name == 'courses:course_list' %}bg-white text-slate-900 shadow-sm font-semibold{% else %}text-slate-600 hover:text-slate-900 hover:bg-white/60{% endif %}">
+        Explore Catalog
+      </a>
+      <a href="{% url 'core:about' %}" class="px-4 py-1.5 rounded-full transition-all {% if request.resolver_match.view_name == 'core:about' %}bg-white text-slate-900 shadow-sm font-semibold{% else %}text-slate-600 hover:text-slate-900 hover:bg-white/60{% endif %}">
+        About
+      </a>
+      <a href="{% url 'core:home' %}#curriculum" class="px-4 py-1.5 rounded-full text-slate-600 hover:text-slate-900 hover:bg-white/60 transition-colors">
+        Curriculum
+      </a>
+      <a href="{% url 'core:home' %}#instructors" class="px-4 py-1.5 rounded-full text-slate-600 hover:text-slate-900 hover:bg-white/60 transition-colors">
+        Instructors
+      </a>
+      {% if user.is_authenticated %}
+      <a href="{% url 'courses:dashboard' %}" class="px-4 py-1.5 rounded-full transition-all {% if request.resolver_match.view_name == 'courses:dashboard' or request.resolver_match.view_name == 'dashboard' %}bg-white text-slate-900 shadow-sm font-semibold{% else %}text-slate-600 hover:text-slate-900 hover:bg-white/60{% endif %}">
+        Dashboard
+      </a>
+      {% if user.is_staff or user.profile.is_instructor %}
+      <a href="{% url 'courses:instructor_studio' %}" class="px-4 py-1.5 rounded-full transition-all {% if request.resolver_match.view_name == 'courses:instructor_studio' %}bg-white text-violet-700 shadow-sm font-semibold{% else %}text-slate-600 hover:text-slate-900 hover:bg-white/60{% endif %}">
+        Studio
+      </a>
+      {% endif %}
+      {% endif %}
+    </nav>
+
+    <!-- Search & Auth CTA -->
+    <div class="flex items-center gap-2">
+      <!-- Search Trigger (⌘K) -->
+      <button type="button" onclick="openSearchModal()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100/80 hover:bg-slate-200/80 text-slate-600 hover:text-slate-900 transition-all border border-slate-200/60 text-xs">
+        <span class="material-symbols-outlined text-[16px]">search</span>
+        <span class="hidden sm:inline-block px-1.5 py-0.5 rounded bg-white text-slate-500 shadow-xs border border-slate-200/50 font-mono text-[10px]">⌘K</span>
+      </button>
+
+      {% if user.is_authenticated %}
+        <!-- Authenticated User Profile & Dropdown -->
+        <div class="relative">
+          <button type="button" onclick="toggleUserDropdown()" id="userDropdownTrigger" class="flex items-center gap-2 pl-2 pr-1 py-1 rounded-full hover:bg-slate-100/80 transition-all">
+            <span class="text-xs font-semibold text-slate-700 hidden md:inline">{{ user.first_name|default:user.username }}</span>
+            <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-violet-500 to-cyan-500 text-white flex items-center justify-center font-bold text-xs ring-2 ring-violet-500/20 shadow-sm overflow-hidden">
+              {% if user.profile.avatar %}
+                <img src="{{ user.profile.avatar.url }}" alt="{{ user.username }}" class="w-full h-full object-cover"/>
+              {% else %}
+                {{ user.username|slice:":1"|upper }}
+              {% endif %}
+            </div>
+            <span class="material-symbols-outlined text-[16px] text-slate-400 hidden sm:inline">expand_more</span>
+          </button>
+
+          <!-- Dropdown Menu Card -->
+          <div id="userDropdownMenu" class="hidden absolute right-0 mt-3 w-56 rounded-2xl bg-white/95 backdrop-blur-2xl border border-white/90 shadow-[0_16px_40px_rgba(99,102,241,0.14)] p-2 z-50 transition-all">
+            <div class="px-3 py-2 border-b border-slate-100">
+              <span class="block text-xs font-extrabold text-[#0f172a] truncate">{{ user.get_full_name|default:user.username }}</span>
+              <span class="block text-[11px] text-slate-400 font-mono truncate">{{ user.email }}</span>
+            </div>
+
+            <div class="py-1 space-y-0.5">
+              <a href="{% url 'accounts:profile' %}" class="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:text-violet-700 hover:bg-violet-50 transition-colors">
+                <span class="material-symbols-outlined text-[17px] text-violet-600">manage_accounts</span>
+                <span>Account Settings</span>
+              </a>
+              <a href="{% url 'courses:dashboard' %}" class="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:text-violet-700 hover:bg-violet-50 transition-colors">
+                <span class="material-symbols-outlined text-[17px] text-violet-600">space_dashboard</span>
+                <span>My Dashboard</span>
+              </a>
+              {% if user.is_staff or user.profile.is_instructor %}
+              <a href="{% url 'courses:instructor_studio' %}" class="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:text-violet-700 hover:bg-violet-50 transition-colors">
+                <span class="material-symbols-outlined text-[17px] text-violet-600">co_present</span>
+                <span>Instructor Studio</span>
+              </a>
+              {% endif %}
+              <a href="{% url 'payments:billing_hub' %}" class="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:text-cyan-700 hover:bg-cyan-50 transition-colors">
+                <span class="material-symbols-outlined text-[17px] text-cyan-600">receipt_long</span>
+                <span>Billing &amp; Invoices</span>
+              </a>
+            </div>
+
+            <div class="pt-1 border-t border-slate-100">
+              <form method="post" action="{% url 'accounts:logout' %}">
+                {% csrf_token %}
+                <button type="submit" class="w-full text-left flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold text-rose-600 hover:bg-rose-50 transition-colors">
+                  <span class="material-symbols-outlined text-[17px]">logout</span>
+                  <span>Sign Out</span>
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      {% else %}
+        <a href="{% url 'accounts:login' %}" class="hidden md:inline-flex px-3 py-1.5 text-xs text-slate-600 hover:text-slate-900 font-semibold transition-colors">
+          Sign In
+        </a>
+        <a href="{% url 'accounts:signup' %}" class="relative inline-flex items-center justify-center p-[1px] rounded-full overflow-hidden shadow-[0_8px_20px_-4px_rgba(124,58,237,0.35)] hover:shadow-[0_12px_24px_-4px_rgba(124,58,237,0.45)] transition-all group">
+          <span class="absolute inset-0 bg-gradient-to-r from-violet-600 via-cyan-500 to-pink-500 group-hover:scale-105 transition-transform"></span>
+          <span class="relative px-4 py-1.5 rounded-full bg-white/95 backdrop-blur-md text-slate-900 text-xs font-bold group-hover:bg-transparent group-hover:text-white transition-all">
+            Get Started
+          </span>
+        </a>
+      {% endif %}
+
+      <!-- Mobile Hamburger Toggle -->
+      <button type="button" onclick="toggleMobileMenu()" class="lg:hidden p-1.5 rounded-full text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors">
+        <span class="material-symbols-outlined text-[20px]">menu</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- Mobile Navigation Drawer -->
+<div id="mobileMenu" class="fixed inset-0 z-50 hidden bg-slate-900/40 backdrop-blur-md transition-all">
+  <div class="fixed top-0 right-0 w-3/4 max-w-xs h-full bg-white/95 backdrop-blur-2xl border-l border-white/80 p-6 flex flex-col justify-between shadow-2xl">
+    <div>
+      <div class="flex items-center justify-between pb-6 border-b border-slate-100">
+        <div class="flex items-center gap-2.5">
+          {% include 'includes/_logo.html' with size="w-7 h-7" unique_id="mobile" %}
+          <span class="font-extrabold text-base text-[#0f172a]">{{ SITE_NAME }}</span>
+        </div>
+        <button type="button" onclick="toggleMobileMenu()" class="p-1 rounded-full text-slate-500 hover:text-slate-900">
+          <span class="material-symbols-outlined text-[20px]">close</span>
+        </button>
+      </div>
+
+      <nav class="flex flex-col gap-3 mt-6 text-sm font-semibold text-slate-700">
+        {% if user.is_authenticated %}
+        <a href="{% url 'courses:dashboard' %}" onclick="toggleMobileMenu()" class="p-2.5 rounded-xl hover:bg-violet-50 text-violet-700 font-bold transition-colors flex items-center justify-between">
+          <span>Student Dashboard</span>
+          <span class="material-symbols-outlined text-[18px]">space_dashboard</span>
+        </a>
+        {% if user.is_staff or user.profile.is_instructor %}
+        <a href="{% url 'courses:instructor_studio' %}" onclick="toggleMobileMenu()" class="p-2.5 rounded-xl hover:bg-violet-50 text-violet-700 font-bold transition-colors flex items-center justify-between">
+          <span>Instructor Studio</span>
+          <span class="material-symbols-outlined text-[18px]">co_present</span>
+        </a>
+        {% endif %}
+        <a href="{% url 'payments:billing_hub' %}" onclick="toggleMobileMenu()" class="p-2.5 rounded-xl hover:bg-cyan-50 text-cyan-700 font-bold transition-colors flex items-center justify-between">
+          <span>Billing &amp; Invoices</span>
+          <span class="material-symbols-outlined text-[18px]">receipt_long</span>
+        </a>
+        {% endif %}
+        <a href="{% url 'courses:course_list' %}" onclick="toggleMobileMenu()" class="p-2.5 rounded-xl hover:bg-violet-50 hover:text-violet-700 transition-colors">Explore Catalog</a>
+        <a href="{% url 'core:about' %}" onclick="toggleMobileMenu()" class="p-2.5 rounded-xl hover:bg-violet-50 hover:text-violet-700 transition-colors">About</a>
+        <a href="{% url 'core:home' %}#curriculum" onclick="toggleMobileMenu()" class="p-2.5 rounded-xl hover:bg-violet-50 hover:text-violet-700 transition-colors">Curriculum</a>
+        <a href="{% url 'core:home' %}#instructors" onclick="toggleMobileMenu()" class="p-2.5 rounded-xl hover:bg-violet-50 hover:text-violet-700 transition-colors">Instructors</a>
+      </nav>
+    </div>
+
+    <div class="pt-6 border-t border-slate-100 flex flex-col gap-3">
+      {% if user.is_authenticated %}
+        <a href="{% url 'accounts:profile' %}" onclick="toggleMobileMenu()" class="flex items-center gap-2.5 p-2 rounded-xl hover:bg-slate-50">
+          <div class="w-9 h-9 rounded-full bg-violet-600 text-white flex items-center justify-center font-bold text-xs overflow-hidden shrink-0">
+            {% if user.profile.avatar %}
+              <img src="{{ user.profile.avatar.url }}" alt="{{ user.username }}" class="w-full h-full object-cover"/>
+            {% else %}
+              {{ user.username|slice:":1"|upper }}
+            {% endif %}
+          </div>
+          <div class="truncate">
+            <span class="block text-xs font-bold text-slate-900 truncate">{{ user.get_full_name|default:user.username }}</span>
+            <span class="block text-[10px] text-slate-400 font-mono truncate">{{ user.email }}</span>
+          </div>
+        </a>
+
+        <form method="post" action="{% url 'accounts:logout' %}">
+          {% csrf_token %}
+          <button type="submit" class="w-full py-2.5 px-4 rounded-full bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold border border-rose-200/80 transition-all flex items-center justify-center gap-1.5 shadow-xs">
+            <span class="material-symbols-outlined text-[16px]">logout</span>
+            <span>Sign Out</span>
+          </button>
+        </form>
+      {% else %}
+        <a href="{% url 'accounts:login' %}" onclick="toggleMobileMenu()" class="w-full text-center py-2.5 rounded-full border border-slate-200 text-xs font-bold text-slate-800 hover:bg-slate-50">Sign In</a>
+        <a href="{% url 'accounts:signup' %}" onclick="toggleMobileMenu()" class="w-full text-center py-2.5 rounded-full bg-gradient-to-r from-violet-600 to-cyan-500 text-xs font-bold text-white shadow-md">Get Started</a>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<script>
+  function toggleMobileMenu() {
+    const menu = document.getElementById('mobileMenu');
+    if (menu) {
+      const isHidden = menu.classList.toggle('hidden');
+      if (window.lenis) {
+        if (!isHidden) {
+          window.lenis.stop();
+        } else {
+          window.lenis.start();
+        }
+      }
+    }
+  }
+
+  function toggleUserDropdown() {
+    const menu = document.getElementById('userDropdownMenu');
+    if (menu) {
+      menu.classList.toggle('hidden');
+    }
+  }
+
+  // Close dropdown on outside click
+  document.addEventListener('click', function(e) {
+    const trigger = document.getElementById('userDropdownTrigger');
+    const menu = document.getElementById('userDropdownMenu');
+    if (menu && !menu.classList.contains('hidden')) {
+      if (trigger && !trigger.contains(e.target) && !menu.contains(e.target)) {
+        menu.classList.add('hidden');
+      }
+    }
+  });
+</script>
