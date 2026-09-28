@@ -302,13 +302,15 @@ LOGGING = {
 # on every worker startup, helping diagnose email delivery failures quickly.
 _is_render_env = bool(os.getenv('RENDER', ''))
 if _is_render_env:
-    _pwd_status = "SET (length={})".format(len(EMAIL_HOST_PASSWORD)) if EMAIL_HOST_PASSWORD else "NOT SET ← SMTP will fail auth!"
+    _smtp_pwd_status = "SET (length={})".format(len(EMAIL_HOST_PASSWORD)) if EMAIL_HOST_PASSWORD else "NOT SET"
+    _brevo_status = "SET (length={}) ✓ PRIMARY".format(len(BREVO_API_KEY)) if BREVO_API_KEY else "NOT SET"
+    _resend_status = "SET ✓" if RESEND_API_KEY else "NOT SET"
     print(
-        f"\n[LEARNIX STARTUP] Email config: "
-        f"backend={EMAIL_BACKEND.split('.')[-1]} "
-        f"host={EMAIL_HOST}:{EMAIL_PORT} "
-        f"tls={EMAIL_USE_TLS} ssl={EMAIL_USE_SSL} "
-        f"user={EMAIL_HOST_USER} "
-        f"password={_pwd_status}",
+        f"\n[LEARNIX STARTUP] ── Email Channel Status ──────────────────────────────\n"
+        f"[LEARNIX STARTUP]  Brevo HTTP API  : {_brevo_status}\n"
+        f"[LEARNIX STARTUP]  Resend HTTP API : {_resend_status}\n"
+        f"[LEARNIX STARTUP]  Gmail SMTP      : host={EMAIL_HOST}:{EMAIL_PORT} "
+        f"user={EMAIL_HOST_USER} password={_smtp_pwd_status}\n"
+        f"[LEARNIX STARTUP] ─────────────────────────────────────────────────────────",
         flush=True
     )
