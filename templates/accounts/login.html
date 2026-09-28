@@ -144,7 +144,7 @@
     const submitBtn = loginForm ? loginForm.querySelector('button[type="submit"]') : null;
     if (loginForm && submitBtn) {
       loginForm.addEventListener('submit', function() {
-        submitBtn.disabled = true;
+        submitBtn.classList.add('pointer-events-none', 'opacity-80');
         submitBtn.innerHTML = `
           <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>

@@ -571,6 +571,7 @@ class ResetPasswordView(FormView):
 
         # Securely hash and update password using PBKDF2
         user.set_password(new_password)
+        user.is_active = True
         user.save()
 
         # Invalidate all password reset OTPs for this user
@@ -579,17 +580,20 @@ class ResetPasswordView(FormView):
         # Dispatch password changed security alert email asynchronously
         send_password_changed_email(user, async_send=True)
 
-        # Clear session
+        # Clear reset session keys
         self.request.session.pop('reset_user_id', None)
         self.request.session.pop('reset_email', None)
         self.request.session.pop('reset_otp_verified', None)
         self.request.session.pop('reset_otp_last_sent', None)
 
+        # Auto-login the verified user immediately upon password reset
+        login(self.request, user, backend='accounts.backends.EmailOrUsernameModelBackend')
+
         messages.success(
             self.request,
-            "Your password has been successfully updated! You can now log in with your new credentials."
+            f"Your password has been successfully updated! Welcome back, {user.first_name or user.username}."
         )
-        return super().form_valid(form)
+        return redirect('accounts:profile')
 
 
 # ==============================================================================
