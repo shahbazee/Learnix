@@ -93,14 +93,30 @@
       if (this.statusText && message) {
         this.statusText.textContent = message;
       }
+      this.overlay.style.display = 'inline-flex';
+      // Force reflow for smooth transition
+      void this.overlay.offsetWidth;
       this.overlay.classList.add('active');
+      this.overlay.style.opacity = '1';
+      this.overlay.style.visibility = 'visible';
+      this.overlay.style.pointerEvents = 'auto';
+      this.overlay.style.transform = 'translateX(-50%) translateY(0) scale(1)';
       this.overlay.setAttribute('aria-hidden', 'false');
     },
 
     hidePill() {
       if (!this.overlay) return;
       this.overlay.classList.remove('active');
+      this.overlay.style.opacity = '0';
+      this.overlay.style.visibility = 'hidden';
+      this.overlay.style.pointerEvents = 'none';
+      this.overlay.style.transform = 'translateX(-50%) translateY(-14px) scale(0.96)';
       this.overlay.setAttribute('aria-hidden', 'true');
+      setTimeout(() => {
+        if (this.overlay && !this.isActive) {
+          this.overlay.style.display = 'none';
+        }
+      }, 250);
     },
 
     /* ==========================================================================

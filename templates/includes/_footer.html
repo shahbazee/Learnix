@@ -13,10 +13,10 @@
 
     <!-- Center: Links -->
     <div class="flex flex-wrap items-center justify-center gap-6 text-xs text-slate-600 font-medium">
-      <a href="#" class="hover:text-slate-900 transition-colors">Courses</a>
-      <a href="#" class="hover:text-slate-900 transition-colors">Syllabus</a>
-      <a href="#" class="hover:text-slate-900 transition-colors">Membership</a>
-      <a href="#" class="hover:text-slate-900 transition-colors">Faculty</a>
+      <a href="{% url 'courses:course_list' %}" class="hover:text-slate-900 transition-colors">Courses</a>
+      <a href="{% url 'courses:course_list' %}" class="hover:text-slate-900 transition-colors">Syllabus</a>
+      <a href="{% url 'core:home' %}#membership" class="hover:text-slate-900 transition-colors">Membership</a>
+      <a href="{% url 'core:home' %}#instructors" class="hover:text-slate-900 transition-colors">Faculty</a>
     </div>
 
     <!-- Right: Copyright -->

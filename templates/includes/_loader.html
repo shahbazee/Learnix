@@ -2,15 +2,15 @@
 <!-- Learnix Modern Loading & Navigation Feedback System -->
 
 <!-- 1. Sleek Top-Edge Progress Bar (NProgress-Style, Non-Blocking) -->
-<div id="learnixProgressBar" class="learnix-progress-bar" aria-hidden="true"></div>
+<div id="learnixProgressBar" class="learnix-progress-bar fixed top-0 left-0 h-[2.5px] z-[999999] pointer-events-none opacity-0" aria-hidden="true" style="position: fixed; top: 0; left: 0; width: 0%; height: 2.5px; z-index: 999999; pointer-events: none; opacity: 0;"></div>
 
-<!-- 2. Minimal Floating Status Pill (Thresholded for Slow Operations / Deep Syncs) -->
-<div id="learnixGlobalLoader" class="learnix-loader-pill" aria-hidden="true" role="status" aria-live="polite">
-  <div class="learnix-loader-pill-inner">
-    <svg class="learnix-pill-spinner" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+<!-- 2. Minimal Floating Status Pill (Fixed overlay, hidden by default, immune to CSS cache issues) -->
+<div id="learnixGlobalLoader" class="learnix-loader-pill fixed top-5 left-1/2 -translate-x-1/2 z-[99999] pointer-events-none opacity-0 invisible" aria-hidden="true" role="status" aria-live="polite" style="position: fixed; top: 1.25rem; left: 50%; transform: translateX(-50%) translateY(-14px) scale(0.96); z-index: 99999; pointer-events: none; opacity: 0; visibility: hidden; display: none;">
+  <div class="learnix-loader-pill-inner inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-white/95 backdrop-blur-xl border border-slate-200/90 shadow-xl" style="display: inline-flex; align-items: center; gap: 0.625rem; padding: 0.45rem 1.05rem; border-radius: 9999px; background: rgba(255, 255, 255, 0.95);">
+    <svg class="learnix-pill-spinner w-4 h-4 text-violet-600 shrink-0" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style="width: 16px; height: 16px; min-width: 16px; min-height: 16px; max-width: 16px; max-height: 16px; color: #7c3aed; flex-shrink: 0;">
       <circle class="opacity-20" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"></circle>
       <path class="opacity-90" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
     </svg>
-    <span id="learnixLoaderStatusText" class="learnix-pill-label">Processing...</span>
+    <span id="learnixLoaderStatusText" class="learnix-pill-label text-xs font-semibold text-slate-700 whitespace-nowrap" style="font-size: 0.75rem; font-weight: 600; color: #334155; white-space: nowrap;">Processing...</span>
   </div>
 </div>
