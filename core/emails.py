@@ -243,7 +243,10 @@ def send_registration_success_email(user, async_send=False):
 def send_otp_verification_email(user, otp_code, expires_minutes=10, async_send=False):
     """
     Triggered when a student registers; dispatches the 6-digit activation code.
-    Always logs the OTP securely to server logs for verification and diagnostics.
+
+    PRODUCTION FALLBACK: On Render (or any environment where RENDER=true),
+    the OTP code is ALWAYS printed to stdout so it appears in the Render Logs
+    dashboard — guaranteeing OTP recovery even if Gmail SMTP is unreachable.
     """
     subject = f"Your {getattr(settings, 'SITE_NAME', 'Learnix')} Verification Code: {otp_code}"
     recipient_email = user.email
@@ -259,9 +262,24 @@ def send_otp_verification_email(user, otp_code, expires_minutes=10, async_send=F
         f"If you did not request this verification code, please ignore this email.\n\n"
         f"— The Learnix Team"
     )
-    logger.info(f"[LEARNIX OTP VERIFICATION] Dispatched OTP code '{otp_code}' for recipient '{recipient_email}' (expires in {expires_minutes}m)")
-    if getattr(settings, 'DEBUG', False) or os.getenv('RENDER', ''):
-        print(f"[LEARNIX OTP VERIFICATION] Code for {recipient_email}: {otp_code}")
+
+    # ── Always log OTP to structured logger (visible in Render log stream) ──
+    logger.info(
+        f"[OTP DISPATCH] user='{recipient_email}' code='{otp_code}' expires_in={expires_minutes}m"
+    )
+
+    # ── Prominent stdout fallback — visible in Render Logs dashboard ──────────
+    # This guarantees the admin/developer can retrieve the OTP from Render logs
+    # even when SMTP fails due to port restrictions or missing credentials.
+    is_render = bool(os.getenv('RENDER', ''))
+    is_debug = getattr(settings, 'DEBUG', False)
+    if is_render or is_debug:
+        separator = "=" * 60
+        print(f"\n{separator}")
+        print(f"[LEARNIX OTP CODE] user={recipient_email}")
+        print(f"[LEARNIX OTP CODE] code={otp_code}  (expires in {expires_minutes} min)")
+        print(f"[LEARNIX OTP CODE] Check Render Logs if email doesn't arrive")
+        print(f"{separator}\n", flush=True)
 
     if async_send:
         return send_platform_email_async(subject, 'emails/otp_verification.html', context, recipient_email, fallback_text)

@@ -297,3 +297,18 @@ LOGGING = {
         },
     },
 }
+# ─── Production startup diagnostics ─────────────────────────────────────────
+# Prints a safe SMTP/email configuration summary to Render's stdout log stream
+# on every worker startup, helping diagnose email delivery failures quickly.
+_is_render_env = bool(os.getenv('RENDER', ''))
+if _is_render_env:
+    _pwd_status = "SET (length={})".format(len(EMAIL_HOST_PASSWORD)) if EMAIL_HOST_PASSWORD else "NOT SET ← SMTP will fail auth!"
+    print(
+        f"\n[LEARNIX STARTUP] Email config: "
+        f"backend={EMAIL_BACKEND.split('.')[-1]} "
+        f"host={EMAIL_HOST}:{EMAIL_PORT} "
+        f"tls={EMAIL_USE_TLS} ssl={EMAIL_USE_SSL} "
+        f"user={EMAIL_HOST_USER} "
+        f"password={_pwd_status}",
+        flush=True
+    )

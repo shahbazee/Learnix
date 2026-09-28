@@ -13,7 +13,7 @@ services:
     plan: starter
     region: oregon
     buildCommand: "./build.sh"
-    startCommand: "gunicorn learnix_project.wsgi:application --bind 0.0.0.0:$PORT --workers 3"
+    startCommand: "gunicorn learnix_project.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --threads 4 --timeout 120 --keep-alive 5 --preload --worker-tmp-dir /dev/shm"
     envVars:
       - key: PYTHON_VERSION
         value: 3.12.3
@@ -54,4 +54,8 @@ services:
       - key: STRIPE_WEBHOOK_SECRET
         sync: false
       - key: EMAIL_HOST_PASSWORD
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
         sync: false
