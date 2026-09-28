@@ -14,8 +14,10 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 from courses.views import StudentDashboardView
+from core.views import health_check_view
 
 urlpatterns = [
+    path('healthz/', health_check_view, name='health_check'),
     path('admin/', admin.site.urls),
     path('accounts/', include('accounts.urls')),
     path('courses/', include('courses.urls')),

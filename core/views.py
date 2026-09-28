@@ -4,6 +4,12 @@ Core views for Learnix platform marketing and informational pages.
 
 from django.shortcuts import render
 from django.views.generic import TemplateView
+from django.http import JsonResponse
+
+
+def health_check_view(request):
+    """Deployment verification healthcheck."""
+    return JsonResponse({"status": "ok", "release": "2026.09.28-async-otp-v2"})
 
 
 class HomeView(TemplateView):
