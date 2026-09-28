@@ -25,6 +25,12 @@ services:
         fromDatabase:
           name: learnix-postgres
           property: connectionString
+      - key: RENDER_EXTERNAL_HOSTNAME
+        value: "learnix-ofqe.onrender.com"
+      - key: ALLOWED_HOSTS
+        value: "learnix-ofqe.onrender.com,localhost,127.0.0.1"
+      - key: RENDER
+        value: "true"
       - key: DEFAULT_FROM_EMAIL
         value: "Learnix <shahbazbutt22ee@gmail.com>"
       - key: EMAIL_HOST_USER
@@ -35,6 +41,10 @@ services:
         value: "587"
       - key: EMAIL_USE_TLS
         value: "True"
+      - key: EMAIL_USE_SSL
+        value: "False"
+      - key: EMAIL_TIMEOUT
+        value: "10"
       - key: STRIPE_CURRENCY
         value: "usd"
       - key: STRIPE_PUBLIC_KEY

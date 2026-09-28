@@ -95,11 +95,18 @@ class SignUpView(FormView):
         """
         Safely generates a fresh OTP for an unverified user, dispatches email defensively,
         and redirects to the OTP verification page without leaving account in a broken state.
+
+        NOTE: The signed token is always embedded in the redirect URL so that VerifyOTPView
+        can recover the user_id via URL even if the session is lost across Gunicorn workers
+        (Render's multi-worker deployment without sticky sessions).
         """
         otp_record = EmailOTP.create_for_user(user, purpose='registration')
-        self.request.session['otp_user_id'] = user.id
-        self.request.session.modified = True
         token = _generate_otp_token(user.id)
+
+        # Persist session verification state — primary mechanism
+        self.request.session['otp_user_id'] = user.id
+        self.request.session['otp_token'] = token
+        self.request.session.modified = True
 
         email_sent = False
         try:
@@ -119,7 +126,9 @@ class SignUpView(FormView):
                 self.request,
                 f"Account pending verification. If you do not receive the email at {user.email} shortly, please click 'Resend Verification Code' below."
             )
-        return redirect(self.success_url)
+        # Always embed token in URL as a reliable cross-worker fallback
+        verify_url = f"{reverse('accounts:verify_otp')}?token={token}"
+        return redirect(verify_url)
 
     def form_valid(self, form):
         # Determine if this is an unverified re-registration
@@ -149,16 +158,13 @@ class SignUpView(FormView):
         self.request.session['otp_token'] = token
         self.request.session.modified = True
 
-        # Dispatch email notification asynchronously in background daemon thread
-        email_sent = False
+        # Dispatch email notification asynchronously in background daemon thread.
+        # Note: send_otp_verification_email with async_send=True always returns True immediately
+        # (the daemon thread is dispatched regardless). We unconditionally set otp_last_sent
+        # to enforce the 60-second resend cooldown window.
         try:
-            email_sent = send_otp_verification_email(user, otp_record.otp_code, async_send=True)
-            if email_sent:
-                self.request.session['otp_last_sent'] = timezone.now().timestamp()
-        except Exception as e:
-            logger.error(f"Error invoking send_otp_verification_email for {user.email}: {e}")
-
-        if email_sent:
+            send_otp_verification_email(user, otp_record.otp_code, async_send=True)
+            self.request.session['otp_last_sent'] = timezone.now().timestamp()
             if is_re_registration:
                 messages.success(
                     self.request,
@@ -169,12 +175,18 @@ class SignUpView(FormView):
                     self.request,
                     f"Verification code sent to {user.email}. Enter the 6-digit code to activate your account."
                 )
-        else:
+        except Exception as e:
+            logger.error(f"Error invoking send_otp_verification_email for {user.email}: {e}")
             messages.warning(
                 self.request,
                 f"Account pending verification. If you do not receive the email at {user.email} shortly, please click 'Resend Verification Code' below."
             )
-        return redirect(self.success_url)
+
+        # Always embed signed token in redirect URL — cross-worker session fallback for Render.
+        # This guarantees VerifyOTPView can recover the user_id from the URL even if the
+        # database session row is not yet visible to a different Gunicorn worker.
+        verify_url = f"{reverse('accounts:verify_otp')}?token={token}"
+        return redirect(verify_url)
 
 
 class VerifyOTPView(FormView):

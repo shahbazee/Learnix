@@ -182,8 +182,10 @@ if 'test' in sys.argv:
     ]
 
 # Session Security
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'  # PostgreSQL-backed sessions (cross-worker safe on Render)
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_AGE = 1209600  # 2 weeks
+SESSION_SAVE_EVERY_REQUEST = False  # Only save when modified (performance)
 CSRF_COOKIE_HTTPONLY = False  # Allows JS to read for AJAX CSRF headers
 
 # Email Subsystem (SMTP & API Backend Configuration)
@@ -191,12 +193,17 @@ EMAIL_BACKEND = os.getenv("EMAIL_BACKEND") or config("EMAIL_BACKEND", default="d
 
 EMAIL_HOST = os.getenv("EMAIL_HOST") or config("EMAIL_HOST", default="smtp.gmail.com")
 EMAIL_PORT = int(os.getenv("EMAIL_PORT") or config("EMAIL_PORT", default=587, cast=int))
-EMAIL_USE_TLS = config("EMAIL_USE_TLS", default=(EMAIL_PORT == 587), cast=bool)
-EMAIL_USE_SSL = config("EMAIL_USE_SSL", default=(EMAIL_PORT == 465), cast=bool)
+
+# Explicit TLS/SSL from env — os.getenv takes precedence so Render env vars win
+_email_use_tls_raw = os.getenv("EMAIL_USE_TLS") or config("EMAIL_USE_TLS", default=None)
+EMAIL_USE_TLS = (_email_use_tls_raw.strip().lower() in ('true', '1', 'yes')) if _email_use_tls_raw else (EMAIL_PORT == 587)
+
+_email_use_ssl_raw = os.getenv("EMAIL_USE_SSL") or config("EMAIL_USE_SSL", default=None)
+EMAIL_USE_SSL = (_email_use_ssl_raw.strip().lower() in ('true', '1', 'yes')) if _email_use_ssl_raw else (EMAIL_PORT == 465)
 
 EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER") or config("EMAIL_HOST_USER", default="shahbazbutt22ee@gmail.com")
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD") or config("EMAIL_HOST_PASSWORD", default="")
-EMAIL_TIMEOUT = int(os.getenv("EMAIL_TIMEOUT") or config("EMAIL_TIMEOUT", default=4, cast=int))
+EMAIL_TIMEOUT = int(os.getenv("EMAIL_TIMEOUT") or config("EMAIL_TIMEOUT", default=10, cast=int))
 
 DEFAULT_FROM_EMAIL = os.getenv(
     "DEFAULT_FROM_EMAIL",
@@ -249,3 +256,44 @@ if not DEBUG:
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+# ─── Logging ──────────────────────────────────────────────────────────────────
+# Streams all WARNING+ logs (including SMTP failures and OTP dispatch events) to
+# Render's stdout log collector so they appear in the Render dashboard log viewer.
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '[{levelname}] {asctime} {name}: {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'WARNING',
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'WARNING',
+            'propagate': False,
+        },
+        'accounts': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'core': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+    },
+}
