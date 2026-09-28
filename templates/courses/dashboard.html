@@ -5,7 +5,7 @@
 {% block title %}Student Dashboard | Learnix{% endblock %}
 
 {% block content %}
-<!-- Ambient Radiant Light Pools (Spatial Glassmorphism) -->
+<!-- Background Ambient Glow -->
 <div class="fixed inset-0 pointer-events-none overflow-hidden z-0">
   <div class="absolute -top-36 left-1/4 w-[36rem] h-[36rem] rounded-full bg-cyan-400/20 blur-[130px]"></div>
   <div class="absolute top-1/4 -right-20 w-[32rem] h-[32rem] rounded-full bg-fuchsia-400/20 blur-[130px]"></div>
@@ -18,47 +18,20 @@
   <!-- ================= TOP GREETING & METRICS BAR ================= -->
   <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative">
     <div class="flex flex-col gap-2">
-      <div class="flex items-center gap-3 flex-wrap">
-        <span class="font-mono text-[11px] uppercase text-cyan-700 font-bold tracking-widest px-3 py-1 rounded-full bg-cyan-100/80 border border-cyan-200/80 backdrop-blur-md">
-          Spatial Workspace // Tier 1
-        </span>
-        <span class="font-mono text-xs text-slate-500 flex items-center gap-1.5 font-semibold">
-          <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse ring-4 ring-emerald-500/20"></span>
-          <span>Sync Active • Local <span id="liveDashboardClock">10:42 PM</span></span>
-        </span>
-      </div>
       <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#0f172a] tracking-tight">
         Welcome back, <span class="bg-gradient-to-r from-cyan-500 via-violet-600 to-fuchsia-600 bg-clip-text text-transparent drop-shadow-sm">{{ user.first_name|default:user.username }}</span>
       </h1>
       <p class="text-sm sm:text-base text-slate-600 font-medium max-w-3xl">
-        {% if active_enrollment %}
-          Module {{ active_module.order_number|default:1 }} milestone is within reach. Resume your {{ active_enrollment.course.title }} session.
-        {% else %}
-          Ready to master modern full-stack architectures and agentic AI? Launch your first engineering sandbox below.
-        {% endif %}
+        Manage your enrolled courses, learning progress, and billing history.
       </p>
     </div>
 
-    <!-- Streaks & User Control Cluster -->
+    <!-- User Control Cluster -->
     <div class="flex items-center gap-3 flex-wrap">
-      <!-- Gamification Pills -->
-      <div class="flex items-center gap-2 p-1.5 rounded-full bg-white/90 backdrop-blur-2xl shadow-xl shadow-slate-200/60 border border-white">
-        <!-- Streak Badge -->
-        <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-amber-500/15 to-orange-500/15 border border-amber-400/40 text-amber-800 shadow-sm">
-          <span class="text-base drop-shadow-sm">🔥</span>
-          <span class="font-mono text-xs font-bold text-amber-700">{{ streak_days }} Day Streak</span>
-        </div>
-        <!-- XP Pill -->
-        <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-yellow-400/20 via-cyan-400/20 to-teal-400/20 border border-cyan-300 text-slate-900 shadow-sm">
-          <span class="text-base text-amber-500 font-bold drop-shadow-sm">⚡</span>
-          <span class="font-mono text-xs font-bold text-cyan-800">{{ xp_points }} XP</span>
-        </div>
-      </div>
-
       <!-- Floating Profile Capsule -->
       <div class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/90 backdrop-blur-2xl shadow-xl shadow-slate-200/60 border border-white">
         <!-- Notification trigger -->
-        <button type="button" onclick="showDashboardToast('All telemetry monitors operational. Zero pipeline bottlenecks detected.')" aria-label="Notifications" class="relative w-10 h-10 rounded-full flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors group cursor-pointer">
+        <button type="button" onclick="showDashboardToast('No new notifications.')" aria-label="Notifications" class="relative w-10 h-10 rounded-full flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors group cursor-pointer">
           <span class="material-symbols-outlined text-slate-600 group-hover:text-slate-900 text-[20px]">notifications</span>
           <span class="absolute top-2 right-2 w-2.5 h-2.5 rounded-full bg-cyan-500 ring-2 ring-white shadow-[0_0_8px_#06b6d4]"></span>
         </button>
@@ -91,299 +64,79 @@
   <!-- ================= MAIN BENTO GRID MATRIX ================= -->
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-6">
 
-    <!-- ================= CARD 1: HERO RESUME LEARNING (Span 8) ================= -->
-    <div class="lg:col-span-8 group relative rounded-3xl bg-white/80 backdrop-blur-xl border border-white p-6 sm:p-8 flex flex-col justify-between overflow-hidden shadow-[0_20px_50px_-15px_rgba(124,58,237,0.12),0_4px_16px_-2px_rgba(0,0,0,0.04)] transition-all duration-300 hover:shadow-[0_25px_60px_-12px_rgba(124,58,237,0.2)]">
-      <!-- Ambient radiant light pool behind card -->
-      <div class="absolute -top-24 -left-24 w-80 h-80 rounded-full bg-violet-400/20 blur-3xl pointer-events-none"></div>
-      <div class="absolute -bottom-24 -right-24 w-72 h-72 rounded-full bg-cyan-400/20 blur-3xl pointer-events-none"></div>
-
-      <div class="relative z-10 flex flex-col gap-5">
-        <!-- Card Header & Metadata -->
-        <div class="flex items-center justify-between flex-wrap gap-3">
-          <div class="flex items-center gap-2">
-            <span class="px-3 py-1 rounded-full bg-violet-100 text-violet-700 font-mono text-[11px] uppercase tracking-wider font-bold border border-violet-200">
-              Current Course Track
-            </span>
-            <span class="font-mono text-xs text-slate-500 font-semibold">
-              {% if active_enrollment %}
-                {{ active_enrollment.course.category.name|default:"Architectural Core" }}
-              {% elif featured_preview_course %}
-                {{ featured_preview_course.category.name|default:"Recommended Track" }}
-              {% else %}
-                Django 5.2 + AutoGen
-              {% endif %}
-            </span>
+    <!-- ================= CARD 1: YOUR ENROLLED COURSES (Span 12) ================= -->
+    <div class="lg:col-span-12 rounded-3xl bg-white/80 backdrop-blur-xl border border-white p-6 sm:p-8 shadow-[0_20px_50px_-15px_rgba(99,102,241,0.1),0_4px_16px_-2px_rgba(0,0,0,0.04)] relative">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-6">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-full bg-violet-100 border border-violet-200 flex items-center justify-center text-violet-700 shadow-sm shrink-0">
+            <span class="material-symbols-outlined text-[20px]">auto_stories</span>
           </div>
-          <div class="flex items-center gap-2 text-slate-500 font-mono text-xs font-semibold">
-            <span class="material-symbols-outlined text-[16px] text-cyan-600">timer</span>
-            <span>{{ remaining_minutes }} min remaining in section</span>
+          <div>
+            <h2 class="text-lg sm:text-xl font-bold text-[#0f172a]">Your Enrolled Courses</h2>
+            <p class="text-xs sm:text-sm text-slate-600 font-medium">Continue your lessons, track course progress, and view verified completion certificates.</p>
           </div>
         </div>
-
-        <!-- Titles -->
-        <div class="flex flex-col gap-1">
-          <h2 class="text-2xl sm:text-3xl font-extrabold text-[#0f172a] tracking-tight">
-            {% if active_enrollment %}
-              {{ active_enrollment.course.title }}
-            {% elif featured_preview_course %}
-              {{ featured_preview_course.title }}
-            {% else %}
-              Full-Stack Django 5 &amp; Multi-Agent AI
-            {% endif %}
-          </h2>
-          <p class="text-base sm:text-lg text-violet-600 font-semibold">
-            {% if active_lesson %}
-              Module {{ active_module.order_number|default:1 }}: {{ active_lesson.title }}
-            {% elif active_enrollment %}
-              Module 1: Getting Started &amp; Architectural Foundations
-            {% else %}
-              Module 4: Advanced Stripe Webhooks &amp; Event Processing
-            {% endif %}
-          </p>
-        </div>
-
-        <!-- Video Thumbnail Module with Progress Sheen -->
-        <div class="relative w-full aspect-video rounded-2xl overflow-hidden bg-slate-900 shadow-xl group/video">
-          <div class="w-full h-full bg-cover bg-center transition-transform duration-700 group-hover/video:scale-105 opacity-90"
-               style="background-image: url('{{ hero_thumbnail_url }}');"></div>
-
-          <!-- Gradient Scrim for contrast -->
-          <div class="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-900/30 to-transparent"></div>
-
-          <!-- Glowing Live Play State Overlay -->
-          <div class="absolute inset-0 flex items-center justify-center">
-            {% if active_enrollment and active_lesson %}
-              <a href="{% url 'courses:lesson_view' active_enrollment.course.slug active_lesson.id %}" class="w-16 h-16 rounded-full bg-white/90 backdrop-blur-xl flex items-center justify-center text-slate-900 shadow-[0_0_35px_rgba(6,182,212,0.6)] group-hover/video:scale-110 transition-transform">
-                <span class="material-symbols-outlined text-[34px] text-violet-600 ml-1" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
-              </a>
-            {% elif active_enrollment %}
-              <a href="{% url 'courses:course_detail' active_enrollment.course.slug %}" class="w-16 h-16 rounded-full bg-white/90 backdrop-blur-xl flex items-center justify-center text-slate-900 shadow-[0_0_35px_rgba(6,182,212,0.6)] group-hover/video:scale-110 transition-transform">
-                <span class="material-symbols-outlined text-[34px] text-violet-600 ml-1" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
-              </a>
-            {% elif featured_preview_course %}
-              <a href="{% url 'courses:course_detail' featured_preview_course.slug %}" class="w-16 h-16 rounded-full bg-white/90 backdrop-blur-xl flex items-center justify-center text-slate-900 shadow-[0_0_35px_rgba(6,182,212,0.6)] group-hover/video:scale-110 transition-transform">
-                <span class="material-symbols-outlined text-[34px] text-violet-600 ml-1" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
-              </a>
-            {% endif %}
-          </div>
-
-          <!-- In-Video Progress Overlay -->
-          <div class="absolute bottom-4 left-4 right-4 flex flex-col gap-2 p-3.5 rounded-xl bg-white/90 backdrop-blur-xl border border-white shadow-lg">
-            <div class="flex items-center justify-between text-slate-900 font-mono text-xs">
-              <span class="text-slate-600 font-semibold flex items-center gap-1.5">
-                <span class="w-2 h-2 rounded-full bg-cyan-500"></span>
-                Telemetry Progress
-              </span>
-              <span class="text-cyan-700 font-bold font-mono text-sm">
-                {% if active_enrollment %}
-                  {{ active_enrollment.progress_percent }}% Completed
-                {% else %}
-                  Ready to Start (0%)
-                {% endif %}
-              </span>
-            </div>
-            <div class="w-full h-2.5 rounded-full bg-slate-200 overflow-hidden p-0.5">
-              <div class="h-full rounded-full bg-gradient-to-r from-violet-600 via-cyan-500 to-teal-400 shadow-[0_0_10px_#06b6d4] transition-all duration-700"
-                   style="width: {% if active_enrollment %}{{ active_enrollment.progress_percent }}{% else %}15{% endif %}%;"></div>
-            </div>
-          </div>
-        </div>
+        <a href="{% url 'courses:course_list' %}" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-slate-100 hover:bg-violet-50 text-slate-700 hover:text-violet-700 font-mono text-xs font-bold transition-all border border-slate-200 self-start md:self-auto">
+          <span>Explore Courses</span>
+          <span class="material-symbols-outlined text-[16px]">chevron_right</span>
+        </a>
       </div>
 
-      <!-- Bottom Action Strip -->
-      <div class="relative z-10 mt-6 pt-5 flex flex-wrap items-center justify-between gap-4 border-t border-slate-100">
-        <div class="flex items-center gap-3 text-slate-600 text-xs sm:text-sm font-medium">
-          <span class="flex items-center gap-1.5">
-            <span class="material-symbols-outlined text-[18px] text-pink-600">check_circle</span>
-            {% if active_enrollment %}
-              {{ active_enrollment.completed_lessons_count }}/{{ active_enrollment.total_lessons_count }} Lessons Completed
-            {% else %}
-              14/17 Lessons Completed
-            {% endif %}
-          </span>
-          <span class="text-slate-300">•</span>
-          <span class="flex items-center gap-1.5">
-            <span class="material-symbols-outlined text-[18px] text-violet-600">terminal</span>
-            3 Interactive Sandboxes
-          </span>
-        </div>
-
-        {% if active_enrollment and active_enrollment.is_completed and active_enrollment.certificate %}
-          <a href="{% url 'courses:certificate_detail' active_enrollment.certificate.certificate_id %}" class="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 text-white text-sm font-bold shadow-[0_10px_25px_-5px_rgba(16,185,129,0.4)] hover:scale-105 transition-all">
-            <span>View Verified Certificate</span>
-            <span class="material-symbols-outlined text-[18px]">verified</span>
-          </a>
-        {% elif active_enrollment and active_lesson %}
-          <a href="{% url 'courses:lesson_view' active_enrollment.course.slug active_lesson.id %}" class="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-gradient-to-r from-violet-600 via-purple-600 to-cyan-500 text-white text-sm font-bold shadow-[0_10px_25px_-5px_rgba(124,58,237,0.4)] hover:shadow-[0_12px_30px_-4px_rgba(6,182,212,0.5)] hover:scale-105 transition-all">
-            <span>Resume Learning</span>
-            <span class="material-symbols-outlined text-[18px]">play_arrow</span>
-          </a>
-        {% elif active_enrollment %}
-          <a href="{% url 'courses:course_detail' active_enrollment.course.slug %}" class="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-gradient-to-r from-violet-600 via-purple-600 to-cyan-500 text-white text-sm font-bold shadow-[0_10px_25px_-5px_rgba(124,58,237,0.4)] hover:shadow-[0_12px_30px_-4px_rgba(6,182,212,0.5)] hover:scale-105 transition-all">
-            <span>Open Curriculum</span>
-            <span class="material-symbols-outlined text-[18px]">menu_book</span>
-          </a>
-        {% elif featured_preview_course %}
-          <a href="{% url 'courses:course_detail' featured_preview_course.slug %}" class="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-gradient-to-r from-violet-600 via-purple-600 to-cyan-500 text-white text-sm font-bold shadow-[0_10px_25px_-5px_rgba(124,58,237,0.4)] hover:shadow-[0_12px_30px_-4px_rgba(6,182,212,0.5)] hover:scale-105 transition-all">
-            <span>Enroll In Track</span>
-            <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
-          </a>
-        {% else %}
-          <a href="{% url 'courses:course_list' %}" class="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-gradient-to-r from-violet-600 via-purple-600 to-cyan-500 text-white text-sm font-bold shadow-[0_10px_25px_-5px_rgba(124,58,237,0.4)] hover:shadow-[0_12px_30px_-4px_rgba(6,182,212,0.5)] hover:scale-105 transition-all">
-            <span>Browse Catalog</span>
-            <span class="material-symbols-outlined text-[18px]">search</span>
-          </a>
-        {% endif %}
-      </div>
-    </div>
-
-    <!-- ================= CARD 2: METRICS COMPLETION RING (Span 4) ================= -->
-    <div class="lg:col-span-4 rounded-3xl bg-white/80 backdrop-blur-xl border border-white p-6 sm:p-8 flex flex-col justify-between shadow-[0_20px_50px_-15px_rgba(6,182,212,0.12),0_4px_16px_-2px_rgba(0,0,0,0.04)] relative overflow-hidden group">
-      <div class="absolute -top-16 -right-16 w-52 h-52 rounded-full bg-cyan-400/20 blur-3xl pointer-events-none"></div>
-
-      <div class="flex items-center justify-between">
-        <span class="font-mono text-[11px] uppercase tracking-wider text-slate-500 font-bold">Telemetry Metrics</span>
-        <span class="material-symbols-outlined text-violet-600 text-[22px]">insights</span>
-      </div>
-
-      <!-- SVG Circular Ring Section -->
-      <div class="flex flex-col items-center justify-center my-6 relative">
-        <div class="relative w-48 h-48 flex items-center justify-center">
-          <svg class="w-full h-full -rotate-90 drop-shadow-sm" viewBox="0 0 160 160">
-            <!-- Background Ring -->
-            <circle class="text-slate-100" cx="80" cy="80" fill="transparent" r="66" stroke="currentColor" stroke-linecap="round" stroke-width="12"></circle>
-            <!-- Primary Vivid Ring (Aggregate Progress) -->
-            <circle class="transition-all duration-1000" cx="80" cy="80" fill="transparent" r="66" stroke="url(#vibrantLightGrad)" stroke-dasharray="414" stroke-dashoffset="{{ hours_dashoffset }}" stroke-linecap="round" stroke-width="12"></circle>
-            <!-- Secondary Inner Accent Ring (Certificates) -->
-            <circle class="text-slate-100" cx="80" cy="80" fill="transparent" r="50" stroke="currentColor" stroke-linecap="round" stroke-width="6"></circle>
-            <circle class="transition-all duration-1000" cx="80" cy="80" fill="transparent" r="50" stroke="#f43f5e" stroke-dasharray="314" stroke-dashoffset="{{ certs_dashoffset }}" stroke-linecap="round" stroke-width="6"></circle>
-            <defs>
-              <linearGradient id="vibrantLightGrad" x1="0%" x2="100%" y1="0%" y2="100%">
-                <stop offset="0%" stop-color="#ec4899"></stop>
-                <stop offset="45%" stop-color="#8b5cf6"></stop>
-                <stop offset="100%" stop-color="#06b6d4"></stop>
-              </linearGradient>
-            </defs>
-          </svg>
-          <!-- Center Concentric Values -->
-          <div class="absolute flex flex-col items-center justify-center text-center">
-            <span class="text-4xl font-black text-[#0f172a] leading-none">{{ aggregate_progress_percent }}%</span>
-            <span class="font-mono text-[11px] text-cyan-700 font-extrabold uppercase tracking-widest mt-1">Aggregate</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Metric Breakdowns Breakdown Pills -->
-      <div class="grid grid-cols-3 gap-2 text-center">
-        <div class="p-2.5 rounded-2xl bg-slate-50/90 border border-slate-200/70 backdrop-blur-md flex flex-col items-center">
-          <span class="text-xl font-black text-cyan-600">{{ completed_courses_count }}</span>
-          <span class="font-mono text-[11px] text-slate-500 font-bold mt-0.5">Completed</span>
-        </div>
-        <div class="p-2.5 rounded-2xl bg-slate-50/90 border border-slate-200/70 backdrop-blur-md flex flex-col items-center">
-          <span class="text-xl font-black text-violet-600">{{ learning_hours }}</span>
-          <span class="font-mono text-[11px] text-slate-500 font-bold mt-0.5">Hours</span>
-        </div>
-        <div class="p-2.5 rounded-2xl bg-slate-50/90 border border-slate-200/70 backdrop-blur-md flex flex-col items-center">
-          <span class="text-xl font-black text-pink-600">{{ verified_certs_count }}</span>
-          <span class="font-mono text-[11px] text-slate-500 font-bold mt-0.5">Verified</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- ================= CARD 3: WEEKLY ACTIVITY HEATMAP (Span 7) ================= -->
-    <div class="lg:col-span-7 rounded-3xl bg-white/80 backdrop-blur-xl border border-white p-6 sm:p-8 flex flex-col justify-between shadow-[0_20px_50px_-15px_rgba(124,58,237,0.1),0_4px_16px_-2px_rgba(0,0,0,0.04)] relative overflow-hidden">
-      <div>
-        <div class="flex items-center justify-between flex-wrap gap-2 mb-2">
-          <div class="flex items-center gap-2">
-            <span class="material-symbols-outlined text-cyan-600 text-[20px]">grid_view</span>
-            <h3 class="text-lg sm:text-xl font-bold text-[#0f172a]">Weekly Study Velocity</h3>
-          </div>
-          <span class="font-mono text-xs text-slate-500 font-semibold">Last 12 Weeks • 148 commits</span>
-        </div>
-        <p class="text-xs sm:text-sm text-slate-600 mb-6 font-medium">
-          Consistent coding sessions logged via Learnix CLI agent sandboxes.
-        </p>
-
-        <!-- Contribution Matrix (7 days x 12 weeks grid) -->
-        <div class="overflow-x-auto pb-2" data-lenis-prevent>
-          <div class="min-w-[480px] flex items-center justify-between gap-2.5">
-            {% for week in weekly_activity %}
-              <div class="flex flex-col gap-1.5 flex-1">
-                {% for day in week.days %}
-                  <div class="w-full aspect-square rounded-sm {{ day.class }} transition-transform hover:scale-125 cursor-pointer"
-                       title="Activity level {{ day.level }} in Week {{ week.week_number }}"></div>
-                {% endfor %}
+      {% if enrollments %}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {% for item in enrollments %}
+            <div class="p-5 rounded-2xl bg-white/90 border border-slate-100 shadow-sm hover:shadow-md hover:border-violet-200 transition-all flex flex-col justify-between gap-4">
+              <div class="flex items-start gap-3">
+                <img src="{{ item.course.get_thumbnail_url }}" alt="{{ item.course.title }}" class="w-16 h-12 object-cover rounded-lg border border-slate-200/60 shrink-0" />
+                <div class="flex flex-col min-w-0">
+                  <span class="text-[11px] font-mono font-bold text-violet-600">{{ item.course.category.name|default:"Software Engineering" }}</span>
+                  <h3 class="text-sm font-bold text-slate-900 truncate" title="{{ item.course.title }}">{{ item.course.title }}</h3>
+                  <span class="text-xs text-slate-500 font-mono mt-0.5">{{ item.completed_lessons_count }}/{{ item.total_lessons_count }} Lessons</span>
+                </div>
               </div>
-            {% endfor %}
-          </div>
-        </div>
-      </div>
 
-      <!-- Legend and summary -->
-      <div class="flex items-center justify-between mt-4 pt-3 border-t border-slate-100 text-slate-500 font-mono text-xs font-semibold">
-        <span>Less</span>
-        <div class="flex items-center gap-1.5">
-          <div class="w-3 h-3 rounded-sm bg-slate-100 border border-slate-200"></div>
-          <div class="w-3 h-3 rounded-sm bg-purple-200"></div>
-          <div class="w-3 h-3 rounded-sm bg-purple-400"></div>
-          <div class="w-3 h-3 rounded-sm bg-violet-600"></div>
-          <div class="w-3 h-3 rounded-sm bg-cyan-500 shadow-[0_0_6px_rgba(6,182,212,0.6)]"></div>
+              <div class="flex flex-col gap-1.5">
+                <div class="flex items-center justify-between font-mono text-xs text-slate-600">
+                  <span>Progress</span>
+                  <span class="font-bold text-violet-700">{{ item.progress_percent }}%</span>
+                </div>
+                <div class="w-full h-2 rounded-full bg-slate-100 overflow-hidden">
+                  <div class="h-full bg-gradient-to-r from-violet-600 to-cyan-500 rounded-full" style="width: {{ item.progress_percent }}%;"></div>
+                </div>
+              </div>
+
+              {% if item.is_completed and item.certificate %}
+                <div class="flex items-center gap-2">
+                  <a href="{% url 'courses:course_detail' item.course.slug %}" class="flex-1 text-center py-2 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-mono text-xs font-bold transition-all">
+                    Review
+                  </a>
+                  <a href="{% url 'courses:certificate_detail' item.certificate.certificate_id %}" class="flex-1 text-center py-2 rounded-full bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-mono text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1">
+                    <span class="material-symbols-outlined text-[14px]">verified</span>
+                    <span>Certificate</span>
+                  </a>
+                </div>
+              {% else %}
+                <a href="{% url 'courses:course_detail' item.course.slug %}" class="w-full text-center py-2.5 rounded-full bg-gradient-to-r from-violet-600 to-cyan-500 hover:opacity-95 text-white font-mono text-xs font-bold transition-all shadow-sm flex items-center justify-center gap-1.5">
+                  <span class="material-symbols-outlined text-[16px]">play_arrow</span>
+                  <span>Continue Course</span>
+                </a>
+              {% endif %}
+            </div>
+          {% endfor %}
         </div>
-        <span>More Active</span>
-      </div>
+      {% else %}
+        <div class="p-8 rounded-2xl bg-slate-50/70 border border-slate-200/70 text-center flex flex-col items-center justify-center gap-3">
+          <span class="material-symbols-outlined text-slate-400 text-[36px]">school</span>
+          <p class="text-sm text-slate-600 font-medium">You have not enrolled in any courses yet.</p>
+          <a href="{% url 'courses:course_list' %}" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-violet-600 to-cyan-500 text-white text-xs font-bold shadow-md hover:scale-105 transition-all">
+            <span class="material-symbols-outlined text-[16px]">search</span>
+            <span>Explore Courses</span>
+          </a>
+        </div>
+      {% endif %}
     </div>
 
-    <!-- ================= CARD 4: UPCOMING LIVE OFFICE HOURS (Span 5) ================= -->
-    <div class="lg:col-span-5 rounded-3xl bg-white/80 backdrop-blur-xl border border-white p-6 sm:p-8 flex flex-col justify-between shadow-[0_20px_50px_-15px_rgba(236,72,153,0.12),0_4px_16px_-2px_rgba(0,0,0,0.04)] relative overflow-hidden">
-      <div class="absolute -bottom-12 -left-12 w-48 h-48 rounded-full bg-pink-400/20 blur-2xl pointer-events-none"></div>
-
-      <div>
-        <div class="flex items-center justify-between mb-3">
-          <span class="px-3 py-1 rounded-full bg-pink-100 text-pink-700 border border-pink-200 font-mono text-[11px] uppercase tracking-wider flex items-center gap-1.5 font-bold">
-            <span class="w-2 h-2 rounded-full bg-pink-500 animate-ping"></span>
-            Live Room Scheduled
-          </span>
-          <span class="font-mono text-xs text-slate-500 font-semibold">{{ upcoming_session.countdown }}</span>
-        </div>
-
-        <h3 class="text-lg sm:text-xl font-bold text-[#0f172a]">
-          {{ upcoming_session.title }}
-        </h3>
-        <p class="text-xs sm:text-sm text-slate-600 mt-2 font-medium">
-          {{ upcoming_session.description }}
-        </p>
-
-        <!-- Schedule reminder badge -->
-        <div class="mt-5 p-3 rounded-2xl bg-slate-50/90 border border-slate-200/70 backdrop-blur-md flex items-center justify-between gap-3">
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-full bg-cyan-100 text-cyan-700 flex items-center justify-center shrink-0">
-              <span class="material-symbols-outlined text-[20px]">calendar_today</span>
-            </div>
-            <div class="flex flex-col">
-              <span class="font-mono text-xs font-bold text-slate-900">{{ upcoming_session.time_display }}</span>
-              <span class="text-xs text-slate-500 font-medium">{{ upcoming_session.room_display }}</span>
-            </div>
-          </div>
-          <div class="flex -space-x-2 overflow-hidden">
-            <div class="w-7 h-7 rounded-full bg-violet-600 border-2 border-white flex items-center justify-center text-[10px] text-white font-bold shadow-sm">
-              {{ upcoming_session.attendees_count }}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="mt-6 pt-1 flex items-center gap-3">
-        <button type="button" onclick="openLiveRoomModal()" class="w-full py-2.5 px-6 rounded-full bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-all shadow-lg shadow-pink-500/25 group cursor-pointer">
-          <span class="material-symbols-outlined text-white group-hover:scale-110 transition-transform text-[18px]">videocam</span>
-          <span>Join Live Room</span>
-        </button>
-        <button type="button" onclick="showDashboardToast('Calendar invite added to your local timetable.')" aria-label="Add to Calendar" class="w-11 h-11 shrink-0 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-900 border border-slate-200/60 flex items-center justify-center transition-all cursor-pointer">
-          <span class="material-symbols-outlined text-[18px]">bookmark_add</span>
-        </button>
-      </div>
-    </div>
-
-    <!-- ================= CARD 5: RECENT PURCHASES & BILLING HISTORY (Span 12) ================= -->
+    <!-- ================= CARD 2: RECENT PURCHASES & BILLING HISTORY (Span 12) ================= -->
     <div class="lg:col-span-12 rounded-3xl bg-white/80 backdrop-blur-xl border border-white p-6 sm:p-8 shadow-[0_20px_50px_-15px_rgba(99,102,241,0.1),0_4px_16px_-2px_rgba(0,0,0,0.04)] relative overflow-hidden">
       <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-6">
         <div class="flex items-center gap-3">
@@ -507,106 +260,12 @@
       </div>
     </div>
 
-    <!-- ================= CARD 6: ALL ENROLLED MASTERCLASS TRACKS ================= -->
-    {% if other_enrollments %}
-      <div class="lg:col-span-12 rounded-3xl bg-white/80 backdrop-blur-xl border border-white p-6 sm:p-8 shadow-[0_20px_50px_-15px_rgba(99,102,241,0.1),0_4px_16px_-2px_rgba(0,0,0,0.04)] relative">
-        <h3 class="text-lg sm:text-xl font-bold text-[#0f172a] mb-4 flex items-center gap-2">
-          <span class="material-symbols-outlined text-violet-600">auto_stories</span>
-          <span>Your Enrolled Masterclasses</span>
-        </h3>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {% for item in other_enrollments %}
-            <div class="p-4 rounded-2xl bg-white/90 border border-slate-100 shadow-sm hover:shadow-md transition-all flex flex-col justify-between gap-3">
-              <div class="flex items-start gap-3">
-                <img src="{{ item.course.get_thumbnail_url }}" alt="{{ item.course.title }}" class="w-16 h-12 object-cover rounded-lg border border-slate-200/60" />
-                <div class="flex flex-col min-w-0">
-                  <h4 class="text-sm font-bold text-slate-900 truncate">{{ item.course.title }}</h4>
-                  <span class="text-xs text-slate-500 font-mono">{{ item.completed_lessons_count }}/{{ item.total_lessons_count }} Lessons</span>
-                </div>
-              </div>
-              <div class="flex flex-col gap-1.5">
-                <div class="flex items-center justify-between font-mono text-xs text-slate-600">
-                  <span>Progress</span>
-                  <span class="font-bold text-violet-700">{{ item.progress_percent }}%</span>
-                </div>
-                <div class="w-full h-2 rounded-full bg-slate-100 overflow-hidden">
-                  <div class="h-full bg-gradient-to-r from-violet-600 to-cyan-500 rounded-full" style="width: {{ item.progress_percent }}%;"></div>
-                </div>
-              </div>
-              {% if item.is_completed and item.certificate %}
-                <div class="flex items-center gap-2">
-                  <a href="{% url 'courses:course_detail' item.course.slug %}" class="flex-1 text-center py-2 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-mono text-xs font-bold transition-all">
-                    Review
-                  </a>
-                  <a href="{% url 'courses:certificate_detail' item.certificate.certificate_id %}" class="flex-1 text-center py-2 rounded-full bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-mono text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1">
-                    <span class="material-symbols-outlined text-[14px]">verified</span>
-                    <span>Certificate</span>
-                  </a>
-                </div>
-              {% else %}
-                <a href="{% url 'courses:course_detail' item.course.slug %}" class="w-full text-center py-2 rounded-full bg-slate-100 hover:bg-violet-50 text-slate-700 hover:text-violet-700 font-mono text-xs font-bold transition-all">
-                  Study Masterclass
-                </a>
-              {% endif %}
-            </div>
-          {% endfor %}
-        </div>
-      </div>
-    {% endif %}
+
 
   </div>
 </div>
 
 <!-- ================= INTERACTIVE MODALS & TOASTS ================= -->
-
-<!-- Live Spatial Room Modal -->
-<div id="liveRoomModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-4" data-lenis-prevent>
-  <div class="w-full max-w-lg rounded-3xl bg-white/95 backdrop-blur-2xl border border-white p-6 sm:p-8 shadow-2xl flex flex-col gap-5 transform transition-all">
-    <div class="flex items-center justify-between pb-3 border-b border-slate-100">
-      <div class="flex items-center gap-2.5">
-        <div class="w-3 h-3 rounded-full bg-pink-500 animate-ping"></div>
-        <span class="font-mono text-xs uppercase font-extrabold text-pink-700 tracking-wider">Spatial Audio Room #08</span>
-      </div>
-      <button type="button" onclick="closeLiveRoomModal()" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 hover:text-slate-900 cursor-pointer">
-        <span class="material-symbols-outlined text-[18px]">close</span>
-      </button>
-    </div>
-
-    <div class="flex flex-col gap-2">
-      <h3 class="text-xl font-bold text-slate-900">AI Agent Architecture Office Hours</h3>
-      <p class="text-xs sm:text-sm text-slate-600">Connecting to Dr. Marcus Vance and 28 peer engineers in the WebRTC spatial audio mesh.</p>
-    </div>
-
-    <!-- Spatial Simulation Container -->
-    <div class="p-6 rounded-2xl bg-slate-900 text-white flex flex-col items-center justify-center gap-4 relative overflow-hidden shadow-inner">
-      <div class="absolute inset-0 bg-radial from-violet-600/20 to-transparent"></div>
-      <div class="relative z-10 w-16 h-16 rounded-full bg-gradient-to-tr from-pink-500 via-purple-600 to-cyan-400 p-[3px] shadow-[0_0_30px_rgba(236,72,153,0.6)]">
-        <div class="w-full h-full rounded-full bg-slate-900 flex items-center justify-center font-bold text-lg text-white">
-          MV
-        </div>
-      </div>
-      <div class="relative z-10 flex flex-col items-center">
-        <span class="text-sm font-bold text-slate-100">Dr. Marcus Vance</span>
-        <span class="font-mono text-[11px] text-cyan-400">Broadcasting 48kHz Spatial Stream</span>
-      </div>
-      <!-- Animated Waveform Bars -->
-      <div class="relative z-10 flex items-center gap-1 h-6">
-        <div class="w-1 bg-cyan-400 h-3 animate-pulse"></div>
-        <div class="w-1 bg-pink-500 h-5 animate-pulse" style="animation-delay: 100ms;"></div>
-        <div class="w-1 bg-violet-400 h-6 animate-pulse" style="animation-delay: 200ms;"></div>
-        <div class="w-1 bg-teal-400 h-4 animate-pulse" style="animation-delay: 300ms;"></div>
-        <div class="w-1 bg-cyan-400 h-5 animate-pulse" style="animation-delay: 150ms;"></div>
-      </div>
-    </div>
-
-    <div class="flex items-center justify-between pt-2">
-      <span class="text-xs text-slate-500 font-mono">Microphone Muted</span>
-      <button type="button" onclick="closeLiveRoomModal(); showDashboardToast('Disconnected from spatial room.');" class="px-5 py-2 rounded-full bg-slate-900 hover:bg-slate-800 text-white font-mono text-xs font-bold cursor-pointer">
-        Leave Room
-      </button>
-    </div>
-  </div>
-</div>
 
 <!-- Invoice Preview Modal -->
 <div id="invoiceModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-4" data-lenis-prevent>
@@ -666,33 +325,6 @@
 </div>
 
 <script>
-  // Live Dashboard Clock
-  function updateDashboardClock() {
-    const el = document.getElementById('liveDashboardClock');
-    if (el) {
-      const now = new Date();
-      el.textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    }
-  }
-  updateDashboardClock();
-  setInterval(updateDashboardClock, 10000);
-
-  // Live Room Modal Controls
-  function openLiveRoomModal() {
-    const modal = document.getElementById('liveRoomModal');
-    if (modal) {
-      modal.classList.remove('hidden');
-      if (window.lenis) window.lenis.stop();
-    }
-  }
-  function closeLiveRoomModal() {
-    const modal = document.getElementById('liveRoomModal');
-    if (modal) {
-      modal.classList.add('hidden');
-      if (window.lenis) window.lenis.start();
-    }
-  }
-
   // Invoice Modal Controls
   function openInvoicePreview(orderNum, title, amount, dateStr) {
     document.getElementById('invModalId').textContent = 'INV-2026-' + orderNum.replace('LRN-', '');

@@ -1,6 +1,5 @@
 """
 URL routing configuration for courses application.
-SRS Section 6 Complete URL Scheme Table.
 """
 
 from django.urls import path

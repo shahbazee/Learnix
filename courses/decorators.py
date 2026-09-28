@@ -1,6 +1,5 @@
 """
 Custom view decorators for Course access and authorization.
-SRS Section 10.2.
 """
 
 from functools import wraps

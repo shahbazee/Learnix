@@ -97,12 +97,12 @@
 from typing import AsyncGenerator
 
 @dataclass
-class TelemetryEvent:
-    trace_id: str
-    status: str = "PROVISIONED"
+class ExecutionEvent:
+    event_id: str
+    status: str = "COMPLETED"
 
-async def stream_agent_execution() -> AsyncGenerator[TelemetryEvent, None]:
-    yield TelemetryEvent(trace_id="learnix-0x89f")</code></pre>
+async def stream_task_execution() -> AsyncGenerator[ExecutionEvent, None]:
+    yield ExecutionEvent(event_id="task-101")</code></pre>
             </div>
             <p>Execute tests against your local PostgreSQL instance and verify transaction isolation levels before moving on to the next unit.</p>
           {% endif %}

@@ -1,6 +1,5 @@
 """
 Class-Based Views for Course Catalog, Curriculum Browsing, Student Dashboard, and Progress Tracking.
-SRS Section 5.3, 5.4, 6, 7.1, 7.2, 8.1, & 10.2.
 """
 
 from django.views.generic import ListView, DetailView, TemplateView, View, CreateView, UpdateView
@@ -15,18 +14,21 @@ from django.utils import timezone
 from datetime import timedelta
 import math
 import csv
+import logging
 
 from .models import Course, CourseCategory, CourseModule, Lesson, Enrollment, LessonProgress, Certificate
 from .services import generate_certificate_pdf
 from .forms import CourseForm
 from payments.models import PaymentTransaction, Invoice
 from accounts.mixins import EnrolledCourseRequiredMixin, InstructorRequiredMixin
+from core.emails import send_course_enrollment_email
+
+logger = logging.getLogger(__name__)
 
 
 class CourseListView(ListView):
     """
     Searchable, filterable, and paginated course catalog.
-    Matches Stitch Screen 3: Course Catalog & Filter Hub.
     """
     model = Course
     template_name = 'courses/course_list.html'
@@ -95,7 +97,6 @@ class CourseListView(ListView):
 class CourseDetailView(DetailView):
     """
     Detailed course syllabus, instructor bio, accreditation, and enrollment CTA.
-    Matches Stitch Screen 2: Course Details & Interactive Syllabus.
     """
     model = Course
     template_name = 'courses/course_detail.html'
@@ -150,9 +151,7 @@ class CourseDetailView(DetailView):
 
 class StudentDashboardView(LoginRequiredMixin, TemplateView):
     """
-    Student Telemetry, Study Velocity, Progress Tracking & Purchases Hub.
-    Direct implementation of Stitch Screen 6: eduflow_student_dashboard_light
-    branded exclusively as Learnix.
+    Student learning progress, dashboard overview, and billing history.
     """
     template_name = 'courses/dashboard.html'
 
@@ -399,7 +398,6 @@ class StudentDashboardView(LoginRequiredMixin, TemplateView):
 class EnrollCourseView(LoginRequiredMixin, View):
     """
     Handles immediate student enrollment in a course.
-    SRS Section 5.3, 5.4, 8.1.
     """
     def post(self, request, slug):
         course = get_object_or_404(Course, slug=slug, is_published=True)
@@ -440,6 +438,12 @@ class EnrollCourseView(LoginRequiredMixin, View):
                 total_amount=course.price,
             )
 
+        # Dispatch course enrollment confirmation email defensively
+        try:
+            send_course_enrollment_email(request.user, course, enrollment)
+        except Exception as e:
+            logger.warning(f"Could not dispatch course enrollment email: {e}")
+
         messages.success(request, f"Congratulations! You have enrolled in '{course.title}'. Your learning journey begins now.")
         return redirect('courses:dashboard')
 
@@ -450,7 +454,6 @@ class EnrollCourseView(LoginRequiredMixin, View):
 class LessonView(EnrolledCourseRequiredMixin, DetailView):
     """
     Interactive lesson learning player and syllabus checklist.
-    SRS Section 6 & 11.1.
     """
     model = Lesson
     template_name = 'courses/lesson_player.html'
@@ -515,7 +518,6 @@ class LessonView(EnrolledCourseRequiredMixin, DetailView):
 class MarkCompleteView(View):
     """
     AJAX endpoint updating lesson completion state and recalculating course progress.
-    SRS Section 6.
     """
     def post(self, request, lesson_id):
         if not request.user.is_authenticated:
@@ -626,8 +628,6 @@ def lesson_preview_api(request, slug, lesson_id):
 class CertificateDetailView(DetailView):
     """
     Publicly accessible cryptographically verifiable Certificate of Completion.
-    Matches Stitch Screen 11: eduflow_verifiable_certificate_of_completion_light (Learnix Branded).
-    SRS Section 8.1, 8.2, 13.
     """
     model = Certificate
     slug_field = 'certificate_id'
@@ -645,7 +645,6 @@ class CertificateDetailView(DetailView):
 class DownloadCertificatePDFView(View):
     """
     Renders and streams high-resolution landscape certificate PDF.
-    SRS Section 8.1 & 13.
     """
     def get(self, request, certificate_id, *args, **kwargs):
         certificate = get_object_or_404(Certificate, certificate_id=certificate_id)
@@ -661,9 +660,7 @@ class DownloadCertificatePDFView(View):
 
 class InstructorStudioView(InstructorRequiredMixin, TemplateView):
     """
-    Instructor Studio & Course Authoring Analytics Dashboard.
-    Matches Stitch Screen 10: eduflow_instructor_studio_dashboard_light (Learnix Branded).
-    SRS Section 10.1 & 10.2.
+    Instructor Studio & Course Management Analytics Dashboard.
     """
     template_name = 'courses/instructor_studio.html'
 

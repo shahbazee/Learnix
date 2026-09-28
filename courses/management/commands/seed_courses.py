@@ -1,5 +1,5 @@
 """
-Management command to seed Learnix database with courses from Stitch screenshots.
+Management command to seed Learnix database with courses and curriculum.
 Populates categories, instructors, courses, modules, and lessons.
 """
 
@@ -15,7 +15,7 @@ User = get_user_model()
 
 
 class Command(BaseCommand):
-    help = "Seeds Learnix with masterclass courses, modules, and lessons from Stitch UI"
+    help = "Seeds Learnix with masterclass courses, modules, and lessons"
 
     def handle(self, *args, **options):
         self.stdout.write(self.style.NOTICE("Seeding Learnix curricula..."))
@@ -78,7 +78,7 @@ class Command(BaseCommand):
                 "rating": Decimal("4.98"),
                 "reviews_count": 1120,
                 "short_description": "Build autonomous multi-agent swarms with LangGraph, Django 5 async websockets, PGVector embeddings, and sub-50ms inference orchestration.",
-                "thumbnail_url": "https://lh3.googleusercontent.com/aida-public/AB6AXuBM_4QyNw8mrBPwiAywegB0PwRkEHKYseeSIC5VC4UuRAz__Q26YyxRnQJ3CyEqiHAKxc09AZ7BG5qlyMh-DWMP-Gy8-9131LyWSqE4CB4NDzWomcdjVDRi8inuYoFEvUmJvqfrQmiUb6UEx_EpEhkYIWciRaN0lU6VHIVEHD8Atq8jfe9qGT1OG2LLFGJgQ8iC_dOQFqfofnufZdRxuaKlSbY4Su4tUcWHyY45tNrnkiH9JweHmaf_Gg",
+                "thumbnail_url": "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=1200&q=80",
                 "modules": [
                     ("Foundations: Asynchronous Django & Channels", [
                         ("1.1 Architecture Overview & ASGI Event Loops", 860, True),
@@ -107,7 +107,7 @@ class Command(BaseCommand):
                 "rating": Decimal("4.94"),
                 "reviews_count": 640,
                 "short_description": "Master Raft consensus, concurrent actor models, sharded distributed key-value stores, and fault-tolerant network topologies under extreme partition failure.",
-                "thumbnail_url": "https://lh3.googleusercontent.com/aida-public/AB6AXuAdlSS6nsZjCM-JjLB04R6RI9OoNFi6f3aY2QQO0FpvlpjVoELsk1cQIM_l-28PzKQrlKygnuAaT9mazbJXhKmnrsuC3YM0BGNq1LpZFY5kNTVj0YjYBEHO1VfdHuQBYccqP75vMmFfPeQWVBAFSviRmt2gLjlkh8DLsN1N3BoczGzkHjTptadUpTBocGQ1WkrUTBrieVTObpyjqgnsifWph_ZdJZiEFw_no1SvfNHAfFtgqWtuuY0how",
+                "thumbnail_url": "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1200&q=80",
                 "modules": [
                     ("Raft Consensus & Distributed Log Replication", [
                         ("1.1 Leader Election State Transitions", 1100, True),
@@ -129,8 +129,8 @@ class Command(BaseCommand):
                 "price": Decimal("119.00"),
                 "rating": Decimal("4.89"),
                 "reviews_count": 480,
-                "short_description": "Custom CRDs, zero-downtime mesh deployments with Istio, multi-region cluster federation, and eBPF kernel network telemetry in live hyperscale clusters.",
-                "thumbnail_url": "https://lh3.googleusercontent.com/aida-public/AB6AXuAsvZ_nkA8UJbMS2OFJ5M7UEKheqwIdT5qdJ6T0aiLbyhtPq6edMe1uOgGqH0oPMlNO2q97JsVs4eQ-hvtGPqqIivTOFjyYikObYv1HXuSM4UjV9D1ww7PcYMBAmCNHPhF_yJEIx8tVzu3mPc6vBe6Kg0FAF87lmfr87HAVWj8TfJywXMQdNKLy0TraCmybNLNW0pBKu24p4_bOwgr1BMotcrt3ZZODQ5CgzcWMjzlbRuVQATowWCUW3Q",
+                "short_description": "Custom CRDs, zero-downtime deployments with Istio, multi-region cluster federation, and eBPF kernel network monitoring in live production clusters.",
+                "thumbnail_url": "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=1200&q=80",
                 "modules": [
                     ("Advanced Operator SDK & Custom Resource Controllers", [
                         ("1.1 Controller-Runtime Architecture", 1020, True),
@@ -149,7 +149,7 @@ class Command(BaseCommand):
                 "rating": Decimal("4.92"),
                 "reviews_count": 890,
                 "short_description": "QLoRA parameter-efficient training, reranking with hybrid sparse-dense vectors, evaluation pipelines, and low-latency vLLM inference clusters.",
-                "thumbnail_url": "https://lh3.googleusercontent.com/aida-public/AB6AXuCCKLH4fHuf94ESEX3vHuDYdEp5px5kH-41vLDq2An_ClcKG8kpCZUWgwjn-RaQ-IXs0eNgtn34grBeZKaCp_QXUNdiaGmzC-4NysHSwPC2B15rDFgiXPV6BMBfVZ-El8LutVbP8kHbRKoGXgNR4yfrlCp89-LP9A4SZEi9SSIm3DVS3Mw4ioLv_FDztJKty-SEDdprPTXvPOMY0aJiDFx7StpWgXqJjjlrziJ3ua_OOeHWmE0HSvX6vg",
+                "thumbnail_url": "https://images.unsplash.com/photo-1620712943543-bcc4688e7485?auto=format&fit=crop&w=1200&q=80",
                 "modules": [
                     ("Quantized Model LoRA Architectures", [
                         ("1.1 4-bit NormalFloat & Double Quantization", 1150, True),
@@ -167,7 +167,7 @@ class Command(BaseCommand):
                 "rating": Decimal("4.91"),
                 "reviews_count": 312,
                 "short_description": "mTLS handshakes, OAuth2.1 + PKCE flows, continuous device attestation, supply chain SBOM verification, and defense against sub-domain takeovers.",
-                "thumbnail_url": "https://lh3.googleusercontent.com/aida-public/AB6AXuDnHBgkz2tT9V005BNr1s1iWtAc5iCg_Xx4OPjF44qn9IaUjBX-gU7EtAkWOUVXQLpjd_14EEWvsNN2CxlNLMw1DqfjK7MPGotnQ9N0xwtE0Misa6r4N0Bso0SfmXJ1W62Edz_LUU3mAmCv0ArHBFGcneEPlZbKNLlFteD7ltR1gwdEdkJLvZ8QkCviFTEf7LNARuqNRxjGADCKvfHOU8E7Mn-XiEwhbHrk1XzRL1JCHf41eMh5VaDcYg",
+                "thumbnail_url": "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=1200&q=80",
                 "modules": [
                     ("Identity Foundation & Cryptographic Tokens", [
                         ("1.1 PKCE Authorization Code Flows", 950, True),
@@ -185,7 +185,7 @@ class Command(BaseCommand):
                 "rating": Decimal("4.95"),
                 "reviews_count": 530,
                 "short_description": "Architect HNSW graph indices, product quantization, scalar compression, and distributed Milvus & Qdrant sharding for billion-scale retrieval.",
-                "thumbnail_url": "https://lh3.googleusercontent.com/aida-public/AB6AXuBmWWVrShwIvNSBj6CfXzDJd9B-monabU8RaWtmbgeciH2xPIigu1oTp6IE2dU0yNk9SNUM1b2C7ksp2MCDNC8308ARQ5WRJX72IsppY4BbNNgYD0QrNxX_dmCQdAPwko2imY_cwzrZKHk2n5CyPikCnWI2I7QwHcN3sX08W_vRlHqbO-CbKu6gFnjDifbxUdTxDLCmC8f0xUThmEacRDcwRqHNnZg9yJyPwukP1K-FUq7leLpf1Ho1Yg",
+                "thumbnail_url": "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1200&q=80",
                 "modules": [
                     ("Vector Indexing Math & HNSW Graphs", [
                         ("1.1 Approximate Nearest Neighbor Math", 1080, True),

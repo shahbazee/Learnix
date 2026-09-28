@@ -1,7 +1,6 @@
 """
 Database models for Course Management, Modules, Lessons, and Categories.
 PostgreSQL 15+ compatible models for Learnix.
-SRS Section 8.1 & 8.2.
 """
 
 import uuid
@@ -122,7 +121,7 @@ class Course(models.Model):
         """
         Resolves the primary course thumbnail URL in priority order:
         1. Uploaded ImageField thumbnail (if file exists).
-        2. Configured thumbnail_url (seeded from Stitch UI designs).
+        2. Configured thumbnail_url.
         3. Curated local vector fallback (/static/images/courses/<slug>.svg).
         4. Default masterclass fallback (/static/images/courses/default-course.svg).
         """
@@ -208,7 +207,6 @@ class Lesson(models.Model):
 class Enrollment(models.Model):
     """
     Represents an active or historical course enrollment for a student.
-    SRS Section 8.1 & 8.2.
     """
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -301,8 +299,7 @@ class Enrollment(models.Model):
 
 class LessonProgress(models.Model):
     """
-    Granular completion and telemetry tracking per lesson per student.
-    SRS Section 8.1 & 8.2.
+    Granular completion and progress tracking per lesson per student.
     """
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -334,8 +331,6 @@ class LessonProgress(models.Model):
 class Certificate(models.Model):
     """
     Cryptographically verifiable Certificate of Completion.
-    Implements Stitch Screen 11 (eduflow_verifiable_certificate_of_completion_light adapted to Learnix).
-    SRS Section 8.1, 8.2, 13.
     """
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,

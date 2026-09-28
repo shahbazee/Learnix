@@ -1,10 +1,10 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Instructor Studio &amp; Telemetry Insights | Learnix{% endblock %}
+{% block title %}Instructor Studio &amp; Insights | Learnix{% endblock %}
 
 {% block content %}
-<!-- Ambient Radiant Light Pools (Spatial Glassmorphism) -->
+<!-- Ambient Radiant Light Pools -->
 <div class="fixed inset-0 pointer-events-none overflow-hidden z-0">
   <div class="absolute -top-36 left-1/4 w-[32rem] h-[32rem] rounded-full bg-violet-400/20 blur-[130px]"></div>
   <div class="absolute top-1/3 -right-24 w-[28rem] h-[28rem] rounded-full bg-cyan-400/20 blur-[120px]"></div>
@@ -21,13 +21,13 @@
         <!-- Sub-header badge -->
         <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/80 backdrop-blur-md shadow-xs border border-white">
           <span class="w-2 h-2 rounded-full bg-violet-600 animate-pulse"></span>
-          <span class="font-mono text-xs text-violet-700 tracking-wider font-extrabold uppercase">INSTRUCTOR CONTROL PLANE · STUDIO v3.2</span>
+          <span class="font-mono text-xs text-violet-700 tracking-wider font-extrabold uppercase">INSTRUCTOR STUDIO</span>
         </div>
         <h1 class="text-3xl sm:text-4xl md:text-5xl font-extrabold text-[#0f172a] tracking-tight">
           Instructor Studio <span class="bg-gradient-to-r from-violet-600 via-purple-600 to-cyan-500 bg-clip-text text-transparent">&amp; Insights</span>
         </h1>
         <p class="text-sm sm:text-base text-slate-600 max-w-2xl leading-relaxed">
-          Real-time enrollment telemetry, global revenue analytics, and curriculum authoring orchestration.
+          Real-time enrollment metrics, course revenue analytics, and curriculum management.
         </p>
       </div>
 
@@ -35,7 +35,7 @@
       <div class="flex flex-wrap items-center gap-3">
         <!-- Time Filter Pill -->
         <div class="flex items-center rounded-full bg-white/80 backdrop-blur-xl shadow-xs border border-white p-1">
-          <button type="button" onclick="showStudioToast('Displaying 30-day verified ledger telemetry.')" class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer">
+          <button type="button" onclick="showStudioToast('Displaying 30-day summary.')" class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer">
             <span class="material-symbols-outlined text-[16px] text-violet-600">calendar_month</span>
             Last 30 Days
             <span class="material-symbols-outlined text-[14px] text-slate-400">expand_more</span>
@@ -43,7 +43,7 @@
           <div class="w-px h-4 bg-slate-200"></div>
           <span class="flex items-center gap-1 px-3 py-1.5 text-xs text-cyan-700 font-bold font-mono">
             <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping"></span>
-            Live Telemetry
+            Live Analytics
           </span>
         </div>
 
@@ -166,15 +166,15 @@
 
   </div>
 
-  <!-- ================= ANALYTICS & TELEMETRY SECTION (Smoothed SVG Chart) ================= -->
+  <!-- ================= ANALYTICS SECTION ================= -->
   <div class="relative rounded-3xl bg-white/80 backdrop-blur-2xl border border-white shadow-md p-6 md:p-8 space-y-6">
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
       <div>
         <div class="flex items-center gap-2">
-          <h2 class="text-lg sm:text-xl font-bold text-[#0f172a]">Student Growth &amp; Telemetry Velocity</h2>
-          <span class="px-2.5 py-0.5 rounded-full bg-violet-100 text-violet-800 text-xs font-bold font-mono">Live Real-Time Flow</span>
+          <h2 class="text-lg sm:text-xl font-bold text-[#0f172a]">Student Growth &amp; Revenue Trends</h2>
+          <span class="px-2.5 py-0.5 rounded-full bg-violet-100 text-violet-800 text-xs font-bold font-mono">Overview</span>
         </div>
-        <p class="text-xs sm:text-sm text-slate-500 mt-1">Telemetry tracking daily new enrollment intake and gross masterclass volume</p>
+        <p class="text-xs sm:text-sm text-slate-500 mt-1">Tracking daily new enrollments and course revenue</p>
       </div>
 
       <div class="flex items-center gap-3">
@@ -529,7 +529,7 @@
     if (active) {
       active.className = 'px-3 py-1 rounded-full bg-white text-violet-700 shadow-xs cursor-pointer';
     }
-    showStudioToast(`Updated chart telemetry to ${range} window.`);
+    showStudioToast(`Updated chart to ${range} window.`);
   }
 
   function filterCourses(status) {

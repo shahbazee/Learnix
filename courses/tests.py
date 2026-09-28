@@ -33,6 +33,8 @@ class CourseManagementTestCase(TestCase):
             email='marcus@learnix.com',
             password='Password123!'
         )
+        self.instructor.profile.role = 'instructor'
+        self.instructor.profile.save()
 
         # Categories
         self.cat_python = CourseCategory.objects.create(
@@ -118,7 +120,7 @@ class CourseManagementTestCase(TestCase):
         self.assertEqual(self.course_django.get_thumbnail_url, 'https://example.com/test.png')
 
     def test_template_tags_and_filters(self):
-        """Validates format_duration and calculate_progress_badge filters (SRS Section 11.2)."""
+        """Validates format_duration and calculate_progress_badge filters."""
         self.assertEqual(format_duration(860), '14m')
         self.assertEqual(format_duration(3665), '1h 1m')
         self.assertEqual(format_duration(0), '0m')
@@ -343,7 +345,7 @@ class CourseManagementTestCase(TestCase):
         self.assertIn('/accounts/login/', response.url)
 
     def test_student_dashboard_view_authenticated(self):
-        """Authenticated student accesses dashboard with telemetry, study velocity, and metrics."""
+        """Authenticated student accesses dashboard with progress metrics."""
         student = User.objects.create_user(
             username='sarah_test',
             first_name='Sarah',
@@ -359,13 +361,13 @@ class CourseManagementTestCase(TestCase):
         self.client.force_login(student)
         url = reverse('courses:dashboard')
         response = self.client.get(url)
-        self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Welcome back')
         self.assertContains(response, 'Sarah')
-        self.assertContains(response, 'Weekly Study Velocity')
         self.assertContains(response, 'Full-Stack Django 5')
-        self.assertContains(response, 'Telemetry Metrics')
-        self.assertContains(response, 'Spatial Workspace // Tier 1')
+        self.assertContains(response, 'Your Enrolled Courses')
+        self.assertNotContains(response, 'Learning Overview')
+        self.assertNotContains(response, 'Weekly Study Velocity')
+        self.assertNotContains(response, 'Spatial Workspace')
         # Strict branding enforcement
         self.assertNotContains(response, 'EduFlow')
 
@@ -507,13 +509,13 @@ class CourseManagementTestCase(TestCase):
         self.assertIn(reverse('accounts:login'), res.url)
 
     def test_instructor_studio_view_authenticated(self):
-        """Logged-in instructors can view real-time studio telemetry and roster."""
+        """Logged-in instructors can view studio dashboard and roster."""
         self.client.force_login(self.instructor)
         url = reverse('courses:instructor_studio')
         res = self.client.get(url)
         self.assertEqual(res.status_code, 200)
         self.assertContains(res, 'Instructor Studio')
-        self.assertContains(res, 'INSTRUCTOR CONTROL PLANE')
+        self.assertContains(res, 'INSTRUCTOR STUDIO')
         self.assertContains(res, 'Total Gross Revenue')
         self.assertContains(res, 'Active Students')
         self.assertContains(res, 'Full-Stack Django 5')

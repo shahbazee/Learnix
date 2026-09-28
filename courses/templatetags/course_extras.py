@@ -1,6 +1,5 @@
 """
 Custom template tags and filters for courses and curriculum tracking.
-SRS Section 11.2.
 """
 
 from django import template
