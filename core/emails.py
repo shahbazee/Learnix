@@ -63,29 +63,91 @@ def _is_retryable_email_error(exc) -> bool:
     return False
 
 
-def _send_via_http_api(subject, html_message, plain_message, recipients):
+def _send_via_http_api(subject, html_message, plain_message, recipients, attachment_filename=None, attachment_bytes=None, attachment_mimetype="application/pdf"):
     """
-    Optional fallback to send email via HTTP REST API (port 443) when standard SMTP ports
-    are firewalled (such as Render free tier blocking ports 25, 465, and 587).
-    Supports Resend and Brevo APIs without requiring third-party Django packages.
+    Primary dispatch channel using HTTP REST API (HTTPS Port 443).
+    Bypasses all cloud host SMTP port restrictions (such as Render blocking ports 25, 465, and 587).
+    Fully supports binary attachments (e.g. PDF Tax Invoices) via Base64 encoding.
+    Supports Brevo and Resend APIs.
     """
+    # Resolve verified sender details from settings
+    sender_name = getattr(settings, 'SITE_NAME', 'Learnix')
+    sender_email = getattr(settings, 'EMAIL_HOST_USER', 'shahbazbutt22ee@gmail.com')
+    from_header = getattr(settings, 'DEFAULT_FROM_EMAIL', '')
+    if '@' in from_header:
+        import email.utils
+        parsed_name, parsed_email = email.utils.parseaddr(from_header)
+        if parsed_email:
+            sender_email = parsed_email
+        if parsed_name:
+            sender_name = parsed_name
+
+    html_body = html_message if html_message and str(html_message).strip() else f"<div>{plain_message}</div>"
+    text_body = plain_message or strip_tags(html_body)
+
+    # ── 1. Brevo HTTP REST API ────────────────────────────────────────────────
+    brevo_key = getattr(settings, 'BREVO_API_KEY', '') or os.getenv('BREVO_API_KEY', '')
+    if brevo_key:
+        try:
+            import requests
+            import base64
+            payload = {
+                "sender": {"name": sender_name, "email": sender_email},
+                "to": [{"email": r} for r in recipients],
+                "subject": subject,
+                "htmlContent": html_body,
+                "textContent": text_body,
+            }
+            if attachment_bytes and attachment_filename:
+                payload["attachment"] = [
+                    {
+                        "name": attachment_filename,
+                        "content": base64.b64encode(attachment_bytes).decode("ascii")
+                    }
+                ]
+
+            resp = requests.post(
+                "https://api.brevo.com/v3/smtp/email",
+                headers={"api-key": brevo_key, "Content-Type": "application/json"},
+                json=payload,
+                timeout=20
+            )
+            if resp.status_code in (200, 201):
+                att_note = f" [Attachment: {attachment_filename}]" if (attachment_bytes and attachment_filename) else ""
+                logger.info(f"Email successfully dispatched via Brevo HTTP API to {recipients}: '{subject}'{att_note}")
+                return True
+            else:
+                logger.warning(f"Brevo HTTP API returned status {resp.status_code}: {resp.text}")
+        except Exception as err:
+            logger.warning(f"Brevo HTTP API dispatch failed: {err}")
+
+    # ── 2. Resend HTTP REST API ───────────────────────────────────────────────
     resend_key = getattr(settings, 'RESEND_API_KEY', '') or os.getenv('RESEND_API_KEY', '')
     if resend_key:
         try:
             import requests
-            sender = getattr(settings, 'DEFAULT_FROM_EMAIL', 'Learnix <onboarding@resend.dev>')
+            import base64
+            sender_str = f"{sender_name} <{sender_email}>" if '@' in sender_email else "onboarding@resend.dev"
             payload = {
-                "from": sender if '@' in sender else "onboarding@resend.dev",
+                "from": sender_str,
                 "to": recipients,
                 "subject": subject,
-                "html": html_message,
-                "text": plain_message,
+                "html": html_body,
+                "text": text_body,
             }
+            if attachment_bytes and attachment_filename:
+                payload["attachments"] = [
+                    {
+                        "filename": attachment_filename,
+                        "content": base64.b64encode(attachment_bytes).decode("ascii")
+                    }
+                ]
+
             resp = requests.post(
                 "https://api.resend.com/emails",
                 headers={"Authorization": f"Bearer {resend_key}", "Content-Type": "application/json"},
                 json=payload,
-                timeout=5
+                timeout=20
             )
             if resp.status_code in (200, 201):
                 logger.info(f"Email successfully dispatched via Resend HTTP API to {recipients}: '{subject}'")
@@ -95,33 +157,69 @@ def _send_via_http_api(subject, html_message, plain_message, recipients):
         except Exception as err:
             logger.warning(f"Resend HTTP API dispatch failed: {err}")
 
-    brevo_key = getattr(settings, 'BREVO_API_KEY', '') or os.getenv('BREVO_API_KEY', '')
-    if brevo_key:
-        try:
-            import requests
-            sender_email = getattr(settings, 'EMAIL_HOST_USER', 'noreply@learnix.com')
-            payload = {
-                "sender": {"name": getattr(settings, 'SITE_NAME', 'Learnix'), "email": sender_email},
-                "to": [{"email": r} for r in recipients],
-                "subject": subject,
-                "htmlContent": html_message,
-                "textContent": plain_message,
-            }
-            resp = requests.post(
-                "https://api.brevo.com/v3/smtp/email",
-                headers={"api-key": brevo_key, "Content-Type": "application/json"},
-                json=payload,
-                timeout=5
-            )
-            if resp.status_code in (200, 201):
-                logger.info(f"Email successfully dispatched via Brevo HTTP API to {recipients}: '{subject}'")
-                return True
-            else:
-                logger.warning(f"Brevo HTTP API returned status {resp.status_code}: {resp.text}")
-        except Exception as err:
-            logger.warning(f"Brevo HTTP API dispatch failed: {err}")
-
     return False
+
+
+def _send_via_brevo_smtp(subject, html_message, plain_message, recipients, attachment_filename=None, attachment_bytes=None, attachment_mimetype="application/pdf"):
+    """
+    Sends email WITH attachments (e.g. PDF invoices) via Brevo's dedicated SMTP relay.
+    Uses Brevo's smtp-relay.brevo.com:587 with the BREVO_API_KEY as password.
+    This is required because the Brevo HTTP API does not support binary attachments
+    in the current implementation — Brevo SMTP relay does, and uses the same account.
+
+    Credentials:
+        host     : smtp-relay.brevo.com
+        port     : 587 (STARTTLS)
+        login    : EMAIL_HOST_USER (your verified Brevo sender email)
+        password : BREVO_API_KEY  (the API key, NOT the Gmail password)
+    """
+    brevo_key = getattr(settings, 'BREVO_API_KEY', '') or os.getenv('BREVO_API_KEY', '')
+    if not brevo_key:
+        return False  # No Brevo key configured — fall through to Gmail SMTP
+
+    sender_email = getattr(settings, 'EMAIL_HOST_USER', '') or os.getenv('EMAIL_HOST_USER', '')
+    if not sender_email:
+        return False
+
+    try:
+        import smtplib
+        from email.mime.multipart import MIMEMultipart
+        from email.mime.text import MIMEText
+        from email.mime.base import MIMEBase
+        from email import encoders
+
+        msg = MIMEMultipart('mixed')
+        msg['Subject'] = subject
+        msg['From'] = getattr(settings, 'DEFAULT_FROM_EMAIL', sender_email)
+        msg['To'] = ', '.join(recipients)
+
+        # Build HTML + plain text body
+        body_part = MIMEMultipart('alternative')
+        body_part.attach(MIMEText(plain_message or '', 'plain', 'utf-8'))
+        if html_message:
+            body_part.attach(MIMEText(html_message, 'html', 'utf-8'))
+        msg.attach(body_part)
+
+        # Attach PDF if provided
+        if attachment_bytes and attachment_filename:
+            attachment_part = MIMEBase('application', 'pdf')
+            attachment_part.set_payload(attachment_bytes)
+            encoders.encode_base64(attachment_part)
+            attachment_part.add_header('Content-Disposition', 'attachment', filename=attachment_filename)
+            msg.attach(attachment_part)
+
+        with smtplib.SMTP('smtp-relay.brevo.com', 587, timeout=15) as server:
+            server.ehlo()
+            server.starttls()
+            server.login(sender_email, brevo_key)
+            server.sendmail(sender_email, recipients, msg.as_string())
+
+        logger.info(f"Email with attachment dispatched via Brevo SMTP relay to {recipients}: '{subject}' [{attachment_filename}]")
+        return True
+
+    except Exception as e:
+        logger.warning(f"Brevo SMTP relay failed for '{subject}' to {recipients}: {type(e).__name__} - {e}")
+        return False
 
 
 def send_platform_email_async(subject, template_name, context, recipient_email, fallback_text=None, attachment_filename=None, attachment_bytes=None, attachment_mimetype="application/pdf"):
@@ -141,7 +239,7 @@ def send_platform_email_async(subject, template_name, context, recipient_email, 
 def _send_platform_email(subject, template_name, context, recipient_email, fallback_text=None, attachment_filename=None, attachment_bytes=None, attachment_mimetype="application/pdf"):
     """
     Internal helper to render HTML template, build plain-text fallback,
-    and safely dispatch email via Django's configured EMAIL_BACKEND.
+    and safely dispatch email via Brevo HTTP API (Port 443) or Django's configured EMAIL_BACKEND.
     Supports binary file attachments (e.g. PDF Tax Invoices).
     Never exposes passwords or sensitive credentials in error logs.
     """
@@ -166,9 +264,16 @@ def _send_platform_email(subject, template_name, context, recipient_email, fallb
         html_message = None
         plain_message = fallback_text or f"Notification from {context['site_name']}.\n\nPlease visit the website for details."
 
-    # If no binary attachments, attempt HTTP REST API dispatch if an API key is configured
-    if not attachment_bytes and _send_via_http_api(subject, html_message, plain_message, recipients):
+    # ── 1. Primary: Try HTTP REST API (Brevo / Resend) on Port 443 ─────────────
+    # Works reliably across all cloud providers (Render, Heroku, etc.)
+    # Supports both plain emails and binary attachments (PDF Tax Invoices) via Base64.
+    if _send_via_http_api(subject, html_message, plain_message, recipients, attachment_filename, attachment_bytes, attachment_mimetype):
         return True
+
+    # ── 2. Secondary fallback: Brevo SMTP relay for attachments ───────────────
+    if attachment_bytes and _send_via_brevo_smtp(subject, html_message, plain_message, recipients, attachment_filename, attachment_bytes, attachment_mimetype):
+        return True
+
 
     last_error = None
     for attempt in range(1, EMAIL_SEND_MAX_ATTEMPTS + 1):

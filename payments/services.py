@@ -33,127 +33,38 @@ logger = logging.getLogger(__name__)
 def send_order_confirmation_email(user, course, transaction, invoice=None):
     """
     Dispatches order receipt and tuition confirmation email to the enrolled student.
-    Sent from: shahbazbutt22ee@gmail.com
+    Routes through core.emails._send_platform_email → Brevo HTTP API (primary channel).
     """
-    subject = f"Order Confirmed: {course.title} — {settings.SITE_NAME}"
-    recipient_email = user.email or f"{user.username}@learnix.edu"
-
-    context = {
-        'user': user,
-        'course': course,
-        'transaction': transaction,
-        'invoice': invoice,
-        'site_name': settings.SITE_NAME,
-        'support_email': settings.DEFAULT_FROM_EMAIL,
-    }
-
+    from core.emails import send_course_purchase_success_email
     try:
-        html_message = render_to_string('emails/order_confirmation.html', context)
-        plain_message = strip_tags(html_message)
+        result = send_course_purchase_success_email(user, course, transaction, invoice=invoice)
+        if result:
+            logger.info(f"Order confirmation email dispatched to {user.email} via Brevo for order #{transaction.order_number}")
+        else:
+            logger.error(f"Order confirmation email failed for {user.email} order #{transaction.order_number}")
+        return result
     except Exception as e:
-        logger.warning(f"Could not render HTML email template, falling back to plain text: {e}")
-        plain_message = (
-            f"Hello {user.first_name or user.username},\n\n"
-            f"Thank you for enrolling in {course.title}!\n\n"
-            f"Order Reference: #{transaction.order_number}\n"
-            f"Amount Paid: ${transaction.amount} {transaction.currency}\n"
-            f"Payment Status: {transaction.status}\n\n"
-            f"You can access your interactive curriculum at any time via your student dashboard:\n"
-            f"https://learnix.com/dashboard/\n\n"
-            f"— The {settings.SITE_NAME} Team\n"
-            f"Sent from: {settings.DEFAULT_FROM_EMAIL}"
-        )
-        html_message = None
-
-    try:
-        send_mail(
-            subject=subject,
-            message=plain_message,
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[recipient_email],
-            html_message=html_message,
-            fail_silently=False
-        )
-        logger.info(f"Order confirmation email dispatched to {recipient_email} from {settings.DEFAULT_FROM_EMAIL}")
-        return True
-    except Exception as e:
-        logger.error(f"Failed to dispatch order confirmation email: {e}")
+        logger.error(f"Failed to dispatch order confirmation email for order #{transaction.order_number}: {e}")
         return False
 
 
 def send_registration_welcome_email(user):
     """
     Dispatches welcome email upon successful account verification.
-    Sent from: shahbazbutt22ee@gmail.com
+    Routes through core.emails._send_platform_email → Brevo HTTP API.
     """
-    subject = f"Welcome to {settings.SITE_NAME} — Account Verified!"
-    recipient_email = user.email
-
-    context = {
-        'user': user,
-        'site_name': settings.SITE_NAME,
-        'support_email': settings.DEFAULT_FROM_EMAIL,
-    }
-
-    try:
-        html_message = render_to_string('emails/registration_welcome.html', context)
-        plain_message = strip_tags(html_message)
-    except Exception:
-        plain_message = (
-            f"Hello {user.first_name or user.username},\n\n"
-            f"Welcome to {settings.SITE_NAME}! Your account is now fully verified.\n\n"
-            f"Explore masterclass curricula, interactive sandboxes, and agentic microservices:\n"
-            f"https://learnix.com/courses/\n\n"
-            f"— The {settings.SITE_NAME} Team\n"
-            f"Sent from: {settings.DEFAULT_FROM_EMAIL}"
-        )
-        html_message = None
-
-    try:
-        send_mail(
-            subject=subject,
-            message=plain_message,
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[recipient_email],
-            html_message=html_message,
-            fail_silently=False
-        )
-        return True
-    except Exception as e:
-        logger.error(f"Failed to dispatch welcome email: {e}")
-        return False
+    from core.emails import send_registration_success_email
+    return send_registration_success_email(user)
 
 
 def send_password_reset_otp_email(user, reset_code):
     """
     Dispatches password recovery OTP to the user.
-    Sent from: shahbazbutt22ee@gmail.com
+    Routes through core.emails._send_platform_email → Brevo HTTP API.
     """
-    subject = f"Password Reset Code: {reset_code} — {settings.SITE_NAME}"
-    recipient_email = user.email
+    from core.emails import send_forgot_password_otp_email
+    return send_forgot_password_otp_email(user, reset_code)
 
-    plain_message = (
-        f"Hello {user.first_name or user.username},\n\n"
-        f"You requested a password reset for your {settings.SITE_NAME} account.\n"
-        f"Your verification code is: {reset_code}\n\n"
-        f"This code will expire in 10 minutes.\n"
-        f"If you did not request this reset, your account is secure and you can disregard this email.\n\n"
-        f"— The {settings.SITE_NAME} Security Team\n"
-        f"Sent from: {settings.DEFAULT_FROM_EMAIL}"
-    )
-
-    try:
-        send_mail(
-            subject=subject,
-            message=plain_message,
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[recipient_email],
-            fail_silently=False
-        )
-        return True
-    except Exception as e:
-        logger.error(f"Failed to dispatch password reset email: {e}")
-        return False
 
 
 def generate_invoice_pdf(invoice) -> bytes:
@@ -287,7 +198,7 @@ def fulfill_order_and_dispatch_emails(
             tx.stripe_payment_intent_id = stripe_payment_intent
         tx.save()
 
-        # 2. Grant Active Enrollment (Idempotent get_or_create)
+        # Grant Active Enrollment (Idempotent get_or_create)
         enrollment, _ = Enrollment.objects.get_or_create(
             user=user,
             course=course,
@@ -297,7 +208,7 @@ def fulfill_order_and_dispatch_emails(
             enrollment.is_active = True
             enrollment.save(update_fields=["is_active"])
 
-        # 3. Create Formal Tax Invoice (Idempotent get_or_create)
+        # Create Formal Tax Invoice (Idempotent get_or_create)
         b_name = billing_name or user.get_full_name() or user.username
         b_email = billing_email or user.email or f"{user.username}@learnix.edu"
         invoice, created = Invoice.objects.get_or_create(
@@ -322,64 +233,66 @@ def fulfill_order_and_dispatch_emails(
             if updated_fields:
                 invoice.save(update_fields=updated_fields)
 
-        emails_sent = False
-        if not tx.confirmation_emails_sent:
-            # Generate official PDF invoice binary bytes
-            pdf_bytes = None
-            try:
-                pdf_bytes = generate_invoice_pdf(invoice)
-            except Exception as e:
-                logger.warning(f"Could not pre-render invoice PDF for order #{tx.order_number}: {e}")
+        # Capture flag BEFORE releasing the lock — read inside atomic, act outside
+        already_sent = bool(tx.confirmation_emails_sent)
 
-            # Every notification is isolated so that an unexpected failure in one email can
-            # never block the customer's invoice / receipt email (the legally relevant one).
-            delivery = {}
+    # ── DB lock released — now send emails OUTSIDE the atomic block ──────────
+    # Sending 3 emails (each 0.5-2s network roundtrip) inside atomic() held a
+    # PostgreSQL row lock for several seconds, causing timeouts on Render.
+    emails_sent = False
+    if not already_sent:
+        # Generate official PDF invoice binary bytes (no DB lock needed)
+        pdf_bytes = None
+        try:
+            pdf_bytes = generate_invoice_pdf(invoice)
+        except Exception as e:
+            logger.warning(f"Could not pre-render invoice PDF for order #{tx.order_number}: {e}")
 
-            # 1. Purchase Confirmation Email
-            try:
-                delivery['purchase_confirmation'] = bool(send_course_purchase_success_email(user, course, tx, invoice=invoice))
-            except Exception as e:
-                delivery['purchase_confirmation'] = False
-                logger.exception(f"Unexpected error dispatching purchase confirmation email for order #{tx.order_number}: {e}")
+        # Each notification is isolated — failure in one never blocks the others.
+        delivery = {}
 
-            # 2. Formal Tax Invoice & Receipt Email with attached PDF (Udemy / Shopify standard)
-            try:
-                delivery['invoice_receipt'] = bool(send_payment_receipt_invoice_email(user, course, tx, invoice, pdf_bytes=pdf_bytes))
-            except Exception as e:
-                delivery['invoice_receipt'] = False
-                logger.exception(f"Unexpected error dispatching invoice/receipt email for order #{tx.order_number}: {e}")
+        # 1. Purchase Confirmation Email (Brevo HTTP API — instant, no attachment)
+        try:
+            delivery['purchase_confirmation'] = bool(send_course_purchase_success_email(user, course, tx, invoice=invoice))
+        except Exception as e:
+            delivery['purchase_confirmation'] = False
+            logger.exception(f"Unexpected error dispatching purchase confirmation email for order #{tx.order_number}: {e}")
 
-            # 3. Enrollment Active Email
-            try:
-                delivery['enrollment'] = bool(send_course_enrollment_email(user, course, enrollment))
-            except Exception as e:
-                delivery['enrollment'] = False
-                logger.exception(f"Unexpected error dispatching course enrollment email for order #{tx.order_number}: {e}")
+        # 2. Formal Tax Invoice & Receipt Email with PDF (Brevo SMTP relay — supports attachments)
+        try:
+            delivery['invoice_receipt'] = bool(send_payment_receipt_invoice_email(user, course, tx, invoice, pdf_bytes=pdf_bytes))
+        except Exception as e:
+            delivery['invoice_receipt'] = False
+            logger.exception(f"Unexpected error dispatching invoice/receipt email for order #{tx.order_number}: {e}")
 
-            if delivery.get('invoice_receipt'):
-                tx.confirmation_emails_sent = True
-                tx.save(update_fields=["confirmation_emails_sent"])
-                emails_sent = True
-                logger.info(
-                    f"Successfully fulfilled order #{tx.order_number} and dispatched confirmation emails to {user.email} (from {settings.DEFAULT_FROM_EMAIL}) | {delivery}"
-                )
-                if not all(delivery.values()):
-                    logger.warning(
-                        f"Order #{tx.order_number}: some confirmation emails were not delivered {delivery}. "
-                        f"The invoice/receipt email was delivered successfully."
-                    )
-            else:
-                # Never flag the order as notified when the invoice/receipt email itself failed,
-                # so the next confirmation event (success page, webhook retry or reconciliation)
-                # re-attempts delivery instead of silently losing the customer's invoice.
-                logger.error(
-                    f"Order #{tx.order_number}: invoice/receipt email could NOT be delivered to {user.email}. "
-                    f"Delivery results: {delivery}. confirmation_emails_sent left unset for automatic retry."
+        # 3. Enrollment Active Email (Brevo HTTP API — instant, no attachment)
+        try:
+            delivery['enrollment'] = bool(send_course_enrollment_email(user, course, enrollment))
+        except Exception as e:
+            delivery['enrollment'] = False
+            logger.exception(f"Unexpected error dispatching course enrollment email for order #{tx.order_number}: {e}")
+
+        if delivery.get('invoice_receipt'):
+            # Mark as sent — short atomic update, not holding lock during network I/O
+            PaymentTransaction.objects.filter(pk=tx.pk).update(confirmation_emails_sent=True)
+            tx.confirmation_emails_sent = True
+            emails_sent = True
+            logger.info(
+                f"Order #{tx.order_number} fulfilled — all emails dispatched to {user.email} | {delivery}"
+            )
+            if not all(delivery.values()):
+                logger.warning(
+                    f"Order #{tx.order_number}: invoice/receipt delivered but some other emails failed: {delivery}"
                 )
         else:
-            logger.info(
-                f"Order #{tx.order_number} was already confirmed (emails already sent); suppressed duplicate purchase/invoice emails."
+            logger.error(
+                f"Order #{tx.order_number}: invoice/receipt email FAILED for {user.email}. "
+                f"Delivery results: {delivery}. confirmation_emails_sent left False for automatic retry."
             )
+    else:
+        logger.info(
+            f"Order #{tx.order_number} already confirmed — suppressed duplicate emails."
+        )
 
     return {
         'transaction': tx,
