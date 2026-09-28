@@ -19,9 +19,9 @@ class CoreViewsTestCase(SimpleTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Learnix')
         self.assertContains(response, 'Master Modern Engineering')
-        self.assertContains(response, 'Interactive Bento Ecosystem')
+        self.assertContains(response, 'Interactive Curriculum')
         self.assertContains(response, 'Full-Stack Django &amp; Scalable AI Architecture')
-        self.assertContains(response, 'pipeline_runner.py')
+        self.assertContains(response, 'tasks.py')
         self.assertContains(response, 'Peer-Verified Mastery')
         self.assertContains(response, 'Zero Latency Global Clusters')
 
@@ -39,30 +39,31 @@ class CoreViewsTestCase(SimpleTestCase):
         self.assertContains(response, 'modalSearchInput')
 
     def test_custom_404_view(self):
-        """Custom 404 view returns status 404 and whimsical deep-space theme."""
+        """Custom 404 view returns status 404 and Page Not Found template."""
         request = self.factory.get('/nonexistent-dimension/')
         response = custom_page_not_found_view(request)
         self.assertEqual(response.status_code, 404)
-        self.assertIn('Lecture Drifted Past Observable Space', response.content.decode())
+        self.assertIn('Page Not Found', response.content.decode())
 
     def test_custom_403_view(self):
         """Custom 403 view returns status 403 and access denied theme."""
         request = self.factory.get('/restricted-zone/')
         response = custom_permission_denied_view(request)
         self.assertEqual(response.status_code, 403)
-        self.assertIn('Restricted Cohort Airspace', response.content.decode())
+        self.assertIn('Access Denied', response.content.decode())
 
     def test_custom_500_view(self):
-        """Custom 500 view returns status 500 and reactor alert theme."""
+        """Custom 500 view returns status 500 and internal server error template."""
         request = self.factory.get('/faulty-reactor/')
         response = custom_server_error_view(request)
         self.assertEqual(response.status_code, 500)
-        self.assertIn('Quantum Decoherence Detected', response.content.decode())
+        self.assertIn('Internal Server Error', response.content.decode())
 
 
 from django.test import TestCase
 from django.core import mail
 from django.contrib.auth import get_user_model
+from django.utils import timezone
 from decimal import Decimal
 from unittest.mock import MagicMock, patch
 from core.emails import (
@@ -106,15 +107,21 @@ class CentralizedEmailSubsystemTestCase(TestCase):
             amount = Decimal('149.00')
             currency = 'USD'
             status = 'COMPLETED'
+            stripe_checkout_session_id = 'cs_test_mock_9988'
+            stripe_payment_intent_id = 'pi_test_mock_9988'
+            created_at = timezone.now()
 
         class DummyInvoice:
             invoice_number = 'INV-2026-TEST99'
             billing_name = 'Alex Tester'
             billing_email = 'tester@learnix.edu'
+            issued_at = timezone.now()
+            pdf_file = None
 
         self.mock_course = DummyCourse()
         self.mock_tx = DummyTransaction()
         self.mock_invoice = DummyInvoice()
+        self.mock_invoice.transaction = self.mock_tx
 
     def test_event_1_registration_success_email(self):
         """1. Registration Success email renders and dispatches successfully."""
@@ -165,14 +172,34 @@ class CentralizedEmailSubsystemTestCase(TestCase):
         self.assertIn('LRN-TEST-9988', sent.body)
 
     def test_event_6_payment_receipt_invoice_email(self):
-        """6. Payment Receipt / Invoice email details amount and invoice number."""
-        success = send_payment_receipt_invoice_email(self.user, self.mock_course, self.mock_tx, self.mock_invoice)
+        """6. Payment Receipt / Invoice email details amount, invoice number, and exact format."""
+        fake_pdf = b"%PDF-1.4 Mock PDF Content"
+        success = send_payment_receipt_invoice_email(
+            self.user, self.mock_course, self.mock_tx, self.mock_invoice, pdf_bytes=fake_pdf
+        )
         self.assertTrue(success)
         self.assertEqual(len(mail.outbox), 1)
         sent = mail.outbox[0]
-        self.assertIn('INV-2026-TEST99', sent.subject)
+        self.assertIn('Official Tax Invoice & Receipt: #INV-2026-TEST99', sent.subject)
         self.assertIn('LRN-TEST-9988', sent.body)
         self.assertIn('149.00', sent.body)
+        self.assertIn('COMPLETED (Paid via Stripe)', sent.body)
+        self.assertIn('Learnix_Invoice_INV-2026-TEST99.pdf', sent.body)
+        # Verify PDF attachment
+        self.assertEqual(len(sent.attachments), 1)
+        self.assertEqual(sent.attachments[0][0], 'Learnix_Invoice_INV-2026-TEST99.pdf')
+
+    def test_event_6_dual_recipients_account_and_stripe_hosted_email(self):
+        """Payment Receipt & Invoice dispatches to both account email and Stripe checkout email if different."""
+        self.mock_invoice.billing_email = 'stripe_guest@example.com'
+        success = send_payment_receipt_invoice_email(
+            self.user, self.mock_course, self.mock_tx, self.mock_invoice
+        )
+        self.assertTrue(success)
+        self.assertEqual(len(mail.outbox), 1)
+        sent = mail.outbox[0]
+        self.assertIn('tester@learnix.edu', sent.to)
+        self.assertIn('stripe_guest@example.com', sent.to)
 
     def test_event_7_course_enrollment_email(self):
         """7. Course Enrollment email confirms student access."""

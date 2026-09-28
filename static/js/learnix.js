@@ -1,139 +1,218 @@
 /**
- * Learnix Global Client Engine & Loading Component
- * Stitch Compass Star Indicator Asset
- * Smooth Fade-in/Fade-out • Centered Responsive • Button Locking
+ * Learnix Modern Client Engine & Processing Feedback System
+ * 
+ * Features:
+ * - Ultra-slim gradient top progress bar (NProgress style, non-blocking)
+ * - Subtle floating status pill (delayed threshold: only appears if action takes >350ms)
+ * - Layout-stable button locking with inline SVG spinner (prevents duplicate clicks)
+ * - Instant page delivery with zero artificial delays
+ * - BFCache & error recovery (pageshow, popstate, error handlers)
  */
 
 (function () {
   'use strict';
 
-  let safetyTimeoutId = null;
-
   const LearnixLoader = {
+    progressBar: null,
     overlay: null,
     statusText: null,
 
+    // Timers & State
+    progressInterval: null,
+    delayedPillTimer: null,
+    safetyTimeoutId: null,
+    currentProgress: 0,
+    isActive: false,
+
     init() {
+      this.progressBar = document.getElementById('learnixProgressBar');
       this.overlay = document.getElementById('learnixGlobalLoader');
       this.statusText = document.getElementById('learnixLoaderStatusText');
 
-      if (!this.overlay) return;
-
       this.attachNavigationInterceptors();
       this.attachFormInterceptors();
-      this.attachBfCacheHandler();
+      this.attachLifecycleHandlers();
     },
 
-    lastShownTime: 0,
-    hideTimerId: null,
+    /* ==========================================================================
+       1. Top Progress Bar Engine (Smooth, Non-Blocking)
+       ========================================================================== */
+    startProgress() {
+      if (!this.progressBar) {
+        this.progressBar = document.getElementById('learnixProgressBar');
+      }
+      if (!this.progressBar) return;
 
-    /**
-     * Shows the global full-screen harmonic equalizer loader with smooth fade-in
-     * @param {string} message - Optional status message
-     */
-    show(message = 'Processing...') {
+      clearInterval(this.progressInterval);
+      this.currentProgress = 15 + Math.random() * 10; // Instantly jump to 15-25%
+
+      this.progressBar.classList.remove('is-finished');
+      this.progressBar.classList.add('is-active');
+      this.progressBar.style.width = `${this.currentProgress}%`;
+
+      // Trickle progress slowly up to ~85%
+      this.progressInterval = setInterval(() => {
+        if (this.currentProgress < 50) {
+          this.currentProgress += Math.random() * 8 + 4;
+        } else if (this.currentProgress < 75) {
+          this.currentProgress += Math.random() * 4 + 2;
+        } else if (this.currentProgress < 88) {
+          this.currentProgress += Math.random() * 1.5 + 0.5;
+        }
+        if (this.progressBar) {
+          this.progressBar.style.width = `${Math.min(this.currentProgress, 90)}%`;
+        }
+      }, 160);
+    },
+
+    finishProgress() {
+      clearInterval(this.progressInterval);
+      if (!this.progressBar) return;
+
+      this.progressBar.style.width = '100%';
+      this.progressBar.classList.add('is-finished');
+
+      setTimeout(() => {
+        if (this.progressBar) {
+          this.progressBar.classList.remove('is-active', 'is-finished');
+          this.progressBar.style.width = '0%';
+        }
+      }, 250);
+    },
+
+    /* ==========================================================================
+       2. Floating Processing Pill (Thresholded for Long Requests)
+       ========================================================================== */
+    showPill(message = 'Processing...') {
       if (!this.overlay) {
-        this.init();
+        this.overlay = document.getElementById('learnixGlobalLoader');
+        this.statusText = document.getElementById('learnixLoaderStatusText');
       }
       if (!this.overlay) return;
-
-      clearTimeout(this.hideTimerId);
-      this.lastShownTime = Date.now();
 
       if (this.statusText && message) {
         this.statusText.textContent = message;
       }
-
       this.overlay.classList.add('active');
       this.overlay.setAttribute('aria-hidden', 'false');
+    },
 
-      // Pause Lenis smooth scrolling while loader is visible
-      if (window.lenis && typeof window.lenis.stop === 'function') {
-        window.lenis.stop();
+    hidePill() {
+      if (!this.overlay) return;
+      this.overlay.classList.remove('active');
+      this.overlay.setAttribute('aria-hidden', 'true');
+    },
+
+    /* ==========================================================================
+       3. Global Show / Hide Coordinator
+       ========================================================================== */
+    show(message = 'Processing...', options = {}) {
+      this.isActive = true;
+      clearTimeout(this.delayedPillTimer);
+      clearTimeout(this.safetyTimeoutId);
+
+      // Start the top progress bar immediately
+      this.startProgress();
+
+      // For instant navigations (<350ms), we do NOT show any screen pill.
+      // Only show the floating pill if the action takes longer than 350ms,
+      // or if explicitly requested via options.immediate = true
+      if (options.immediate) {
+        this.showPill(message);
+      } else {
+        const threshold = options.threshold || 380;
+        this.delayedPillTimer = setTimeout(() => {
+          if (this.isActive) {
+            this.showPill(message);
+          }
+        }, threshold);
       }
 
-      // Safety fallback: auto-hide after 12s in case navigation is cancelled or file download starts
-      clearTimeout(safetyTimeoutId);
-      safetyTimeoutId = setTimeout(() => {
+      // Safety fallback: auto-hide after 7s in case connection drops or download starts
+      this.safetyTimeoutId = setTimeout(() => {
         this.hide(true);
-      }, 12000);
+      }, 7000);
     },
 
-    /**
-     * Hides the global loader with smooth fade-out and natural state transition
-     * @param {boolean} immediate - If true, ignores minimum animation threshold
-     */
     hide(immediate = false) {
-      if (!this.overlay) return;
+      this.isActive = false;
+      clearTimeout(this.delayedPillTimer);
+      clearTimeout(this.safetyTimeoutId);
 
-      clearTimeout(safetyTimeoutId);
-      clearTimeout(this.hideTimerId);
+      this.hidePill();
+      this.finishProgress();
 
-      const elapsed = Date.now() - (this.lastShownTime || 0);
-      // Small smoothing threshold (180ms) prevents jarring flickering on near-instant actions
-      const delay = !immediate && elapsed < 180 ? 180 - elapsed : 0;
-
-      this.hideTimerId = setTimeout(() => {
-        if (!this.overlay) return;
-        this.overlay.classList.remove('active');
-        this.overlay.setAttribute('aria-hidden', 'true');
-
-        // Reset any buttons locked in loading state
-        document.querySelectorAll('.is-loading').forEach((btn) => {
-          this.resetButton(btn);
-        });
-
-        // Resume Lenis smooth scroll
-        if (window.lenis && typeof window.lenis.start === 'function') {
-          window.lenis.start();
-        }
-      }, delay);
+      // Restore any buttons currently in a loading state
+      document.querySelectorAll('.is-loading').forEach((btn) => {
+        this.resetButton(btn);
+      });
     },
 
-    /**
-     * Applies micro harmonic equalizer indicator to a specific button
-     * Disables button and prevents duplicate click actions
-     * @param {HTMLElement} btn
-     * @param {string} message
-     */
-    setButtonLoading(btn, message = 'Processing...') {
+    /* ==========================================================================
+       4. Button Loading State (Prevents Double-Clicks & Layout Shifts)
+       ========================================================================== */
+    inferLoadingText(btn) {
+      if (btn.dataset.loadingText) {
+        return btn.dataset.loadingText;
+      }
+      const text = (btn.textContent || '').trim().toLowerCase();
+      if (text.includes('sign in') || text.includes('log in')) return 'Signing in...';
+      if (text.includes('sign up') || text.includes('register') || text.includes('create account')) return 'Creating account...';
+      if (text.includes('verify')) return 'Verifying...';
+      if (text.includes('buy now') || text.includes('pay') || text.includes('checkout')) return 'Redirecting to payment...';
+      if (text.includes('enroll')) return 'Enrolling...';
+      if (text.includes('save') || text.includes('update')) return 'Saving...';
+      if (text.includes('send') || text.includes('resend')) return 'Sending...';
+      if (text.includes('search')) return 'Searching...';
+      if (text.includes('delete') || text.includes('remove')) return 'Deleting...';
+      return 'Processing...';
+    },
+
+    setButtonLoading(btn, customMessage = null) {
       if (!btn || btn.classList.contains('is-loading')) return;
 
-      btn.classList.add('is-loading');
-      btn.disabled = true;
-      btn.setAttribute('aria-busy', 'true');
+      // Lock exact computed width to prevent layout jump
+      const currentWidth = btn.getBoundingClientRect().width;
+      if (currentWidth > 0) {
+        btn.style.minWidth = `${currentWidth}px`;
+      }
 
       // Cache original HTML
       if (!btn.dataset.originalHtml) {
         btn.dataset.originalHtml = btn.innerHTML;
       }
 
-      // Render micro icon inside button
-      const iconUrl = (this.overlay && this.overlay.dataset.iconUrl) || '/static/images/loader-icon.png';
+      const message = customMessage || this.inferLoadingText(btn);
+
+      btn.classList.add('is-loading');
+      btn.disabled = true;
+      btn.setAttribute('aria-busy', 'true');
+
+      // Inject clean SVG spinner with matching text
       btn.innerHTML = `
-        <span class="inline-flex items-center gap-2">
-          <img src="${iconUrl}" class="learnix-btn-micro-icon" alt="" aria-hidden="true" />
+        <span class="inline-flex items-center justify-center gap-2">
+          <svg class="learnix-btn-spinner" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"></circle>
+            <path class="opacity-90" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
           <span>${message}</span>
         </span>
       `;
     },
 
-    /**
-     * Restores button to its original state
-     * @param {HTMLElement} btn
-     */
     resetButton(btn) {
       if (!btn || !btn.dataset.originalHtml) return;
       btn.innerHTML = btn.dataset.originalHtml;
       delete btn.dataset.originalHtml;
+      btn.style.minWidth = '';
       btn.disabled = false;
       btn.removeAttribute('aria-busy');
       btn.classList.remove('is-loading');
     },
 
-    /**
-     * Intercepts valid navigational link clicks
-     */
+    /* ==========================================================================
+       5. Event Interceptors & Lifecycle Handlers
+       ========================================================================== */
     attachNavigationInterceptors() {
       document.addEventListener('click', (e) => {
         const link = e.target.closest('a');
@@ -142,7 +221,7 @@
         const href = link.getAttribute('href');
         if (!href) return;
 
-        // Skip non-navigational links
+        // Skip anchors, javascript, mailto, tel, new tabs, downloads, or opted-out links
         if (
           href === '#' ||
           href.startsWith('#') ||
@@ -156,7 +235,7 @@
           return;
         }
 
-        // Skip when modifier keys are pressed (open in background/new tab)
+        // Skip modified clicks (new tab, new window, background)
         if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) {
           return;
         }
@@ -175,13 +254,10 @@
         } catch (_) {}
 
         const label = link.dataset.loadingText || 'Loading Masterclass...';
-        this.show(label);
+        this.show(label, { threshold: 380 });
       });
     },
 
-    /**
-     * Intercepts form submissions and shows loader + locks submit button
-     */
     attachFormInterceptors() {
       document.addEventListener('submit', (e) => {
         const form = e.target;
@@ -189,50 +265,61 @@
           return;
         }
 
-        // Check HTML5 validation before showing loader
+        // Check HTML5 validation before triggering loading state
         if (typeof form.checkValidity === 'function' && !form.checkValidity()) {
           return;
         }
 
         const submitBtn = form.querySelector('button[type="submit"], input[type="submit"]');
-        const label = form.dataset.loadingText || (submitBtn ? submitBtn.dataset.loadingText : null) || 'Processing...';
+        const customText = form.dataset.loadingText || (submitBtn ? submitBtn.dataset.loadingText : null);
 
         if (submitBtn) {
-          this.setButtonLoading(submitBtn, label);
+          this.setButtonLoading(submitBtn, customText);
         }
 
-        this.show(label);
+        const pillLabel = customText || (submitBtn ? this.inferLoadingText(submitBtn) : 'Processing...');
+        // Delayed pill appears after 450ms if the server response takes longer
+        this.show(pillLabel, { threshold: 450 });
       });
     },
 
-    /**
-     * Ensures loader is dismissed on back/forward browser cache navigation
-     */
-    attachBfCacheHandler() {
+    attachLifecycleHandlers() {
+      // Dismiss on back/forward browser cache navigation or full reload
       window.addEventListener('pageshow', () => {
         this.hide(true);
       });
 
-      // Escape key emergency dismissal
+      window.addEventListener('popstate', () => {
+        this.hide(true);
+      });
+
+      // Emergency reset on escape key
       window.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && this.overlay && this.overlay.classList.contains('active')) {
-          this.hide();
+        if (e.key === 'Escape' && this.isActive) {
+          this.hide(true);
         }
+      });
+
+      // Cleanup loading state if unhandled errors occur during client execution
+      window.addEventListener('error', () => {
+        this.hide(true);
+      });
+
+      window.addEventListener('unhandledrejection', () => {
+        this.hide(true);
       });
     },
 
-    /**
-     * Executes an async operation with automatic loader lifecycle
-     * @param {Promise|Function} promiseOrAsyncFn
-     * @param {string} message
-     */
+    /* ==========================================================================
+       6. Async Helper Method
+       ========================================================================== */
     async withLoading(promiseOrAsyncFn, message = 'Processing...') {
-      this.show(message);
+      this.show(message, { immediate: true });
       try {
         const result = typeof promiseOrAsyncFn === 'function' ? await promiseOrAsyncFn() : await promiseOrAsyncFn;
         return result;
       } finally {
-        this.hide();
+        this.hide(true);
       }
     }
   };

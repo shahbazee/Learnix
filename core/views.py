@@ -8,7 +8,7 @@ from django.views.generic import TemplateView
 
 class HomeView(TemplateView):
     """
-    Landing page showcasing the Bento grid, featured tracks, telemetry, and platform highlights.
+    Landing page showcasing the course catalog, curriculum tracks, and platform highlights.
     """
     template_name = 'core/home.html'
 
@@ -21,15 +21,15 @@ class AboutView(TemplateView):
 
 
 def custom_page_not_found_view(request, exception=None):
-    """Custom 404 handler rendering whimsical deep-space page."""
+    """Custom 404 error handler."""
     return render(request, '404.html', status=404)
 
 
 def custom_server_error_view(request):
-    """Custom 500 handler rendering reactor alert page."""
+    """Custom 500 error handler."""
     return render(request, '500.html', status=500)
 
 
 def custom_permission_denied_view(request, exception=None):
-    """Custom 403 handler rendering security intercept page."""
+    """Custom 403 error handler."""
     return render(request, '403.html', status=403)

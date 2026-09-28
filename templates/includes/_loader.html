@@ -1,28 +1,16 @@
 {% load static %}
-<!-- Learnix Global Loading Component (Stitch Compass Star Asset) -->
-<div id="learnixGlobalLoader" class="learnix-loader-overlay" aria-hidden="true" role="status" aria-live="polite" data-icon-url="{% static 'images/loader-icon.png' %}">
-  <div class="learnix-loader-card">
-    
-    <!-- Learnix Stitch Compass Star Loading Indicator Asset -->
-    <div class="learnix-loader-icon-wrapper">
-      <div class="learnix-loader-icon-glow"></div>
-      <img src="{% static 'images/loader-icon.png' %}" 
-           alt="Loading..." 
-           class="learnix-loader-icon-img"
-           width="52" 
-           height="52" />
-    </div>
+<!-- Learnix Modern Loading & Navigation Feedback System -->
 
-    <!-- Status Metadata Pill -->
-    <div class="mt-2.5 flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-slate-100/70 border border-slate-200/50 shadow-2xs">
-      <span class="relative flex h-1.5 w-1.5">
-        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-violet-400 opacity-75"></span>
-        <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-violet-600"></span>
-      </span>
-      <span id="learnixLoaderStatusText" class="font-mono text-[10px] text-slate-600 tracking-wider font-semibold uppercase">
-        Processing...
-      </span>
-    </div>
+<!-- 1. Sleek Top-Edge Progress Bar (NProgress-Style, Non-Blocking) -->
+<div id="learnixProgressBar" class="learnix-progress-bar" aria-hidden="true"></div>
 
+<!-- 2. Minimal Floating Status Pill (Thresholded for Slow Operations / Deep Syncs) -->
+<div id="learnixGlobalLoader" class="learnix-loader-pill" aria-hidden="true" role="status" aria-live="polite">
+  <div class="learnix-loader-pill-inner">
+    <svg class="learnix-pill-spinner" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <circle class="opacity-20" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"></circle>
+      <path class="opacity-90" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+    </svg>
+    <span id="learnixLoaderStatusText" class="learnix-pill-label">Processing...</span>
   </div>
 </div>

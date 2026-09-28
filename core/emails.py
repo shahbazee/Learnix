@@ -18,21 +18,60 @@ Features:
 """
 
 import logging
+import smtplib
+import time
 from django.conf import settings
-from django.core.mail import send_mail
+from django.core.mail import send_mail, EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 
 logger = logging.getLogger(__name__)
 
+# Transient SMTP transport failures (Gmail throttling after several rapid sends, socket
+# timeouts, dropped connections) are retried. Without a retry a single transient failure
+# would silently suppress a customer email such as the purchase invoice / receipt.
+EMAIL_SEND_MAX_ATTEMPTS = 3
+EMAIL_SEND_RETRY_DELAY_SECONDS = 2
 
-def _send_platform_email(subject, template_name, context, recipient_email, fallback_text=None):
+# Permanent provider rejections that must never be retried (bad credentials, refused
+# sender/recipient address, unsupported SMTP feature).
+PERMANENT_EMAIL_ERRORS = (
+    smtplib.SMTPAuthenticationError,
+    smtplib.SMTPRecipientsRefused,
+    smtplib.SMTPSenderRefused,
+    smtplib.SMTPNotSupportedError,
+)
+
+
+def _is_retryable_email_error(exc) -> bool:
+    """
+    Retry only transport level failures: dropped connections, socket timeouts and SMTP 4xx
+    throttling/greylisting (e.g. Gmail 421 / 454). Permanent rejections and programming
+    errors are never retried.
+    """
+    if isinstance(exc, PERMANENT_EMAIL_ERRORS):
+        return False
+    # SMTP 4xx responses are temporary, 5xx responses are permanent.
+    if isinstance(exc, smtplib.SMTPResponseException):
+        code = getattr(exc, 'smtp_code', None)
+        return isinstance(code, int) and 400 <= code < 500
+    # smtplib errors, socket timeouts and connection errors are all OSError subclasses.
+    return isinstance(exc, OSError)
+
+
+def _send_platform_email(subject, template_name, context, recipient_email, fallback_text=None, attachment_filename=None, attachment_bytes=None, attachment_mimetype="application/pdf"):
     """
     Internal helper to render HTML template, build plain-text fallback,
     and safely dispatch email via Django's configured EMAIL_BACKEND.
+    Supports binary file attachments (e.g. PDF Tax Invoices).
     Never exposes passwords or sensitive credentials in error logs.
     """
-    if not recipient_email:
+    if isinstance(recipient_email, (list, tuple, set)):
+        recipients = [str(e).strip() for e in recipient_email if e and str(e).strip()]
+    else:
+        recipients = [str(recipient_email).strip()] if recipient_email and str(recipient_email).strip() else []
+
+    if not recipients:
         logger.warning(f"Cannot dispatch email '{subject}': recipient email is empty.")
         return False
 
@@ -48,21 +87,47 @@ def _send_platform_email(subject, template_name, context, recipient_email, fallb
         html_message = None
         plain_message = fallback_text or f"Notification from {context['site_name']}.\n\nPlease visit the website for details."
 
-    try:
-        send_mail(
-            subject=subject,
-            message=plain_message,
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[recipient_email],
-            html_message=html_message,
-            fail_silently=False
-        )
-        logger.info(f"Email successfully dispatched to {recipient_email}: '{subject}'")
-        return True
-    except Exception as e:
-        # Log failure safely without exposing passwords or private credentials
-        logger.error(f"Email delivery failed to {recipient_email} for subject '{subject}'. Reason: {type(e).__name__} - {e}")
-        return False
+    last_error = None
+    for attempt in range(1, EMAIL_SEND_MAX_ATTEMPTS + 1):
+        try:
+            if attachment_bytes and attachment_filename:
+                email = EmailMultiAlternatives(
+                    subject=subject,
+                    body=plain_message,
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    to=recipients,
+                )
+                if html_message:
+                    email.attach_alternative(html_message, "text/html")
+                email.attach(attachment_filename, attachment_bytes, attachment_mimetype)
+                email.send(fail_silently=False)
+            else:
+                send_mail(
+                    subject=subject,
+                    message=plain_message,
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=recipients,
+                    html_message=html_message,
+                    fail_silently=False
+                )
+            logger.info(f"Email successfully dispatched to {recipients}: '{subject}'" + (f" [Attachment: {attachment_filename}]" if attachment_filename else ""))
+            return True
+        except Exception as e:
+            last_error = e
+            if attempt < EMAIL_SEND_MAX_ATTEMPTS and _is_retryable_email_error(e):
+                logger.warning(
+                    f"Email delivery attempt {attempt}/{EMAIL_SEND_MAX_ATTEMPTS} to {recipients} for subject "
+                    f"'{subject}' failed ({type(e).__name__} - {e}). Retrying in {EMAIL_SEND_RETRY_DELAY_SECONDS}s."
+                )
+                time.sleep(EMAIL_SEND_RETRY_DELAY_SECONDS)
+                continue
+            break
+
+    # Log failure safely without exposing passwords or private credentials
+    logger.error(f"Email delivery failed to {recipient_email} for subject '{subject}'. Reason: {type(last_error).__name__} - {last_error}")
+    if getattr(settings, 'DEBUG', False):
+        print(f"[LEARNIX EMAIL NOTICE] SMTP delivery to {recipient_email} failed: {type(last_error).__name__} - {last_error}")
+    return False
 
 
 # ==============================================================================
@@ -162,57 +227,136 @@ def send_password_changed_email(user):
 # ==============================================================================
 # 5. COURSE PURCHASE SUCCESSFUL
 # ==============================================================================
-def send_course_purchase_success_email(user, course, transaction):
+def send_course_purchase_success_email(user, course, transaction, invoice=None):
     """
-    Triggered when Stripe webhook confirms a successful payment for a course.
+    Triggered when Stripe webhook or checkout confirms a successful payment for a course.
+    Dispatches to registered account email and/or email entered in Stripe hosted checkout.
     """
     subject = f"Payment Confirmed: {course.title} — {getattr(settings, 'SITE_NAME', 'Learnix')}"
-    recipient_email = user.email or f"{user.username}@learnix.edu"
+    
+    recipients = []
+    if getattr(user, 'email', None) and user.email.strip():
+        recipients.append(user.email.strip())
+    inv = invoice or getattr(transaction, 'invoice', None)
+    if inv and getattr(inv, 'billing_email', None) and inv.billing_email.strip():
+        if inv.billing_email.strip() not in recipients:
+            recipients.append(inv.billing_email.strip())
+    if not recipients:
+        recipients = [f"{user.username}@learnix.edu"]
+
     context = {
         'user': user,
         'course': course,
         'transaction': transaction,
+        'invoice': inv,
     }
+    date_str = transaction.created_at.strftime('%B %d, %Y, %I:%M %p') if getattr(transaction, 'created_at', None) else 'Confirmed'
+    stripe_ref = getattr(transaction, 'stripe_payment_intent_id', None) or getattr(transaction, 'stripe_checkout_session_id', None) or 'Stripe Verified'
+    customer_name = (getattr(inv, 'billing_name', None) or user.get_full_name() or user.first_name or user.username)
     fallback_text = (
-        f"Hello {user.first_name or user.username},\n\n"
+        f"Hello {customer_name},\n\n"
         f"Your purchase of '{course.title}' has been successfully processed.\n\n"
+        f"Customer Name: {customer_name}\n"
+        f"Course: {course.title}\n"
         f"Order Number: #{transaction.order_number}\n"
-        f"Amount: ${transaction.amount} {transaction.currency}\n"
-        f"Status: COMPLETED\n\n"
+        f"Amount Paid: ${transaction.amount} {transaction.currency}\n"
+        f"Payment Status: {getattr(transaction, 'status', 'COMPLETED')}\n"
+        f"Purchase Date: {date_str}\n"
+        f"Stripe Reference: {stripe_ref}\n\n"
         f"You can launch your course classroom here:\n"
         f"https://learnix.com/courses/{course.slug}/\n\n"
         f"— The Learnix Team"
     )
-    return _send_platform_email(subject, 'emails/course_purchase_success.html', context, recipient_email, fallback_text)
+    return _send_platform_email(subject, 'emails/course_purchase_success.html', context, recipients, fallback_text)
 
 
 # ==============================================================================
 # 6. PAYMENT RECEIPT / INVOICE
 # ==============================================================================
-def send_payment_receipt_invoice_email(user, course, transaction, invoice=None):
+def send_payment_receipt_invoice_email(user, course, transaction, invoice=None, pdf_bytes=None):
     """
     Triggered upon confirmed payment to deliver formal tax receipt and invoice details.
+    Dispatches itemized HTML receipt in email body AND attaches the official Tax Invoice PDF
+    (matching Udemy & Shopify checkout confirmation standards).
+    Dispatches to registered account email and/or email entered in Stripe hosted checkout.
     """
     inv_num = invoice.invoice_number if invoice else transaction.order_number
     subject = f"Official Tax Invoice & Receipt: #{inv_num} — {getattr(settings, 'SITE_NAME', 'Learnix')}"
-    recipient_email = user.email or f"{user.username}@learnix.edu"
+    
+    recipients = []
+    if getattr(user, 'email', None) and user.email.strip():
+        recipients.append(user.email.strip())
+    if invoice and getattr(invoice, 'billing_email', None) and invoice.billing_email.strip():
+        if invoice.billing_email.strip() not in recipients:
+            recipients.append(invoice.billing_email.strip())
+    if not recipients:
+        recipients = [f"{user.username}@learnix.edu"]
+
     context = {
         'user': user,
         'course': course,
         'transaction': transaction,
         'invoice': invoice,
     }
+    date_val = getattr(invoice, 'issued_at', None) or getattr(transaction, 'created_at', None)
+    date_str = date_val.strftime('%B %d, %Y, %I:%M %p') if date_val else 'Confirmed'
+    stripe_ref = getattr(transaction, 'stripe_payment_intent_id', None) or getattr(transaction, 'stripe_checkout_session_id', None) or 'Stripe Verified'
+    customer_name = (getattr(invoice, 'billing_name', None) or user.get_full_name() or user.first_name or user.username)
+    billed_to = getattr(invoice, 'billing_email', None) or getattr(user, 'email', '')
     fallback_text = (
-        f"Hello {user.first_name or user.username},\n\n"
-        f"Here is your official tuition receipt and invoice for '{course.title}'.\n\n"
+        f"Learnix\n"
+        f"Official Tax Receipt\n"
+        f"Payment Receipt & Invoice\n"
+        f"Invoice Number: {inv_num}\n"
+        f"Hello {user.first_name or user.username},\n"
+        f"Thank you for your business. Here is the formal itemized receipt and tax invoice for your tuition payment:\n\n"
+        f"Customer Name: {customer_name}\n"
+        f"Billed To: {billed_to}\n"
+        f"Course Title: {course.title}\n"
         f"Invoice Number: {inv_num}\n"
         f"Order Reference: #{transaction.order_number}\n"
+        f"Payment Status: COMPLETED (Paid via Stripe)\n"
+        f"Purchase Date: {date_str}\n"
+        f"Stripe Reference: {stripe_ref}\n"
+        f"Subtotal: ${transaction.amount} {transaction.currency}\n"
+        f"Estimated Tax: $0.00 {transaction.currency}\n"
         f"Amount Paid: ${transaction.amount} {transaction.currency}\n\n"
-        f"View all receipts and download PDFs in your Billing Hub:\n"
-        f"https://learnix.com/payments/billing/\n\n"
-        f"— The Learnix Billing Department"
+        f"PDF\n"
+        f"Official PDF Tax Invoice Attached\n"
+        f"Learnix_Invoice_{inv_num}.pdf\n\n"
+        f"View Invoices in Student Billing Hub: https://learnix.com/payments/billing/\n\n"
+        f"This invoice was cryptographically authorized via Stripe Inc.\n"
+        f"Sent from: {getattr(settings, 'DEFAULT_FROM_EMAIL', 'shahbazbutt22ee@gmail.com')}\n"
+        f"© 2026 {getattr(settings, 'SITE_NAME', 'Learnix')} Technologies Inc. All rights reserved."
     )
-    return _send_platform_email(subject, 'emails/payment_receipt_invoice.html', context, recipient_email, fallback_text)
+
+    # Attach official PDF Invoice if available or renderable
+    attachment_filename = f"Learnix_Invoice_{inv_num}.pdf"
+    if not pdf_bytes and invoice:
+        if getattr(invoice, 'pdf_file', None):
+            try:
+                invoice.pdf_file.open('rb')
+                pdf_bytes = invoice.pdf_file.read()
+                invoice.pdf_file.close()
+            except Exception:
+                pass
+        if not pdf_bytes:
+            try:
+                from payments.services import generate_invoice_pdf
+                pdf_bytes = generate_invoice_pdf(invoice)
+            except Exception as e:
+                logger.warning(f"Could not generate invoice PDF attachment: {e}")
+
+    return _send_platform_email(
+        subject,
+        'emails/payment_receipt_invoice.html',
+        context,
+        recipients,
+        fallback_text,
+        attachment_filename=attachment_filename if pdf_bytes else None,
+        attachment_bytes=pdf_bytes,
+        attachment_mimetype='application/pdf'
+    )
 
 
 # ==============================================================================

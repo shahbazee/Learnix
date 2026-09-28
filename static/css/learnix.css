@@ -69,150 +69,120 @@ html {
 }
 
 /* ==========================================================================
-   Learnix Stitch Loading Component (Compass Star Asset)
-   Calm 2.0s Breathing Cycle • Subtle 52px Sizing • Smooth Fade-in/Fade-out
+   Learnix Modern Loading & Navigation Feedback System
+   1. Ultra-Slim Gradient Top Progress Bar (NProgress-style, Non-Blocking)
+   2. Minimal Floating Status Pill (Delayed Threshold for Heavy Operations)
+   3. Button-Level Micro Spinners & Layout-Stable Locking
    ========================================================================== */
 
-/* Fullscreen Glassmorphic Overlay with Smooth Eased Fade Transitions */
-.learnix-loader-overlay {
+/* 1. Top Edge Progress Bar */
+.learnix-progress-bar {
   position: fixed;
-  inset: 0;
-  z-index: 99999;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(15, 23, 42, 0.16);
-  backdrop-filter: blur(5px);
-  -webkit-backdrop-filter: blur(5px);
+  top: 0;
+  left: 0;
+  width: 0%;
+  height: 2.5px;
+  z-index: 999999;
+  background: linear-gradient(90deg, #7c3aed 0%, #6366f1 50%, #06b6d4 100%);
+  box-shadow: 0 0 10px rgba(124, 58, 237, 0.5), 0 0 5px rgba(6, 182, 212, 0.4);
+  pointer-events: none;
   opacity: 0;
-  pointer-events: none;
-  visibility: hidden;
-  transition: opacity 0.32s cubic-bezier(0.4, 0, 0.2, 1),
-              visibility 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 0 2px 2px 0;
+  transition: width 0.2s cubic-bezier(0.1, 0.7, 0.1, 1), opacity 0.25s ease-out;
+  will-change: width, opacity;
 }
 
-.learnix-loader-overlay.active {
+.learnix-progress-bar.is-active {
   opacity: 1;
-  pointer-events: auto;
+}
+
+.learnix-progress-bar.is-finished {
+  opacity: 0;
+  transition: opacity 0.25s ease-out, width 0.15s ease-in;
+}
+
+/* 2. Minimal Floating Status Pill (Top-Center, Non-Screen-Blocking) */
+.learnix-loader-pill {
+  position: fixed;
+  top: 1.25rem;
+  left: 50%;
+  transform: translateX(-50%) translateY(-14px) scale(0.96);
+  z-index: 99999;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+              visibility 0.22s;
+}
+
+.learnix-loader-pill.active {
+  opacity: 1;
   visibility: visible;
+  transform: translateX(-50%) translateY(0) scale(1);
+  pointer-events: auto;
 }
 
-/* Glassmorphic Central Card - Compact, Refined & Centered */
-.learnix-loader-card {
-  position: relative;
-  display: flex;
-  flex-direction: column;
+.learnix-loader-pill-inner {
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  padding: 1.25rem 1.65rem;
-  border-radius: 1.5rem;
-  background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.95);
-  box-shadow: 0 16px 40px -10px rgba(99, 102, 241, 0.18),
-              0 6px 18px -4px rgba(6, 182, 212, 0.08),
-              inset 0 1px 2px rgba(255, 255, 255, 0.95);
-  transform: scale(0.96) translateY(4px);
-  transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1),
-              opacity 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+  gap: 0.625rem;
+  padding: 0.45rem 1.05rem;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  box-shadow: 0 12px 28px -6px rgba(15, 23, 42, 0.12),
+              0 4px 10px -2px rgba(15, 23, 42, 0.04),
+              inset 0 1px 1px rgba(255, 255, 255, 0.9);
 }
 
-.learnix-loader-overlay.active .learnix-loader-card {
-  transform: scale(1) translateY(0);
+.learnix-pill-spinner {
+  width: 1rem;
+  height: 1rem;
+  color: #7c3aed;
+  flex-shrink: 0;
+  animation: learnixSpin 0.75s linear infinite;
 }
 
-/* Loading Icon Container */
-.learnix-loader-icon-wrapper {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 52px;
-  height: 52px;
+.learnix-pill-label {
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #334155;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
 }
 
-/* Ambient Radial Glow underneath icon */
-.learnix-loader-icon-glow {
-  position: absolute;
-  inset: 0;
-  margin: auto;
-  width: 52px;
-  height: 52px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(147, 51, 234, 0.32) 0%, rgba(6, 182, 212, 0.22) 50%, transparent 75%);
-  filter: blur(10px);
-  pointer-events: none;
-  animation: learnixGlowPulse 2.4s ease-in-out infinite;
-}
-
-@keyframes learnixGlowPulse {
-  0%, 100% {
-    opacity: 0.55;
-    transform: scale(0.92);
-  }
-  50% {
-    opacity: 0.95;
-    transform: scale(1.15);
-  }
-}
-
-/* Loading Icon Image */
-.learnix-loader-icon-img {
-  position: relative;
-  z-index: 2;
-  width: 52px;
-  height: 52px;
-  object-fit: contain;
-  display: block;
-  user-select: none;
-  pointer-events: none;
-  border-radius: 12px;
-  box-shadow: 0 4px 14px -2px rgba(124, 58, 237, 0.18),
-              0 2px 6px -1px rgba(6, 182, 212, 0.12);
-  will-change: transform;
-  animation: learnixIconPulse 2.0s cubic-bezier(0.42, 0, 0.58, 1) infinite;
-}
-
-@keyframes learnixIconPulse {
-  0%, 100% {
-    transform: scale(0.96) translateY(0);
-    filter: drop-shadow(0 2px 8px rgba(124, 58, 237, 0.15));
-  }
-  50% {
-    transform: scale(1.03) translateY(-1.5px);
-    filter: drop-shadow(0 6px 14px rgba(6, 182, 212, 0.35));
-  }
-}
-
-/* Micro Icon for in-button loading states */
-.learnix-btn-micro-icon {
-  width: 15px;
-  height: 15px;
-  object-fit: contain;
-  border-radius: 3px;
+/* 3. Button Micro Spinner & Stable Locking State */
+.learnix-btn-spinner {
+  width: 1rem;
+  height: 1rem;
+  color: currentColor;
   display: inline-block;
+  flex-shrink: 0;
   vertical-align: middle;
-  will-change: transform;
-  animation: learnixMicroPulse 1.8s ease-in-out infinite;
+  animation: learnixSpin 0.75s linear infinite;
 }
 
-@keyframes learnixMicroPulse {
-  0%, 100% {
-    transform: scale(0.92);
-    opacity: 0.85;
+@keyframes learnixSpin {
+  from {
+    transform: rotate(0deg);
   }
-  50% {
-    transform: scale(1.08);
-    opacity: 1;
+  to {
+    transform: rotate(360deg);
   }
 }
 
 /* Button Loading State Lock */
 button.is-loading,
-a.is-loading {
+a.is-loading,
+input[type="submit"].is-loading {
   pointer-events: none !important;
   cursor: wait !important;
-  opacity: 0.85 !important;
+  opacity: 0.88 !important;
+  user-select: none !important;
 }
+
 

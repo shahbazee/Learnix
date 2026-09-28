@@ -5,6 +5,7 @@ Configured strictly for PostgreSQL 15+ and decoupled environment variables.
 """
 
 import os
+import sys
 from pathlib import Path
 from decouple import config, Csv
 
@@ -134,7 +135,13 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Session Security (SRS Section 4 & 15)
+# Accelerated password hasher for automated tests
+if 'test' in sys.argv:
+    PASSWORD_HASHERS = [
+        'django.contrib.auth.hashers.MD5PasswordHasher',
+    ]
+
+# Session Security
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_AGE = 1209600  # 2 weeks
 CSRF_COOKIE_HTTPONLY = False  # Allows JS to read for AJAX CSRF headers
@@ -148,10 +155,11 @@ EMAIL_USE_TLS = True
 
 EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER") or config("EMAIL_HOST_USER", default="shahbazbutt22ee@gmail.com")
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD") or config("EMAIL_HOST_PASSWORD", default="")
+EMAIL_TIMEOUT = int(os.getenv("EMAIL_TIMEOUT") or config("EMAIL_TIMEOUT", default=10, cast=int))
 
 DEFAULT_FROM_EMAIL = os.getenv(
     "DEFAULT_FROM_EMAIL",
-    config("DEFAULT_FROM_EMAIL", default=EMAIL_HOST_USER)
+    config("DEFAULT_FROM_EMAIL", default="shahbazbutt22ee@gmail.com")
 )
 
 # Stripe Configuration (Test/Sandbox Mode Only per requirements)
