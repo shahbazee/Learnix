@@ -12,6 +12,9 @@ python manage.py collectstatic --no-input --clear
 echo "=== Learnix Build: Running database migrations ==="
 python manage.py migrate --no-input
 
+echo "=== Learnix Build: Ensuring superuser exists ==="
+python manage.py init_superuser
+
 echo "=== Learnix Build: Running system checks ==="
 python manage.py check --deploy 2>&1 | grep -v "WARNINGS" || true
 
