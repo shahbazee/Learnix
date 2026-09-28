@@ -29,7 +29,7 @@ env/
 
 # Django Media & Collected Static
 media/
-staticfiles/
+# staticfiles/ (tracked to ensure PaaS deployments have pre-compiled admin and app assets)
 
 # Logs & Databases
 *.log
