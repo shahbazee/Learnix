@@ -74,15 +74,44 @@ ASGI_APPLICATION = 'learnix_project.asgi.application'
 
 # Database Configuration: PostgreSQL 15+ ONLY
 # SQLite is strictly prohibited per architectural requirements
-DATABASE_URL = config('DATABASE_URL', default=None)
-if DATABASE_URL:
+def _resolve_database_config():
+    raw_url = os.environ.get('DATABASE_URL') or config('DATABASE_URL', default=None)
+    if not raw_url:
+        return None
+
+    # Strip any leading/trailing whitespace, backslashes, and accidental quotes (common when pasting into Render/PaaS dashboards)
+    cleaned_url = str(raw_url).strip().strip("'\"\\ \t\n\r")
+    if not cleaned_url:
+        return None
+
+    # Auto-repair URL missing protocol scheme
+    if cleaned_url.startswith('://'):
+        cleaned_url = f'postgres{cleaned_url}'
+    elif cleaned_url.startswith('//'):
+        cleaned_url = f'postgres:{cleaned_url}'
+    elif '://' not in cleaned_url and '@' in cleaned_url:
+        cleaned_url = f'postgres://{cleaned_url}'
+
     import dj_database_url
-    DATABASES = {
-        'default': dj_database_url.config(
-            default=DATABASE_URL,
+    try:
+        return dj_database_url.parse(
+            cleaned_url,
             conn_max_age=600,
             conn_health_checks=True,
         )
+    except Exception as exc:
+        raise ValueError(
+            f"Invalid DATABASE_URL provided ('{raw_url}'). "
+            "Please ensure your DATABASE_URL in the Render dashboard starts with "
+            "'postgres://' or 'postgresql://' and has no surrounding quotes. "
+            f"Details: {exc}"
+        ) from exc
+
+
+_db_config = _resolve_database_config()
+if _db_config:
+    DATABASES = {
+        'default': _db_config
     }
 else:
     DATABASES = {
