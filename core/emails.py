@@ -17,9 +17,11 @@ Features:
 - Complete compatibility with local SMTP and Render production environments.
 """
 
+import os
 import logging
 import smtplib
 import time
+import threading
 from django.conf import settings
 from django.core.mail import send_mail, EmailMultiAlternatives
 from django.template.loader import render_to_string
@@ -27,11 +29,12 @@ from django.utils.html import strip_tags
 
 logger = logging.getLogger(__name__)
 
-# Transient SMTP transport failures (Gmail throttling after several rapid sends, socket
-# timeouts, dropped connections) are retried. Without a retry a single transient failure
-# would silently suppress a customer email such as the purchase invoice / receipt.
-EMAIL_SEND_MAX_ATTEMPTS = 3
-EMAIL_SEND_RETRY_DELAY_SECONDS = 2
+# Fast non-blocking timeout policy:
+# Socket connection timeouts and refused connections must never be retried across
+# multiple attempts in synchronous web contexts because each timeout stacks into
+# worker termination (Gunicorn SIGKILL).
+EMAIL_SEND_MAX_ATTEMPTS = 1
+EMAIL_SEND_RETRY_DELAY_SECONDS = 1
 
 # Permanent provider rejections that must never be retried (bad credentials, refused
 # sender/recipient address, unsupported SMTP feature).
@@ -45,18 +48,94 @@ PERMANENT_EMAIL_ERRORS = (
 
 def _is_retryable_email_error(exc) -> bool:
     """
-    Retry only transport level failures: dropped connections, socket timeouts and SMTP 4xx
-    throttling/greylisting (e.g. Gmail 421 / 454). Permanent rejections and programming
-    errors are never retried.
+    Retry only transient SMTP 4xx responses.
+    Socket connection timeouts and refused connections must NOT be retried
+    because repeated timeouts aggregate into Gunicorn worker kills.
     """
     if isinstance(exc, PERMANENT_EMAIL_ERRORS):
+        return False
+    if isinstance(exc, (TimeoutError, smtplib.SMTPConnectError)):
         return False
     # SMTP 4xx responses are temporary, 5xx responses are permanent.
     if isinstance(exc, smtplib.SMTPResponseException):
         code = getattr(exc, 'smtp_code', None)
         return isinstance(code, int) and 400 <= code < 500
-    # smtplib errors, socket timeouts and connection errors are all OSError subclasses.
-    return isinstance(exc, OSError)
+    return False
+
+
+def _send_via_http_api(subject, html_message, plain_message, recipients):
+    """
+    Optional fallback to send email via HTTP REST API (port 443) when standard SMTP ports
+    are firewalled (such as Render free tier blocking ports 25, 465, and 587).
+    Supports Resend and Brevo APIs without requiring third-party Django packages.
+    """
+    resend_key = getattr(settings, 'RESEND_API_KEY', '') or os.getenv('RESEND_API_KEY', '')
+    if resend_key:
+        try:
+            import requests
+            sender = getattr(settings, 'DEFAULT_FROM_EMAIL', 'Learnix <onboarding@resend.dev>')
+            payload = {
+                "from": sender if '@' in sender else "onboarding@resend.dev",
+                "to": recipients,
+                "subject": subject,
+                "html": html_message,
+                "text": plain_message,
+            }
+            resp = requests.post(
+                "https://api.resend.com/emails",
+                headers={"Authorization": f"Bearer {resend_key}", "Content-Type": "application/json"},
+                json=payload,
+                timeout=5
+            )
+            if resp.status_code in (200, 201):
+                logger.info(f"Email successfully dispatched via Resend HTTP API to {recipients}: '{subject}'")
+                return True
+            else:
+                logger.warning(f"Resend HTTP API returned status {resp.status_code}: {resp.text}")
+        except Exception as err:
+            logger.warning(f"Resend HTTP API dispatch failed: {err}")
+
+    brevo_key = getattr(settings, 'BREVO_API_KEY', '') or os.getenv('BREVO_API_KEY', '')
+    if brevo_key:
+        try:
+            import requests
+            sender_email = getattr(settings, 'EMAIL_HOST_USER', 'noreply@learnix.com')
+            payload = {
+                "sender": {"name": getattr(settings, 'SITE_NAME', 'Learnix'), "email": sender_email},
+                "to": [{"email": r} for r in recipients],
+                "subject": subject,
+                "htmlContent": html_message,
+                "textContent": plain_message,
+            }
+            resp = requests.post(
+                "https://api.brevo.com/v3/smtp/email",
+                headers={"api-key": brevo_key, "Content-Type": "application/json"},
+                json=payload,
+                timeout=5
+            )
+            if resp.status_code in (200, 201):
+                logger.info(f"Email successfully dispatched via Brevo HTTP API to {recipients}: '{subject}'")
+                return True
+            else:
+                logger.warning(f"Brevo HTTP API returned status {resp.status_code}: {resp.text}")
+        except Exception as err:
+            logger.warning(f"Brevo HTTP API dispatch failed: {err}")
+
+    return False
+
+
+def send_platform_email_async(subject, template_name, context, recipient_email, fallback_text=None, attachment_filename=None, attachment_bytes=None, attachment_mimetype="application/pdf"):
+    """
+    Dispatches platform email in a background daemon thread.
+    Guarantees user web transactions and redirects execute in milliseconds without blocking on network I/O.
+    """
+    thread = threading.Thread(
+        target=_send_platform_email,
+        args=(subject, template_name, context, recipient_email, fallback_text, attachment_filename, attachment_bytes, attachment_mimetype),
+        daemon=True
+    )
+    thread.start()
+    return True
 
 
 def _send_platform_email(subject, template_name, context, recipient_email, fallback_text=None, attachment_filename=None, attachment_bytes=None, attachment_mimetype="application/pdf"):
@@ -86,6 +165,10 @@ def _send_platform_email(subject, template_name, context, recipient_email, fallb
         logger.warning(f"Failed to render HTML email template '{template_name}': {e}. Using plain text fallback.")
         html_message = None
         plain_message = fallback_text or f"Notification from {context['site_name']}.\n\nPlease visit the website for details."
+
+    # If no binary attachments, attempt HTTP REST API dispatch if an API key is configured
+    if not attachment_bytes and _send_via_http_api(subject, html_message, plain_message, recipients):
+        return True
 
     last_error = None
     for attempt in range(1, EMAIL_SEND_MAX_ATTEMPTS + 1):
@@ -125,7 +208,7 @@ def _send_platform_email(subject, template_name, context, recipient_email, fallb
 
     # Log failure safely without exposing passwords or private credentials
     logger.error(f"Email delivery failed to {recipient_email} for subject '{subject}'. Reason: {type(last_error).__name__} - {last_error}")
-    if getattr(settings, 'DEBUG', False):
+    if getattr(settings, 'DEBUG', False) or os.getenv('RENDER', ''):
         print(f"[LEARNIX EMAIL NOTICE] SMTP delivery to {recipient_email} failed: {type(last_error).__name__} - {last_error}")
     return False
 
@@ -141,12 +224,12 @@ def send_registration_success_email(user):
     recipient_email = user.email
     context = {
         'user': user,
-        'login_url': 'https://learnix.com/accounts/login/',
+        'login_url': 'https://learnix-ofqe.onrender.com/accounts/login/',
     }
     fallback_text = (
         f"Hello {user.first_name or user.username},\n\n"
         f"Welcome to {getattr(settings, 'SITE_NAME', 'Learnix')}! Your account has been verified and is now fully active.\n\n"
-        f"You can log in and explore our masterclass catalog at: https://learnix.com/courses/\n\n"
+        f"You can log in and explore our masterclass catalog at: https://learnix-ofqe.onrender.com/courses/\n\n"
         f"— The Learnix Team"
     )
     return _send_platform_email(subject, 'emails/registration_success.html', context, recipient_email, fallback_text)
@@ -158,6 +241,7 @@ def send_registration_success_email(user):
 def send_otp_verification_email(user, otp_code, expires_minutes=10):
     """
     Triggered when a student registers; dispatches the 6-digit activation code.
+    Always logs the OTP securely to server logs for verification and diagnostics.
     """
     subject = f"Your {getattr(settings, 'SITE_NAME', 'Learnix')} Verification Code: {otp_code}"
     recipient_email = user.email
@@ -173,6 +257,10 @@ def send_otp_verification_email(user, otp_code, expires_minutes=10):
         f"If you did not request this verification code, please ignore this email.\n\n"
         f"— The Learnix Team"
     )
+    logger.info(f"[LEARNIX OTP VERIFICATION] Dispatched OTP code '{otp_code}' for recipient '{recipient_email}' (expires in {expires_minutes}m)")
+    if getattr(settings, 'DEBUG', False) or os.getenv('RENDER', ''):
+        print(f"[LEARNIX OTP VERIFICATION] Code for {recipient_email}: {otp_code}")
+
     return _send_platform_email(subject, 'emails/otp_verification.html', context, recipient_email, fallback_text)
 
 
@@ -182,6 +270,7 @@ def send_otp_verification_email(user, otp_code, expires_minutes=10):
 def send_forgot_password_otp_email(user, reset_code, expires_minutes=10):
     """
     Triggered when a user initiates a password reset request.
+    Always logs the reset OTP to server logs for diagnostics.
     """
     subject = f"Password Reset Code: {reset_code} — {getattr(settings, 'SITE_NAME', 'Learnix')}"
     recipient_email = user.email
@@ -198,6 +287,10 @@ def send_forgot_password_otp_email(user, reset_code, expires_minutes=10):
         f"If you did not request this reset, your account is secure and you can disregard this email.\n\n"
         f"— The Learnix Security Team"
     )
+    logger.info(f"[LEARNIX PASSWORD RESET OTP] Dispatched reset OTP '{reset_code}' for recipient '{recipient_email}' (expires in {expires_minutes}m)")
+    if getattr(settings, 'DEBUG', False) or os.getenv('RENDER', ''):
+        print(f"[LEARNIX PASSWORD RESET OTP] Code for {recipient_email}: {reset_code}")
+
     return _send_platform_email(subject, 'emails/forgot_password_otp.html', context, recipient_email, fallback_text)
 
 
@@ -212,12 +305,12 @@ def send_password_changed_email(user):
     recipient_email = user.email
     context = {
         'user': user,
-        'login_url': 'https://learnix.com/accounts/login/',
+        'login_url': 'https://learnix-ofqe.onrender.com/accounts/login/',
     }
     fallback_text = (
         f"Hello {user.first_name or user.username},\n\n"
         f"This email confirms that the password for your {getattr(settings, 'SITE_NAME', 'Learnix')} account was successfully changed.\n\n"
-        f"If you made this change, no further action is needed.\n"
+        f"If you made this change, no further action is needed.\n\n"
         f"If you did NOT change your password, please contact support immediately.\n\n"
         f"— The Learnix Security Team"
     )

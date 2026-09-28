@@ -186,21 +186,26 @@ SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_AGE = 1209600  # 2 weeks
 CSRF_COOKIE_HTTPONLY = False  # Allows JS to read for AJAX CSRF headers
 
-# Email Subsystem (SMTP Backend Configuration)
-EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+# Email Subsystem (SMTP & API Backend Configuration)
+EMAIL_BACKEND = os.getenv("EMAIL_BACKEND") or config("EMAIL_BACKEND", default="django.core.mail.backends.smtp.EmailBackend")
 
 EMAIL_HOST = os.getenv("EMAIL_HOST") or config("EMAIL_HOST", default="smtp.gmail.com")
 EMAIL_PORT = int(os.getenv("EMAIL_PORT") or config("EMAIL_PORT", default=587, cast=int))
-EMAIL_USE_TLS = True
+EMAIL_USE_TLS = config("EMAIL_USE_TLS", default=(EMAIL_PORT == 587), cast=bool)
+EMAIL_USE_SSL = config("EMAIL_USE_SSL", default=(EMAIL_PORT == 465), cast=bool)
 
 EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER") or config("EMAIL_HOST_USER", default="shahbazbutt22ee@gmail.com")
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD") or config("EMAIL_HOST_PASSWORD", default="")
-EMAIL_TIMEOUT = int(os.getenv("EMAIL_TIMEOUT") or config("EMAIL_TIMEOUT", default=10, cast=int))
+EMAIL_TIMEOUT = int(os.getenv("EMAIL_TIMEOUT") or config("EMAIL_TIMEOUT", default=4, cast=int))
 
 DEFAULT_FROM_EMAIL = os.getenv(
     "DEFAULT_FROM_EMAIL",
-    config("DEFAULT_FROM_EMAIL", default="shahbazbutt22ee@gmail.com")
+    config("DEFAULT_FROM_EMAIL", default="Learnix <shahbazbutt22ee@gmail.com>")
 )
+
+# Optional HTTP-based email API providers (bypasses cloud host SMTP port restrictions)
+RESEND_API_KEY = os.getenv("RESEND_API_KEY") or config("RESEND_API_KEY", default="")
+BREVO_API_KEY = os.getenv("BREVO_API_KEY") or config("BREVO_API_KEY", default="")
 
 # Stripe Configuration (Test/Sandbox Mode Only per requirements)
 STRIPE_PUBLISHABLE_KEY = config('STRIPE_PUBLISHABLE_KEY', default=config('STRIPE_PUBLIC_KEY', default='pk_test_placeholder'))
@@ -208,6 +213,9 @@ STRIPE_PUBLIC_KEY = STRIPE_PUBLISHABLE_KEY
 STRIPE_SECRET_KEY = config('STRIPE_SECRET_KEY', default='sk_test_placeholder')
 STRIPE_WEBHOOK_SECRET = config('STRIPE_WEBHOOK_SECRET', default='whsec_placeholder')
 STRIPE_CURRENCY = config('STRIPE_CURRENCY', default='usd')
+
+if 'test' in sys.argv:
+    STRIPE_WEBHOOK_SECRET = 'whsec_placeholder'
 
 # Google OAuth 2.0 Configuration
 GOOGLE_CLIENT_ID = config('GOOGLE_CLIENT_ID', default='')

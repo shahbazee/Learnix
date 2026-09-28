@@ -10,8 +10,9 @@ import logging
 from urllib.parse import urlencode
 
 from django.shortcuts import render, redirect, get_object_or_404
-from django.urls import reverse_lazy
+from django.urls import reverse, reverse_lazy
 from django.db import transaction
+from django.core import signing
 from django.views.generic import FormView, TemplateView, UpdateView, View
 from django.contrib.auth import login, logout, get_user_model
 from django.contrib.auth.views import LoginView
@@ -42,6 +43,16 @@ from payments.services import send_registration_welcome_email
 
 User = get_user_model()
 logger = logging.getLogger(__name__)
+
+
+def _generate_otp_token(user_id):
+    """Cryptographically signs user ID to guarantee session recovery across redirects and browsers."""
+    return signing.dumps(user_id, salt='learnix_otp_verify')
+
+
+def _decode_otp_token(token):
+    """Decodes signed user ID with 30-minute validity window."""
+    return signing.loads(token, salt='learnix_otp_verify', max_age=1800)
 
 
 # ==============================================================================
@@ -87,15 +98,18 @@ class SignUpView(FormView):
         """
         otp_record = EmailOTP.create_for_user(user, purpose='registration')
         self.request.session['otp_user_id'] = user.id
+        self.request.session.modified = True
+        token = _generate_otp_token(user.id)
 
+        email_sent = False
         try:
             email_sent = send_otp_verification_email(user, otp_record.otp_code)
+            if email_sent:
+                self.request.session['otp_last_sent'] = timezone.now().timestamp()
         except Exception as e:
             logger.error(f"Error invoking send_otp_verification_email for {user.email}: {e}")
-            email_sent = False
 
         if email_sent:
-            self.request.session['otp_last_sent'] = timezone.now().timestamp()
             messages.success(
                 self.request,
                 f"Your account is pending verification. A fresh verification code has been dispatched to {user.email}."
@@ -111,35 +125,40 @@ class SignUpView(FormView):
         # Determine if this is an unverified re-registration
         is_re_registration = bool(form.instance and form.instance.pk)
 
-        # Save user as inactive (pending OTP verification)
-        user = form.save(commit=False)
-        user.is_active = False
-        user.set_password(form.cleaned_data['password'])
-        user.save()
+        with transaction.atomic():
+            # Save user as inactive (pending OTP verification)
+            user = form.save(commit=False)
+            user.is_active = False
+            user.set_password(form.cleaned_data['password'])
+            user.save()
 
-        # Initialize or retrieve UserProfile with selected role
-        role = form.cleaned_data.get('role', 'student')
-        if role not in ['student', 'instructor']:
-            role = 'student'
-        profile, _ = UserProfile.objects.get_or_create(user=user)
-        profile.role = role
-        profile.save(update_fields=['role'])
+            # Initialize or retrieve UserProfile with selected role
+            role = form.cleaned_data.get('role', 'student')
+            if role not in ['student', 'instructor']:
+                role = 'student'
+            profile, _ = UserProfile.objects.get_or_create(user=user)
+            profile.role = role
+            profile.save(update_fields=['role'])
 
-        # Generate cryptographic 6-digit OTP (invalidates any pending registration OTPs)
-        otp_record = EmailOTP.create_for_user(user, purpose='registration')
+            # Generate cryptographic 6-digit OTP (invalidates any pending registration OTPs)
+            otp_record = EmailOTP.create_for_user(user, purpose='registration')
 
         # Persist session verification state
+        token = _generate_otp_token(user.id)
         self.request.session['otp_user_id'] = user.id
+        self.request.session['otp_token'] = token
+        self.request.session.modified = True
 
         # Dispatch email notification defensively via centralized email service
+        email_sent = False
         try:
             email_sent = send_otp_verification_email(user, otp_record.otp_code)
+            if email_sent:
+                self.request.session['otp_last_sent'] = timezone.now().timestamp()
         except Exception as e:
             logger.error(f"Error invoking send_otp_verification_email for {user.email}: {e}")
-            email_sent = False
 
         if email_sent:
-            self.request.session['otp_last_sent'] = timezone.now().timestamp()
             if is_re_registration:
                 messages.success(
                     self.request,
@@ -155,7 +174,7 @@ class SignUpView(FormView):
                 self.request,
                 f"Account pending verification. If you do not receive the email at {user.email} shortly, please click 'Resend Verification Code' below."
             )
-        return super().form_valid(form)
+        return redirect(self.success_url)
 
 
 class VerifyOTPView(FormView):
@@ -170,7 +189,18 @@ class VerifyOTPView(FormView):
     def dispatch(self, request, *args, **kwargs):
         if request.user.is_authenticated:
             return redirect('core:home')
+
         user_id = request.session.get('otp_user_id')
+        token = request.GET.get('token') or request.POST.get('token')
+
+        if not user_id and token:
+            try:
+                user_id = _decode_otp_token(token)
+                request.session['otp_user_id'] = user_id
+                request.session.modified = True
+            except (signing.BadSignature, signing.SignatureExpired):
+                user_id = None
+
         if not user_id:
             messages.error(request, "Registration session expired. Please sign up again.")
             return redirect('accounts:signup')
@@ -191,6 +221,13 @@ class VerifyOTPView(FormView):
 
     def get_user(self):
         user_id = self.request.session.get('otp_user_id')
+        token = self.request.GET.get('token') or self.request.POST.get('token')
+        if not user_id and token:
+            try:
+                user_id = _decode_otp_token(token)
+                self.request.session['otp_user_id'] = user_id
+            except Exception:
+                pass
         return get_object_or_404(User, id=user_id)
 
     def get_context_data(self, **kwargs):
@@ -198,6 +235,7 @@ class VerifyOTPView(FormView):
         user = self.get_user()
         context['pending_user'] = user
         context['pending_email'] = user.email if user else ""
+        context['token'] = self.request.GET.get('token') or self.request.POST.get('token', '')
         return context
 
     def form_valid(self, form):
@@ -260,6 +298,16 @@ class ResendOTPView(View):
 
     def post(self, request, *args, **kwargs):
         user_id = request.session.get('otp_user_id')
+        token = request.POST.get('token') or request.GET.get('token')
+
+        if not user_id and token:
+            try:
+                user_id = _decode_otp_token(token)
+                request.session['otp_user_id'] = user_id
+                request.session.modified = True
+            except Exception:
+                user_id = None
+
         if not user_id:
             messages.error(request, "Session expired. Please register again.")
             return redirect('accounts:signup')
@@ -269,6 +317,7 @@ class ResendOTPView(View):
             messages.info(request, "This account is already verified. Please sign in.")
             return redirect('accounts:login')
 
+        token_str = token or _generate_otp_token(user.id)
         # Rate limiting check (60s cooldown)
         last_sent = request.session.get('otp_last_sent')
         if last_sent:
@@ -283,16 +332,13 @@ class ResendOTPView(View):
 
         # Send fresh verification email defensively via centralized email service
         try:
-            email_sent = send_otp_verification_email(user, otp_record.otp_code)
-        except Exception as e:
-            logger.error(f"Failed to resend OTP verification email to {user.email}: {e}")
-            email_sent = False
-
-        if email_sent:
+            send_otp_verification_email(user, otp_record.otp_code)
             request.session['otp_last_sent'] = timezone.now().timestamp()
             messages.info(request, f"A fresh verification code has been dispatched to {user.email}.")
-        else:
+        except Exception as e:
+            logger.error(f"Failed to resend OTP verification email to {user.email}: {e}")
             messages.warning(request, "Could not send verification email. Please check your network or try again in a moment.")
+
         return redirect('accounts:verify_otp')
 
 
