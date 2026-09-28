@@ -26,23 +26,13 @@
       </p>
     </div>
 
-    <!-- Active Badges -->
-    <div class="flex items-center gap-3 shrink-0">
-      <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-50 border border-emerald-200/80 text-emerald-700 text-xs font-bold shadow-xs">
-        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-        <span>Active &amp; Pro Member</span>
-      </div>
-      <div class="px-3.5 py-1.5 rounded-xl bg-slate-100/90 border border-slate-200/80 text-slate-600 font-mono text-xs font-bold shadow-xs">
-        ID: {{ user_id_badge }}
-      </div>
-    </div>
   </div>
 
   <!-- Main Settings Layout -->
   <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
     
     <!-- ====================================================================
-         LEFT SIDEBAR: Navigation Tabs & Workspace Telemetry
+         LEFT SIDEBAR: Navigation Tabs
          ==================================================================== -->
     <div class="lg:col-span-4 xl:col-span-3 space-y-5">
       
@@ -352,57 +342,8 @@
                   <button type="button" onclick="disconnectIntegration('Google Workspace')" class="text-xs font-bold text-slate-600 hover:text-rose-600 transition-colors">
                     Disconnect
                   </button>
-                </div>
-              </div>
-
-              <!-- GitHub Profile Integration Card -->
-              <div class="p-5 rounded-2xl bg-slate-50/70 border border-slate-200/80 shadow-xs flex flex-col justify-between gap-4">
-                <div class="flex items-center justify-between">
-                  <div class="flex items-center gap-3">
-                    <div class="w-9 h-9 rounded-xl bg-[#0f172a] text-white flex items-center justify-center shadow-xs">
-                      <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
-                        <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/>
-                      </svg>
-                    </div>
-                    <div>
-                      <span class="block text-xs font-bold text-[#0f172a]">GitHub Profile</span>
-                      <span class="block text-[11px] text-slate-500 font-mono">@{{ profile.github_username|default:user.username }}</span>
-                    </div>
-                  </div>
-                  <span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-mono text-[10px] font-bold">Class Sync</span>
-                </div>
-
-                <div class="flex items-center justify-between pt-2 border-t border-slate-200/60 text-xs">
-                  <span class="flex items-center gap-1.5 text-slate-600 text-[11px]">
-                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                    <span>8 Classroom Repositories Synced</span>
-                  </span>
-                  <button type="button" onclick="showConfigureGithubModal()" class="px-3 py-1 rounded-full bg-white border border-slate-200 text-xs font-bold text-slate-700 shadow-xs hover:bg-slate-50 transition-all">
-                    Configure
-                  </button>
-                </div>
-              </div>
-
-            </div>
-          </div>
-
-          <!-- SECTION 4: Public Directory Listing Toggle Card -->
-          <div class="p-5 rounded-2xl bg-gradient-to-r from-violet-50/70 via-indigo-50/50 to-pink-50/40 border border-violet-100 shadow-xs flex items-center justify-between gap-4">
-            <div class="flex items-center gap-3.5">
-              <div class="w-10 h-10 rounded-2xl bg-white text-violet-700 shadow-xs border border-violet-100 flex items-center justify-center shrink-0">
-                <span class="material-symbols-outlined text-[22px]">visibility</span>
-              </div>
-              <div>
-                <span class="block text-sm font-extrabold text-[#0f172a]">Public Directory Listing</span>
-                <span class="block text-xs text-slate-500">Allow fellow enrolled students to find you in peer search and collaborative masterclass teams.</span>
               </div>
             </div>
-
-            <!-- iOS Style Toggle -->
-            <label class="relative inline-flex items-center cursor-pointer shrink-0">
-              <input type="checkbox" name="public_directory" value="true" {% if profile.public_directory %}checked{% endif %} class="sr-only peer" onchange="markUnsaved()"/>
-              <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gradient-to-r peer-checked:from-violet-600 peer-checked:to-cyan-500"></div>
-            </label>
           </div>
 
         </div>
@@ -497,8 +438,8 @@
           <div class="p-6 rounded-2xl bg-gradient-to-r from-violet-600 via-indigo-600 to-cyan-500 text-white shadow-lg flex flex-col md:flex-row items-center justify-between gap-6">
             <div>
               <span class="px-3 py-1 rounded-full bg-white/20 text-white text-xs font-bold uppercase tracking-wider backdrop-blur-md">Active Plan</span>
-              <h3 class="text-2xl font-black mt-2">Learnix Pro Spatial Tier</h3>
-              <p class="text-xs text-white/80 mt-1 max-w-md">Unlimited access to spatial curricula, GPU sandbox compute, live instructor pods, and tamper-proof SHA-256 certificates.</p>
+              <h3 class="text-2xl font-black mt-2">Learnix Pro Membership</h3>
+              <p class="text-xs text-white/80 mt-1 max-w-md">Unlimited access to all courses, interactive coding exercises, and verified certificates.</p>
             </div>
             <div class="text-right">
               <span class="text-3xl font-black">$49</span>
@@ -528,7 +469,7 @@
 
             <div class="flex items-center justify-between p-4 rounded-2xl bg-slate-50 border border-slate-200">
               <div>
-                <span class="block text-xs font-bold text-slate-900">Weekly Learning Telemetry Digest</span>
+                <span class="block text-xs font-bold text-slate-900">Weekly Learning Progress Digest</span>
                 <span class="block text-[11px] text-slate-500">A personalized weekly breakdown of lesson hours, streak status, and completion benchmarks.</span>
               </div>
               <input type="checkbox" checked class="w-4 h-4 text-violet-600 rounded focus:ring-violet-500"/>
@@ -589,24 +530,6 @@
     <button type="submit" form="accountSettingsForm" id="saveChangesBtn" class="inline-flex items-center gap-2 px-6 py-2 rounded-full bg-gradient-to-r from-violet-600 via-indigo-600 to-cyan-500 text-white text-xs font-bold shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-95 transition-all">
       <span class="material-symbols-outlined text-[16px]">check</span>
       <span>Save Changes</span>
-    </button>
-  </div>
-</div>
-
-<!-- Public Visibility Modal -->
-<div id="publicVisibilityModal" class="fixed inset-0 z-50 hidden bg-slate-900/40 backdrop-blur-md flex items-center justify-center p-4">
-  <div class="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl space-y-4">
-    <div class="flex items-center justify-between pb-3 border-b border-slate-100">
-      <h3 class="text-base font-extrabold text-[#0f172a]">Public Profile Visibility</h3>
-      <button type="button" onclick="closePublicVisibilityModal()" class="text-slate-400 hover:text-slate-700">
-        <span class="material-symbols-outlined text-[20px]">close</span>
-      </button>
-    </div>
-    <p class="text-xs text-slate-600 leading-relaxed">
-      Your profile picture, full name, academic headline, and verified course completion certificates will be displayed in the peer directory. Private details like email, phone number, and billing information are never displayed publicly.
-    </p>
-    <button type="button" onclick="closePublicVisibilityModal()" class="w-full py-2.5 rounded-full bg-violet-600 text-white text-xs font-bold">
-      Understood
     </button>
   </div>
 </div>
@@ -716,20 +639,10 @@
     }
   }
 
-  // Modals
-  function showPublicVisibilityModal() {
-    document.getElementById('publicVisibilityModal').classList.remove('hidden');
-  }
-  function closePublicVisibilityModal() {
-    document.getElementById('publicVisibilityModal').classList.add('hidden');
-  }
   function disconnectIntegration(name) {
     if (confirm(`Disconnect ${name} from your Learnix account?`)) {
       alert(`${name} disconnected.`);
     }
-  }
-  function showConfigureGithubModal() {
-    alert("GitHub Classroom synchronization is active for 8 repositories.");
   }
 
   // Track changes on form inputs
@@ -767,7 +680,7 @@
             const dot = document.getElementById('saveStatusDot');
             const text = document.getElementById('saveStatusText');
             if (dot) dot.className = 'w-2.5 h-2.5 rounded-full bg-emerald-500';
-            if (text) text.textContent = 'All changes saved & synchronized';
+            if (text) text.textContent = 'Changes saved';
 
             saveBtn.innerHTML = `
               <span class="material-symbols-outlined text-[16px]">check_circle</span>

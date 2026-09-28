@@ -6,10 +6,12 @@ Session Management, and Real-Time Profile Synchronization.
 
 import secrets
 import requests
+import logging
 from urllib.parse import urlencode
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse_lazy
+from django.db import transaction
 from django.views.generic import FormView, TemplateView, UpdateView, View
 from django.contrib.auth import login, logout, get_user_model
 from django.contrib.auth.views import LoginView
@@ -19,6 +21,7 @@ from django.utils import timezone
 from django.core.mail import send_mail
 from django.conf import settings
 from django.http import JsonResponse
+from django.utils.http import url_has_allowed_host_and_scheme
 
 from .models import UserProfile, EmailOTP
 from .forms import (
@@ -38,6 +41,7 @@ from core.emails import (
 from payments.services import send_registration_welcome_email
 
 User = get_user_model()
+logger = logging.getLogger(__name__)
 
 
 # ==============================================================================
@@ -48,6 +52,8 @@ class SignUpView(FormView):
     """
     Phase 1 of Registration: Validates input, creates inactive user (is_active=False),
     issues cryptographic 6-digit OTP, and triggers verification email.
+    If an unverified account already exists for the email, resends a fresh OTP and
+    redirects to OTP verification instead of showing an 'already exists' error.
     """
     template_name = 'accounts/signup.html'
     form_class = StudentRegistrationForm
@@ -58,8 +64,54 @@ class SignUpView(FormView):
             return redirect('core:home')
         return super().dispatch(request, *args, **kwargs)
 
+    def post(self, request, *args, **kwargs):
+        submitted_email = str(request.POST.get('email', '')).strip().lower()
+        if submitted_email:
+            active_user = User.objects.filter(email__iexact=submitted_email, is_active=True).first()
+            if not active_user:
+                unverified_user = User.objects.filter(email__iexact=submitted_email, is_active=False).first()
+                if unverified_user:
+                    form = self.get_form()
+                    if form.is_valid():
+                        return self.form_valid(form)
+                    else:
+                        # Unverified account exists; per requirements, do NOT show
+                        # "already exists" error. Resend fresh OTP and take user to verification page.
+                        return self._dispatch_unverified_otp_and_redirect(unverified_user)
+        return super().post(request, *args, **kwargs)
+
+    def _dispatch_unverified_otp_and_redirect(self, user):
+        """
+        Safely generates a fresh OTP for an unverified user, dispatches email defensively,
+        and redirects to the OTP verification page without leaving account in a broken state.
+        """
+        otp_record = EmailOTP.create_for_user(user, purpose='registration')
+        self.request.session['otp_user_id'] = user.id
+
+        try:
+            email_sent = send_otp_verification_email(user, otp_record.otp_code)
+        except Exception as e:
+            logger.error(f"Error invoking send_otp_verification_email for {user.email}: {e}")
+            email_sent = False
+
+        if email_sent:
+            self.request.session['otp_last_sent'] = timezone.now().timestamp()
+            messages.success(
+                self.request,
+                f"Your account is pending verification. A fresh verification code has been dispatched to {user.email}."
+            )
+        else:
+            messages.warning(
+                self.request,
+                f"Account pending verification. If you do not receive the email at {user.email} shortly, please click 'Resend Verification Code' below."
+            )
+        return redirect(self.success_url)
+
     def form_valid(self, form):
-        # Create inactive user
+        # Determine if this is an unverified re-registration
+        is_re_registration = bool(form.instance and form.instance.pk)
+
+        # Save user as inactive (pending OTP verification)
         user = form.save(commit=False)
         user.is_active = False
         user.set_password(form.cleaned_data['password'])
@@ -73,20 +125,36 @@ class SignUpView(FormView):
         profile.role = role
         profile.save(update_fields=['role'])
 
-        # Generate cryptographic 6-digit OTP
+        # Generate cryptographic 6-digit OTP (invalidates any pending registration OTPs)
         otp_record = EmailOTP.create_for_user(user, purpose='registration')
 
         # Persist session verification state
         self.request.session['otp_user_id'] = user.id
-        self.request.session['otp_last_sent'] = timezone.now().timestamp()
 
-        # Dispatch email notification via centralized email service
-        send_otp_verification_email(user, otp_record.otp_code)
+        # Dispatch email notification defensively via centralized email service
+        try:
+            email_sent = send_otp_verification_email(user, otp_record.otp_code)
+        except Exception as e:
+            logger.error(f"Error invoking send_otp_verification_email for {user.email}: {e}")
+            email_sent = False
 
-        messages.success(
-            self.request,
-            f"Verification code sent to {user.email}. Enter the 6-digit code to activate your account."
-        )
+        if email_sent:
+            self.request.session['otp_last_sent'] = timezone.now().timestamp()
+            if is_re_registration:
+                messages.success(
+                    self.request,
+                    f"Your account is pending verification. A fresh verification code has been dispatched to {user.email}."
+                )
+            else:
+                messages.success(
+                    self.request,
+                    f"Verification code sent to {user.email}. Enter the 6-digit code to activate your account."
+                )
+        else:
+            messages.warning(
+                self.request,
+                f"Account pending verification. If you do not receive the email at {user.email} shortly, please click 'Resend Verification Code' below."
+            )
         return super().form_valid(form)
 
 
@@ -102,9 +170,23 @@ class VerifyOTPView(FormView):
     def dispatch(self, request, *args, **kwargs):
         if request.user.is_authenticated:
             return redirect('core:home')
-        if not request.session.get('otp_user_id'):
+        user_id = request.session.get('otp_user_id')
+        if not user_id:
             messages.error(request, "Registration session expired. Please sign up again.")
             return redirect('accounts:signup')
+
+        user = User.objects.filter(id=user_id).first()
+        if not user:
+            request.session.pop('otp_user_id', None)
+            messages.error(request, "Registration session expired. Please sign up again.")
+            return redirect('accounts:signup')
+
+        if user.is_active:
+            request.session.pop('otp_user_id', None)
+            request.session.pop('otp_last_sent', None)
+            messages.info(request, "Your account has already been verified. Please sign in.")
+            return redirect('accounts:login')
+
         return super().dispatch(request, *args, **kwargs)
 
     def get_user(self):
@@ -156,8 +238,11 @@ class VerifyOTPView(FormView):
         self.request.session.pop('otp_user_id', None)
         self.request.session.pop('otp_last_sent', None)
 
-        # Dispatch registration success notification via centralized email service
-        send_registration_success_email(user)
+        # Dispatch registration success notification defensively via centralized email service
+        try:
+            send_registration_success_email(user)
+        except Exception as e:
+            logger.error(f"Failed to dispatch registration success email: {e}")
 
         messages.success(
             self.request,
@@ -180,6 +265,9 @@ class ResendOTPView(View):
             return redirect('accounts:signup')
 
         user = get_object_or_404(User, id=user_id)
+        if user.is_active:
+            messages.info(request, "This account is already verified. Please sign in.")
+            return redirect('accounts:login')
 
         # Rate limiting check (60s cooldown)
         last_sent = request.session.get('otp_last_sent')
@@ -192,12 +280,19 @@ class ResendOTPView(View):
 
         # Issue new code
         otp_record = EmailOTP.create_for_user(user, purpose='registration')
-        request.session['otp_last_sent'] = timezone.now().timestamp()
 
-        # Send fresh verification email via centralized email service
-        send_otp_verification_email(user, otp_record.otp_code)
+        # Send fresh verification email defensively via centralized email service
+        try:
+            email_sent = send_otp_verification_email(user, otp_record.otp_code)
+        except Exception as e:
+            logger.error(f"Failed to resend OTP verification email to {user.email}: {e}")
+            email_sent = False
 
-        messages.info(request, "A fresh verification code has been dispatched to your email.")
+        if email_sent:
+            request.session['otp_last_sent'] = timezone.now().timestamp()
+            messages.info(request, f"A fresh verification code has been dispatched to {user.email}.")
+        else:
+            messages.warning(request, "Could not send verification email. Please check your network or try again in a moment.")
         return redirect('accounts:verify_otp')
 
 
@@ -238,12 +333,14 @@ class UserLogoutView(View):
     def post(self, request, *args, **kwargs):
         if request.user.is_authenticated:
             logout(request)
+            request.session.flush()
             messages.info(request, "You have been logged out of your Learnix session.")
         return redirect('core:home')
 
     def get(self, request, *args, **kwargs):
         if request.user.is_authenticated:
             logout(request)
+            request.session.flush()
             messages.info(request, "You have been logged out of your Learnix session.")
         return redirect('core:home')
 
@@ -531,7 +628,8 @@ class ProfileView(LoginRequiredMixin, View):
             profile.github_username = request.POST.get('github_username', '').strip()
 
         # Boolean directory flag
-        profile.public_directory = (request.POST.get('public_directory') in ['on', 'true', 'True', True, '1'])
+        if 'public_directory' in request.POST:
+            profile.public_directory = (request.POST.get('public_directory') in ['on', 'true', 'True', True, '1'])
 
         # Avatar handling
         if 'avatar' in request.FILES:
@@ -559,25 +657,128 @@ class ProfileView(LoginRequiredMixin, View):
 # 5. CONTINUE WITH GOOGLE (OAUTH 2.0 INTEGRATION)
 # ==============================================================================
 
+def complete_google_auth_login(request, google_email, given_name='', family_name='', next_url=None, role='student', avatar_url=''):
+    """
+    Unified Google OAuth authentication and session establishment.
+    Handles:
+    1. New User: creates Learnix account, marks is_active=True (email verified by Google),
+       sets unusable password, configures profile with role and google_email.
+    2. Existing User (Google): logs user in, ensures active.
+    3. Existing User (Normal email/password): safely links Google email without overwriting
+       password or creating duplicate account, marks active if previously unverified.
+    """
+    google_email = google_email.strip().lower()
+    user = User.objects.filter(email__iexact=google_email).first()
+    is_new_user = False
+    is_linked_user = False
+
+    if user:
+        # Activate account if it was pending verification (Google verified identity!)
+        if not user.is_active:
+            user.is_active = True
+            user.save(update_fields=['is_active'])
+
+        profile, _ = UserProfile.objects.get_or_create(user=user)
+        if not profile.google_email:
+            profile.google_email = google_email
+            is_linked_user = True
+        profile.save()
+        user.profile = profile
+        # NOTE: We preserve user.password intact so existing email/password login continues to work!
+    else:
+        is_new_user = True
+        base_username = (given_name.lower().replace(' ', '') if given_name else google_email.split('@')[0])
+        clean_username = ''.join(c for c in base_username if c.isalnum() or c in ['_', '.'])
+        if not clean_username:
+            clean_username = 'student'
+
+        username = clean_username
+        counter = 1
+        while User.objects.filter(username__iexact=username).exists():
+            username = f"{clean_username}_{counter}"
+            counter += 1
+
+        user = User.objects.create(
+            username=username,
+            email=google_email,
+            first_name=given_name or google_email.split('@')[0].capitalize(),
+            last_name=family_name or 'Learner',
+            is_active=True
+        )
+        # Set unusable password so account uses Google OAuth (or explicit password reset)
+        user.set_unusable_password()
+        user.save(update_fields=['password'])
+
+        assigned_role = role if role in ['student', 'instructor'] else 'student'
+        profile, _ = UserProfile.objects.get_or_create(user=user)
+        profile.google_email = google_email
+        profile.role = assigned_role
+        profile.headline = "Masterclass Instructor" if assigned_role == 'instructor' else "Engineering Fellow"
+        profile.location_timezone = "San Francisco, CA · Pacific Daylight (UTC-7)"
+        profile.save()
+        user.profile = profile
+
+    # Authenticate session
+    login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+
+    # Determine safe destination redirect URL
+    if is_new_user:
+        target_redirect = reverse_lazy('core:home')
+    elif next_url and url_has_allowed_host_and_scheme(next_url, allowed_hosts={request.get_host()}):
+        target_redirect = next_url
+    elif hasattr(user, 'profile') and user.profile.is_instructor:
+        target_redirect = reverse_lazy('courses:instructor_studio')
+    else:
+        target_redirect = reverse_lazy('accounts:profile')
+
+    if is_new_user:
+        messages.success(
+            request,
+            f"Welcome to {getattr(settings, 'SITE_NAME', 'Learnix')}, {user.first_name or user.username}! Your account has been verified and created via Google."
+        )
+    elif is_linked_user:
+        messages.success(
+            request,
+            f"Welcome back, {user.first_name or user.username}! Your Google account has been linked to your existing Learnix account."
+        )
+    else:
+        messages.success(
+            request,
+            f"Welcome back, {user.first_name or user.username}! Signed in via Google."
+        )
+
+    return redirect(target_redirect)
+
+
 class GoogleLoginView(View):
     """
     Initiates Google OAuth 2.0 Authorization Code Flow for both Login and Signup.
-    Secured with state token against CSRF attacks.
+    Directs user straight to Google's official authorization screen with prompt=select_account
+    so users can always choose their intended Google account.
     """
     def get(self, request, *args, **kwargs):
         client_id = getattr(settings, 'GOOGLE_CLIENT_ID', '').strip()
-        if not client_id or client_id.startswith('your_'):
+        client_secret = getattr(settings, 'GOOGLE_CLIENT_SECRET', '').strip()
+
+        # If Google OAuth credentials are not yet configured in .env
+        if not client_id or not client_secret or client_id.startswith('your_'):
             messages.warning(
                 request,
                 "Google OAuth 2.0 is not yet configured. Please set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in your .env file."
             )
+            referer = request.META.get('HTTP_REFERER')
+            if referer and url_has_allowed_host_and_scheme(referer, allowed_hosts={request.get_host()}):
+                return redirect(referer)
             return redirect('accounts:login')
 
         # Generate cryptographic CSRF state token
         state = secrets.token_urlsafe(32)
         request.session['google_oauth_state'] = state
+
         if request.GET.get('next'):
             request.session['google_oauth_next'] = request.GET.get('next')
+        if request.GET.get('role'):
+            request.session['google_oauth_role'] = request.GET.get('role')
 
         redirect_uri = request.build_absolute_uri(reverse_lazy('accounts:google_callback'))
         params = {
@@ -598,21 +799,27 @@ class GoogleCallbackView(View):
     Handles Google OAuth 2.0 server callback:
     1. Validates CSRF state token
     2. Exchanges authorization code for access token via HTTPS POST
-    3. Fetches userinfo profile from Google
+    3. Fetches verified userinfo profile from Google
     4. Finds or creates corresponding Django User (preventing duplicate accounts)
     5. Logs user in and redirects to appropriate page
     """
     def get(self, request, *args, **kwargs):
-        # 1. Error check
+        # 1. Error check (e.g. user cancelled or denied access)
         if 'error' in request.GET:
             error = request.GET.get('error')
-            messages.info(request, f"Google sign-in was cancelled ({error}).")
+            request.session.pop('google_oauth_state', None)
+            request.session.pop('google_oauth_next', None)
+            request.session.pop('google_oauth_role', None)
+            if error in ['access_denied', 'user_cancelled', 'immediate_failed']:
+                messages.info(request, "Google sign-in was cancelled.")
+            else:
+                messages.error(request, f"Google authentication failed ({error}).")
             return redirect('accounts:login')
 
         # 2. State verification (Anti-CSRF)
         state = request.GET.get('state')
         saved_state = request.session.pop('google_oauth_state', None)
-        if not state or state != saved_state:
+        if not state or not saved_state or state != saved_state:
             messages.error(request, "OAuth security verification failed (state mismatch). Please try again.")
             return redirect('accounts:login')
 
@@ -643,8 +850,11 @@ class GoogleCallbackView(View):
 
             tokens = token_resp.json()
             access_token = tokens.get('access_token')
+            if not access_token:
+                messages.error(request, "Failed to retrieve access token from Google.")
+                return redirect('accounts:login')
 
-            # 5. Fetch user profile from Google userinfo API
+            # 5. Fetch verified user profile from Google userinfo API
             userinfo_resp = requests.get(
                 'https://www.googleapis.com/oauth2/v3/userinfo',
                 headers={'Authorization': f'Bearer {access_token}'},
@@ -664,67 +874,15 @@ class GoogleCallbackView(View):
             messages.error(request, "Google account did not return a valid email address.")
             return redirect('accounts:login')
 
+        if userinfo.get('email_verified') is False:
+            messages.error(request, "Your Google email address is not verified by Google.")
+            return redirect('accounts:login')
+
         given_name = userinfo.get('given_name', '')
         family_name = userinfo.get('family_name', '')
+        picture = userinfo.get('picture', '')
+        next_url = request.session.pop('google_oauth_next', None)
+        role = request.session.pop('google_oauth_role', 'student')
 
-        # 6. Find or create Django User
-        user = User.objects.filter(email__iexact=google_email).first()
-        is_new_user = False
+        return complete_google_auth_login(request, google_email, given_name, family_name, next_url, role=role, avatar_url=picture)
 
-        if user:
-            # Existing user: Activate if not active
-            if not user.is_active:
-                user.is_active = True
-                user.save(update_fields=['is_active'])
-
-            profile, _ = UserProfile.objects.get_or_create(user=user)
-            if not profile.google_email:
-                profile.google_email = google_email
-                profile.save(update_fields=['google_email'])
-        else:
-            # New user: Create unique username
-            is_new_user = True
-            base_username = google_email.split('@')[0]
-            clean_username = ''.join(c for c in base_username if c.isalnum() or c in ['_', '.'])
-            if not clean_username:
-                clean_username = 'student'
-
-            username = clean_username
-            counter = 1
-            while User.objects.filter(username__iexact=username).exists():
-                username = f"{clean_username}_{counter}"
-                counter += 1
-
-            user = User.objects.create(
-                username=username,
-                email=google_email,
-                first_name=given_name,
-                last_name=family_name,
-                is_active=True
-            )
-            user.set_unusable_password()
-            user.save()
-
-            profile, _ = UserProfile.objects.get_or_create(user=user)
-            profile.google_email = google_email
-            profile.headline = "Engineering Fellow"
-            profile.location_timezone = "San Francisco, CA · Pacific Daylight (UTC-7)"
-            profile.save()
-
-        # 7. Authenticate session
-        login(request, user, backend='django.contrib.auth.backends.ModelBackend')
-
-        next_url = request.session.pop('google_oauth_next', None) or reverse_lazy('accounts:profile')
-
-        if is_new_user:
-            messages.success(
-                request,
-                f"Welcome to {settings.SITE_NAME}, {user.first_name or user.username}! Your account has been created via Google."
-            )
-        else:
-            messages.success(
-                request,
-                f"Welcome back, {user.first_name or user.username}! Signed in via Google."
-            )
-
-        return redirect(next_url)

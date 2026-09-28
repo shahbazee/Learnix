@@ -29,7 +29,7 @@ class AccountsAuthenticationTestCase(TestCase):
         self.profile_url = reverse('accounts:profile')
 
     def test_student_registration_form_validation(self):
-        """Validates email uniqueness and password rules (SRS Section 9)."""
+        """Validates email uniqueness and password rules."""
         # Weak password (< 8 chars)
         form = StudentRegistrationForm(data={
             'first_name': 'Marcus',
@@ -127,7 +127,7 @@ class AccountsAuthenticationTestCase(TestCase):
         self.assertFalse(user.is_active)
 
     def test_brute_force_otp_attempt_ceiling(self):
-        """Enforces a maximum of 5 failed attempts before locking the code (SRS Section 15)."""
+        """Enforces a maximum of 5 failed attempts before locking the code."""
         user = User.objects.create_user(
             username='brute_tester',
             email='brute@learnix.com',
@@ -392,13 +392,14 @@ class NewAuthenticationFeaturesTestCase(TestCase):
         callback_url = f"{self.google_callback_url}?code=google_auth_code&state=valid_secret_state"
         response = self.client.get(callback_url)
         self.assertEqual(response.status_code, 302)
-        self.assertRedirects(response, self.profile_url)
+        self.assertRedirects(response, reverse('core:home'))
 
         # User was created and is authenticated
         new_user = User.objects.get(email='newgoogleuser@gmail.com')
         self.assertTrue(new_user.is_active)
         self.assertEqual(new_user.first_name, 'Google')
         self.assertEqual(new_user.last_name, 'Student')
+        self.assertFalse(bool(new_user.profile.avatar))  # Profile picture remains empty/default per specs
         self.assertEqual(int(self.client.session['_auth_user_id']), new_user.id)
 
     @patch('accounts.views.requests.get')
@@ -443,11 +444,221 @@ class NewAuthenticationFeaturesTestCase(TestCase):
         self.assertRedirects(response, reverse('accounts:login'))
         self.assertNotIn('_auth_user_id', self.client.session)
 
-    @override_settings(GOOGLE_CLIENT_ID='')
-    def test_google_login_unconfigured_redirects_with_warning(self):
-        """When Google credentials are not configured, friendly redirect to login."""
+    def test_google_login_includes_prompt_select_account(self):
+        """Google login URL contains prompt=select_account to support multi-account selection."""
         response = self.client.get(self.google_login_url)
         self.assertEqual(response.status_code, 302)
+        self.assertIn('prompt=select_account', response.url)
+
+    @patch('accounts.views.requests.get')
+    @patch('accounts.views.requests.post')
+    def test_google_callback_with_existing_password_user_preserves_password(self, mock_post, mock_get):
+        """When an existing normal email/password user authenticates via Google, password is not overwritten."""
+        mock_post.return_value = MagicMock(
+            status_code=200,
+            json=lambda: {'access_token': 'fake_google_access_token'}
+        )
+        mock_get.return_value = MagicMock(
+            status_code=200,
+            json=lambda: {
+                'id': 'google_sub_password_preserve',
+                'email': 'student@learnix.edu',
+                'given_name': 'OriginalFirst',
+                'family_name': 'OriginalLast',
+            }
+        )
+
+        # Set session state
+        session = self.client.session
+        session['google_oauth_state'] = 'valid_state_for_linking'
+        session.save()
+
+        callback_url = f"{self.google_callback_url}?code=google_auth_code&state=valid_state_for_linking"
+        response = self.client.get(callback_url)
+        self.assertEqual(response.status_code, 302)
+
+        # Refresh user from DB and verify password is still valid!
+        self.user.refresh_from_db()
+        self.assertTrue(self.user.check_password('OldSecurePassword123!'))
+        self.assertEqual(self.user.profile.google_email, 'student@learnix.edu')
+        self.assertEqual(int(self.client.session['_auth_user_id']), self.user.id)
+
+    def test_google_callback_cancelled_redirects_and_creates_no_user(self):
+        """When Google authentication is cancelled (access_denied), no account is created."""
+        before_count = User.objects.count()
+        session = self.client.session
+        session['google_oauth_state'] = 'pending_state'
+        session.save()
+
+        callback_url = f"{self.google_callback_url}?error=access_denied&state=pending_state"
+        response = self.client.get(callback_url)
+        self.assertEqual(response.status_code, 302)
         self.assertRedirects(response, reverse('accounts:login'))
+        self.assertEqual(User.objects.count(), before_count)
+        self.assertNotIn('_auth_user_id', self.client.session)
+
+    @patch('accounts.views.requests.post')
+    def test_google_callback_token_failure_redirects_and_creates_no_user(self, mock_post):
+        """When token exchange with Google fails, no account is created and error is handled."""
+        mock_post.return_value = MagicMock(status_code=400, json=lambda: {'error': 'invalid_grant'})
+        before_count = User.objects.count()
+
+        session = self.client.session
+        session['google_oauth_state'] = 'valid_state_fail'
+        session.save()
+
+        callback_url = f"{self.google_callback_url}?code=bad_code&state=valid_state_fail"
+        response = self.client.get(callback_url)
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, reverse('accounts:login'))
+        self.assertEqual(User.objects.count(), before_count)
+        self.assertNotIn('_auth_user_id', self.client.session)
+
+
+class UnverifiedUserOTPSignupFlowTestCase(TestCase):
+    """
+    Test suite specifically validating unverified vs verified user signup behavior:
+    1. Unverified user submitting same email resends fresh OTP and redirects to verify_otp.
+    2. No 'An account with this email address already exists' error is shown for unverified emails.
+    3. Verified user submitting same email shows 'An account with this email address already exists. Please sign in.'.
+    4. OTP email sending failure does not leave account or session in a broken state.
+    5. Inactive user login returns helpful unverified notice.
+    """
+
+    def setUp(self):
+        self.client = Client()
+        self.signup_url = reverse('accounts:signup')
+        self.verify_otp_url = reverse('accounts:verify_otp')
+        self.login_url = reverse('accounts:login')
+
+    def test_signup_with_unverified_existing_email_resends_otp_and_redirects(self):
+        """If email belongs to an unverified user, resend OTP and redirect to verify_otp without error."""
+        unverified_user = User.objects.create_user(
+            username='pending_alex',
+            email='alex.pending@learnix.edu',
+            password='InitialPassword123!',
+            is_active=False
+        )
+        old_otp = EmailOTP.create_for_user(unverified_user, purpose='registration')
+
+        # Re-submit signup with same email
+        payload = {
+            'first_name': 'Alex',
+            'last_name': 'Pending',
+            'username': 'pending_alex',
+            'email': 'alex.pending@learnix.edu',
+            'password': 'UpdatedPassword123!',
+            'confirm_password': 'UpdatedPassword123!',
+        }
+        response = self.client.post(self.signup_url, data=payload)
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, self.verify_otp_url)
+
+        # Check session is set to unverified user
+        self.assertEqual(self.client.session.get('otp_user_id'), unverified_user.id)
+
+        # Verify a new OTP was issued
+        new_otp = EmailOTP.objects.filter(user=unverified_user, purpose='registration', is_verified=False).first()
+        self.assertIsNotNone(new_otp)
+        self.assertNotEqual(old_otp.otp_code, new_otp.otp_code)
+
+        # Verify user can complete registration with new OTP
+        verify_resp = self.client.post(self.verify_otp_url, data={'otp_code': new_otp.otp_code})
+        self.assertEqual(verify_resp.status_code, 302)
+        unverified_user.refresh_from_db()
+        self.assertTrue(unverified_user.is_active)
+
+    def test_signup_with_unverified_existing_email_and_invalid_form_resends_otp(self):
+        """Even if form fields have errors, an unverified email resends OTP and redirects to verify_otp."""
+        unverified_user = User.objects.create_user(
+            username='pending_jamie',
+            email='jamie.pending@learnix.edu',
+            password='InitialPassword123!',
+            is_active=False
+        )
+
+        # Submit signup with same email but mismatched passwords
+        payload = {
+            'first_name': 'Jamie',
+            'last_name': 'Pending',
+            'username': 'pending_jamie',
+            'email': 'jamie.pending@learnix.edu',
+            'password': 'PasswordOne123!',
+            'confirm_password': 'PasswordTwoMismatched!',
+        }
+        response = self.client.post(self.signup_url, data=payload)
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, self.verify_otp_url)
+
+        # Session should be set to unverified user
+        self.assertEqual(self.client.session.get('otp_user_id'), unverified_user.id)
+
+    def test_signup_with_verified_existing_email_shows_please_sign_in_error(self):
+        """If email belongs to an already active/verified user, reject with sign in notice."""
+        User.objects.create_user(
+            username='active_samantha',
+            email='samantha.active@learnix.edu',
+            password='VerifiedPassword123!',
+            is_active=True
+        )
+
+        payload = {
+            'first_name': 'Samantha',
+            'last_name': 'Active',
+            'username': 'samantha_new',
+            'email': 'samantha.active@learnix.edu',
+            'password': 'NewPassword123!',
+            'confirm_password': 'NewPassword123!',
+        }
+        response = self.client.post(self.signup_url, data=payload)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "An account with this email address already exists. Please sign in.")
+
+    @patch('accounts.views.send_otp_verification_email')
+    def test_signup_otp_email_failure_does_not_break_account(self, mock_send_email):
+        """If SMTP delivery fails during signup, account and session are preserved so user can verify."""
+        mock_send_email.return_value = False  # Simulate SMTP failure
+
+        payload = {
+            'first_name': 'SMTP',
+            'last_name': 'Tester',
+            'username': 'smtp_tester',
+            'email': 'smtp.fail@learnix.edu',
+            'password': 'SecurePassword123!',
+            'confirm_password': 'SecurePassword123!',
+        }
+        response = self.client.post(self.signup_url, data=payload)
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, self.verify_otp_url)
+
+        user = User.objects.get(username='smtp_tester')
+        self.assertFalse(user.is_active)
+        self.assertEqual(self.client.session.get('otp_user_id'), user.id)
+
+        # OTP was created
+        otp_record = EmailOTP.objects.filter(user=user, is_verified=False).first()
+        self.assertIsNotNone(otp_record)
+
+        # User enters OTP on verify page -> successfully activates!
+        verify_resp = self.client.post(self.verify_otp_url, data={'otp_code': otp_record.otp_code})
+        self.assertEqual(verify_resp.status_code, 302)
+        user.refresh_from_db()
+        self.assertTrue(user.is_active)
+
+    def test_unverified_user_login_shows_helpful_notice(self):
+        """Unverified user attempting credentials login receives clear instructions to verify OTP."""
+        User.objects.create_user(
+            username='unverified_login_user',
+            email='unverified.login@learnix.edu',
+            password='ValidPassword123!',
+            is_active=False
+        )
+        response = self.client.post(self.login_url, data={
+            'username': 'unverified_login_user',
+            'password': 'ValidPassword123!'
+        })
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Your account email has not been verified yet")
+
 
 

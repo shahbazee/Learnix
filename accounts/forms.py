@@ -1,10 +1,9 @@
 """
 Forms and ModelForms for user registration, OTP verification, and login.
-Implements validation constraints defined in SRS Section 9.
 """
 
 from django import forms
-from django.contrib.auth import get_user_model
+from django.contrib.auth import authenticate, get_user_model
 from django.core.exceptions import ValidationError
 from django.contrib.auth.forms import AuthenticationForm
 
@@ -66,13 +65,48 @@ class StudentRegistrationForm(forms.ModelForm):
             }),
         }
 
+    def __init__(self, *args, **kwargs):
+        # If an unverified user exists with this email, bind existing instance before super().__init__
+        # so ModelForm uniqueness validation properly excludes this instance's pk.
+        if 'instance' not in kwargs:
+            data = kwargs.get('data')
+            if data is None and len(args) > 0 and hasattr(args[0], 'get'):
+                data = args[0]
+            if data and 'email' in data:
+                submitted_email = str(data.get('email', '')).strip().lower()
+                if submitted_email:
+                    unverified_user = User.objects.filter(email__iexact=submitted_email, is_active=False).first()
+                    if unverified_user:
+                        kwargs['instance'] = unverified_user
+        super().__init__(*args, **kwargs)
+
+    def clean_username(self):
+        """Validates username uniqueness, allowing unverified accounts to update their username."""
+        username = self.cleaned_data.get("username", "").strip()
+        if not username:
+            raise ValidationError("A unique handle is required.")
+
+        query = User.objects.filter(username__iexact=username)
+        if self.instance and self.instance.pk:
+            query = query.exclude(pk=self.instance.pk)
+
+        if query.exists():
+            raise ValidationError("This username is already taken. Please choose another.")
+        return username
+
     def clean_email(self):
-        """Custom field validator: Email uniqueness & normalization."""
+        """
+        Validates email uniqueness:
+        - If email exists and user is verified (is_active=True): rejects with 'already exists' message.
+        - If email exists and user is unverified (is_active=False): allows continuing verification.
+        """
         email = self.cleaned_data.get("email", "").lower().strip()
         if not email:
             raise ValidationError("A valid email address is required.")
-        if User.objects.filter(email=email).exists():
-            raise ValidationError("An account with this email address already exists.")
+
+        verified_user = User.objects.filter(email__iexact=email, is_active=True).first()
+        if verified_user:
+            raise ValidationError("An account with this email address already exists. Please sign in.")
         return email
 
     def clean(self):
@@ -150,8 +184,34 @@ class UserLoginForm(AuthenticationForm):
         })
     )
 
+    def confirm_login_allowed(self, user):
+        if not user.is_active:
+            raise ValidationError(
+                "Your account email has not been verified yet. Please check your email for the OTP or register again to request a fresh code.",
+                code="inactive",
+            )
+
     def clean(self):
-        cleaned_data = super().clean()
+        username = self.cleaned_data.get('username')
+        password = self.cleaned_data.get('password')
+
+        if username and password:
+            self.user_cache = authenticate(self.request, username=username, password=password)
+            if self.user_cache is None:
+                # Check if an inactive account exists with matching credentials
+                inactive_user = (
+                    User.objects.filter(username__iexact=username, is_active=False).first() or
+                    User.objects.filter(email__iexact=username, is_active=False).first()
+                )
+                if inactive_user and inactive_user.check_password(password):
+                    raise ValidationError(
+                        "Your account email has not been verified yet. Please check your email for the OTP or register again to request a fresh code.",
+                        code="inactive",
+                    )
+                raise self.get_invalid_login_error()
+            else:
+                self.confirm_login_allowed(self.user_cache)
+
         user = self.get_user()
         submitted_role = self.data.get('role')
 
@@ -169,7 +229,7 @@ class UserLoginForm(AuthenticationForm):
                         f"Please switch the role toggle to '{role_display}' to sign in."
                     )
 
-        return cleaned_data
+        return self.cleaned_data
 
 
 class ForgotPasswordRequestForm(forms.Form):

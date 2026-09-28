@@ -1,6 +1,6 @@
 """
 Access control mixins for Class-Based Views.
-Implements EnrolledCourseRequiredMixin per SRS Section 7.2.
+Provides EnrolledCourseRequiredMixin to verify student enrollments.
 """
 
 from django.contrib.auth.mixins import AccessMixin
