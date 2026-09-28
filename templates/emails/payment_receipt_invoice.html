@@ -32,7 +32,7 @@
 
     <div class="table-box">
       <div class="row">
-        <span style="color: #64748b;">Billing Name:</span>
+        <span style="color: #64748b;">Customer Name:</span>
         <strong>{{ invoice.billing_name|default:user.get_full_name|default:user.username }}</strong>
       </div>
       <div class="row">
@@ -40,12 +40,28 @@
         <strong style="font-family: monospace;">{{ invoice.billing_email|default:user.email }}</strong>
       </div>
       <div class="row">
+        <span style="color: #64748b;">Course Title:</span>
+        <strong>{{ course.title }}</strong>
+      </div>
+      <div class="row">
+        <span style="color: #64748b;">Invoice Number:</span>
+        <strong style="font-family: monospace;">{{ invoice.invoice_number|default:transaction.order_number }}</strong>
+      </div>
+      <div class="row">
         <span style="color: #64748b;">Order Reference:</span>
         <strong style="font-family: monospace;">#{{ transaction.order_number }}</strong>
       </div>
       <div class="row">
-        <span style="color: #64748b;">Course Item:</span>
-        <strong>{{ course.title }}</strong>
+        <span style="color: #64748b;">Payment Status:</span>
+        <strong style="color: #059669;">COMPLETED (Paid via Stripe)</strong>
+      </div>
+      <div class="row">
+        <span style="color: #64748b;">Purchase Date:</span>
+        <strong>{{ invoice.issued_at|default:transaction.created_at|date:"F j, Y, g:i A"|default:"Confirmed" }}</strong>
+      </div>
+      <div class="row">
+        <span style="color: #64748b;">Stripe Reference:</span>
+        <strong style="font-family: monospace;">{{ transaction.stripe_payment_intent_id|default:transaction.stripe_checkout_session_id|default:"Stripe Verified" }}</strong>
       </div>
       <div class="divider"></div>
       <div class="row">
@@ -57,8 +73,17 @@
         <span>$0.00 {{ transaction.currency }}</span>
       </div>
       <div class="row" style="font-size: 15px; font-weight: 800; color: #0f172a;">
-        <span>Total Paid:</span>
+        <span>Amount Paid:</span>
         <span style="color: #059669;">${{ transaction.amount }} {{ transaction.currency }}</span>
+      </div>
+    </div>
+
+    <!-- Attached Invoice Notice (Udemy / Shopify standard) -->
+    <div style="margin: 20px 0; padding: 14px 18px; border-radius: 12px; background: #f8fafc; border: 1px solid #e2e8f0; display: flex; align-items: center; gap: 12px;">
+      <div style="background: #ede9fe; border-radius: 8px; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; font-weight: 800; color: #7c3aed; font-size: 11px; flex-shrink: 0;">PDF</div>
+      <div>
+        <div style="font-size: 13px; font-weight: 700; color: #0f172a;">Official PDF Tax Invoice Attached</div>
+        <div style="font-size: 12px; color: #64748b; font-family: monospace;">Learnix_Invoice_{{ invoice.invoice_number|default:transaction.order_number }}.pdf</div>
       </div>
     </div>
 

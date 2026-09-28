@@ -1,7 +1,6 @@
 """
 Automated unit and integration test suite for Learnix Payments & Email Subsystem.
 Validates Stripe Checkout in Test/Sandbox Mode, Webhook lifecycle, and centralized email sender.
-SRS Section 5.4, 12, 13, 14.
 """
 
 import json
@@ -548,5 +547,142 @@ class StripePaymentsTestCase(TestCase):
         url = reverse('payments:stripe_webhook')
         response = self.client.post(url, data=json.dumps(payload), content_type='application/json')
         self.assertEqual(response.status_code, 200)
+
+    def test_stripe_course_purchase_emails_content_and_sender(self):
+        """
+        Validates that paid course purchase triggers both purchase confirmation
+        and invoice/receipt emails to the customer's registered email with sender
+        shahbazbutt22ee@gmail.com and all mandatory details.
+        """
+        mail.outbox = []
+
+        payload = {
+            "type": "checkout.session.completed",
+            "data": {
+                "object": {
+                    "id": "cs_test_purchase_full_details",
+                    "payment_intent": "pi_test_stripe_ref_789",
+                    "customer_details": {
+                        "name": "Mark Jenkins",
+                        "email": self.student.email,
+                    },
+                    "metadata": {
+                        "user_id": str(self.student.id),
+                        "course_id": str(self.course_paid.id),
+                        "order_number": "LRN-DETAILS99",
+                    }
+                }
+            }
+        }
+
+        url = reverse('payments:stripe_webhook')
+        response = self.client.post(url, data=json.dumps(payload), content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+
+        # 3 emails sent: Purchase Confirmation, Tax Invoice, Enrollment
+        self.assertEqual(len(mail.outbox), 3)
+
+        # 1. Purchase confirmation email
+        purchase_email = next(m for m in mail.outbox if 'Payment Confirmed' in m.subject)
+        self.assertEqual(purchase_email.from_email, 'shahbazbutt22ee@gmail.com')
+        self.assertIn(self.student.email, purchase_email.to)
+        import html
+        purchase_body = html.unescape(purchase_email.body)
+        self.assertIn(self.student.first_name, purchase_body)
+        self.assertIn(self.course_paid.title, purchase_body)
+        self.assertIn(str(self.course_paid.price), purchase_body)
+        self.assertIn('COMPLETED', purchase_body)
+        self.assertIn('LRN-DETAILS99', purchase_body)
+        self.assertIn('pi_test_stripe_ref_789', purchase_body)
+
+        # 2. Invoice / receipt email
+        invoice_email = next(m for m in mail.outbox if 'Official Tax Invoice' in m.subject)
+        self.assertEqual(invoice_email.from_email, 'shahbazbutt22ee@gmail.com')
+        self.assertIn(self.student.email, invoice_email.to)
+        # Content checks
+        invoice_body = html.unescape(invoice_email.body)
+        self.assertIn('Mark Jenkins', invoice_body)
+        self.assertIn(self.course_paid.title, invoice_body)
+        self.assertIn(str(self.course_paid.price), invoice_body)
+        self.assertIn('COMPLETED', invoice_body)
+        self.assertIn('LRN-DETAILS99', invoice_body)
+        self.assertIn('INV-2026-', invoice_body)
+        self.assertIn('pi_test_stripe_ref_789', invoice_body)
+
+        # 3. PDF Invoice attachment verification (Udemy / Shopify standard)
+        self.assertEqual(len(invoice_email.attachments), 1)
+        att_filename, att_content, att_mimetype = invoice_email.attachments[0]
+        self.assertTrue(att_filename.startswith('Learnix_Invoice_'))
+        self.assertTrue(att_filename.endswith('.pdf'))
+        self.assertEqual(att_mimetype, 'application/pdf')
+        self.assertTrue(att_content.startswith(b'%PDF-'))
+
+    @patch('stripe.checkout.Session.retrieve')
+    def test_payment_success_view_and_webhook_race_condition_never_duplicates(self, mock_retrieve):
+        """
+        If user returns to payment_success view and Stripe confirms payment,
+        and webhook subsequently triggers, confirmation emails are sent exactly once.
+        """
+        mail.outbox = []
+
+        # Create pending transaction
+        tx = PaymentTransaction.objects.create(
+            user=self.student,
+            course=self.course_paid,
+            order_number='LRN-RACE01',
+            amount=self.course_paid.price,
+            status='PENDING',
+            stripe_checkout_session_id='cs_test_race_session'
+        )
+
+        mock_session = MagicMock()
+        mock_session.payment_status = 'paid'
+        mock_session.payment_intent = 'pi_test_race_intent'
+        mock_retrieve.return_value = mock_session
+
+        # 1. User redirects to PaymentSuccessView
+        self.client.force_login(self.student)
+        success_url = f"{reverse('payments:payment_success')}?session_id=cs_test_race_session&order={tx.order_number}"
+        res1 = self.client.get(success_url)
+        self.assertEqual(res1.status_code, 200)
+
+        # Verify transaction completed and emails sent
+        tx.refresh_from_db()
+        self.assertEqual(tx.status, 'COMPLETED')
+        self.assertTrue(tx.confirmation_emails_sent)
+        self.assertEqual(len(mail.outbox), 3)
+        inv_mail = next(m for m in mail.outbox if 'Official Tax Invoice' in m.subject)
+        self.assertEqual(len(inv_mail.attachments), 1)
+        self.assertTrue(inv_mail.attachments[0][0].startswith('Learnix_Invoice_'))
+        self.assertEqual(inv_mail.attachments[0][2], 'application/pdf')
+
+        # 2. Subsequent Stripe Webhook arrives with same session
+        webhook_payload = {
+            "type": "checkout.session.completed",
+            "data": {
+                "object": {
+                    "id": "cs_test_race_session",
+                    "payment_intent": "pi_test_race_intent",
+                    "metadata": {
+                        "user_id": str(self.student.id),
+                        "course_id": str(self.course_paid.id),
+                        "order_number": tx.order_number,
+                    }
+                }
+            }
+        }
+        webhook_url = reverse('payments:stripe_webhook')
+        res2 = self.client.post(webhook_url, data=json.dumps(webhook_payload), content_type='application/json')
+        self.assertEqual(res2.status_code, 200)
+
+        # Still exactly 3 emails (zero duplicate emails on webhook delivery)
+        self.assertEqual(len(mail.outbox), 3)
+
+        # 3. User refreshes success page again
+        res3 = self.client.get(success_url)
+        self.assertEqual(res3.status_code, 200)
+        # Still exactly 3 emails
+        self.assertEqual(len(mail.outbox), 3)
+
 
 

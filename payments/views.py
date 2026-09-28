@@ -1,7 +1,5 @@
 """
 Class-Based Views for Stripe Checkout, Payment Success, and Aborted Transactions.
-Implements Stitch Screen 9 (Checkout Modal) & Screen 8 (Payment Success).
-SRS Section 5.4, 6, 8.1, 12.1.
 """
 
 import stripe
@@ -24,7 +22,8 @@ from .models import PaymentTransaction, Invoice
 from .services import (
     send_order_confirmation_email,
     generate_invoice_pdf,
-    generate_receipt_pdf
+    generate_receipt_pdf,
+    fulfill_order_and_dispatch_emails
 )
 
 logger = logging.getLogger(__name__)
@@ -34,7 +33,6 @@ class CreateCheckoutSessionView(LoginRequiredMixin, View):
     """
     Initiates Stripe Checkout session in Sandbox/Test Mode.
     Falls back gracefully to the interactive Learnix Checkout Modal Simulator if live keys are absent.
-    SRS Section 12.1.
     """
     def post(self, request, course_slug):
         course = get_object_or_404(Course, slug=course_slug, is_published=True)
@@ -58,7 +56,7 @@ class CreateCheckoutSessionView(LoginRequiredMixin, View):
                         'status': 'COMPLETED'
                     }
                 )
-                Enrollment.objects.get_or_create(
+                enrollment, _ = Enrollment.objects.get_or_create(
                     user=request.user,
                     course=course,
                     defaults={'is_active': True, 'progress_percent': 0.00}
@@ -172,7 +170,6 @@ class CheckoutModalView(LoginRequiredMixin, View):
 class PaymentSuccessView(LoginRequiredMixin, TemplateView):
     """
     Renders the celebratory Payment Success & Onboarding page.
-    Matches Stitch Screen 8: eduflow_payment_success_enrollment_light (Learnix branded).
     """
     template_name = 'payments/success.html'
 
@@ -193,30 +190,43 @@ class PaymentSuccessView(LoginRequiredMixin, TemplateView):
         if not tx:
             tx = PaymentTransaction.objects.filter(user=user, status='COMPLETED').select_related('course', 'invoice').order_by('-created_at').first()
 
-        # If transaction found but not yet fulfilled (e.g. redirected before webhook completed):
-        if tx and tx.status != 'COMPLETED':
-            with db_transaction.atomic():
-                tx.status = 'COMPLETED'
-                tx.save(update_fields=['status'])
-                enrollment, _ = Enrollment.objects.get_or_create(
-                    user=user,
-                    course=tx.course,
-                    defaults={'is_active': True, 'progress_percent': 0.00}
+        # If transaction found but not yet fulfilled or emails not yet dispatched:
+        if tx and (tx.status != 'COMPLETED' or not getattr(tx, 'confirmation_emails_sent', False)):
+            stripe_confirmed = False
+            payment_intent = None
+            billing_name = None
+            billing_email = None
+
+            if session_id and not session_id.startswith('{'):
+                try:
+                    stripe.api_key = settings.STRIPE_SECRET_KEY
+                    if settings.STRIPE_SECRET_KEY and not settings.STRIPE_SECRET_KEY.endswith('_placeholder'):
+                        s_obj = stripe.checkout.Session.retrieve(session_id)
+                        if getattr(s_obj, 'payment_status', None) == 'paid':
+                            stripe_confirmed = True
+                            payment_intent = getattr(s_obj, 'payment_intent', None)
+                            cust = getattr(s_obj, 'customer_details', None) or {}
+                            raw_name = cust.get('name') if isinstance(cust, dict) else getattr(cust, 'name', None)
+                            raw_email = cust.get('email') if isinstance(cust, dict) else getattr(cust, 'email', None)
+                            billing_name = str(raw_name).strip() if isinstance(raw_name, str) and raw_name.strip() else None
+                            billing_email = str(raw_email).strip() if isinstance(raw_email, str) and raw_email.strip() else None
+                    elif settings.DEBUG:
+                        stripe_confirmed = True
+                except Exception as e:
+                    logger.warning(f"Could not verify session with Stripe API: {e}")
+            elif tx.status == 'COMPLETED':
+                stripe_confirmed = True
+
+            if stripe_confirmed:
+                fulfill_order_and_dispatch_emails(
+                    transaction=tx,
+                    session_id=session_id,
+                    stripe_payment_intent=payment_intent,
+                    order_number=order_ref,
+                    billing_name=billing_name,
+                    billing_email=billing_email,
                 )
-                enrollment.is_active = True
-                enrollment.save(update_fields=['is_active'])
-                if not hasattr(tx, 'invoice'):
-                    inv = Invoice.objects.create(
-                        transaction=tx,
-                        invoice_number=Invoice.generate_invoice_number(),
-                        billing_name=user.get_full_name() or user.username,
-                        billing_email=user.email or f"{user.username}@learnix.edu",
-                        subtotal=tx.amount,
-                        tax_amount=Decimal('0.00'),
-                        total_amount=tx.amount
-                    )
-                    # Notice: Payment confirmation emails are dispatched strictly by the confirmed
-                    # Stripe webhook listener to prevent duplicate emails and unverified deliveries.
+                tx.refresh_from_db()
 
         # Find first lesson of course for direct "Launch Classroom" CTA
         first_lesson = None
@@ -257,8 +267,6 @@ class PaymentCancelView(TemplateView):
 class BillingHubView(LoginRequiredMixin, TemplateView):
     """
     Student Billing & Invoices Management Hub.
-    Implements Stitch Screen 2 (eduflow_billing_invoices_management_hub_light).
-    SRS Section 8.1, 8.2, 13.
     """
     template_name = 'payments/billing_hub.html'
 
@@ -305,7 +313,6 @@ class BillingHubView(LoginRequiredMixin, TemplateView):
 class DownloadInvoicePDFView(LoginRequiredMixin, View):
     """
     Streams official Tax Invoice PDF generated via server-side xhtml2pdf.
-    SRS Section 13.
     """
     def get(self, request, invoice_number):
         invoice = get_object_or_404(
@@ -331,7 +338,6 @@ class DownloadInvoicePDFView(LoginRequiredMixin, View):
 class DownloadReceiptPDFView(LoginRequiredMixin, View):
     """
     Streams official Payment Receipt PDF generated via server-side xhtml2pdf.
-    SRS Section 13.
     """
     def get(self, request, order_number):
         tx = get_object_or_404(
@@ -357,7 +363,6 @@ class DownloadReceiptPDFView(LoginRequiredMixin, View):
 class ExportAllInvoicesZipView(LoginRequiredMixin, View):
     """
     Packages all student tax invoices and receipts into a single downloadable .ZIP archive.
-    SRS Section 13.
     """
     def get(self, request):
         transactions = PaymentTransaction.objects.filter(user=request.user).select_related('course', 'invoice').order_by('-created_at')

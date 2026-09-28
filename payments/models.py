@@ -1,7 +1,6 @@
 """
 Database models for Payment Transactions, Checkout Sessions, and Invoicing.
 PostgreSQL 15+ compatible models for Learnix.
-SRS Section 8.1, 8.2, 12, & 13.
 """
 
 from django.db import models
@@ -12,7 +11,6 @@ import uuid
 class PaymentTransaction(models.Model):
     """
     Records completed or pending financial transactions via Stripe Checkout.
-    SRS Section 8.1 & 8.2.
     """
     STATUS_CHOICES = (
         ("PENDING", "Pending"),
@@ -55,6 +53,11 @@ class PaymentTransaction(models.Model):
         choices=STATUS_CHOICES,
         default="COMPLETED"
     )
+    confirmation_emails_sent = models.BooleanField(
+        default=False,
+        db_index=True,
+        help_text="Ensures purchase confirmation and invoice emails are dispatched exactly once."
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -76,7 +79,6 @@ class PaymentTransaction(models.Model):
 class Invoice(models.Model):
     """
     Formal tax invoice generated for completed tuition payments.
-    SRS Section 8.1 & 8.2.
     """
     transaction = models.OneToOneField(
         PaymentTransaction,

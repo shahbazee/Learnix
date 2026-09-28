@@ -32,6 +32,10 @@
 
     <div class="details-box">
       <div class="row">
+        <span style="color: #64748b;">Customer Name:</span>
+        <strong>{{ user.get_full_name|default:user.first_name|default:user.username }}</strong>
+      </div>
+      <div class="row">
         <span style="color: #64748b;">Course Title:</span>
         <strong>{{ course.title }}</strong>
       </div>
@@ -44,8 +48,16 @@
         <strong style="color: #059669;">${{ transaction.amount }} {{ transaction.currency }}</strong>
       </div>
       <div class="row">
-        <span style="color: #64748b;">Status:</span>
-        <strong style="color: #059669;">COMPLETED</strong>
+        <span style="color: #64748b;">Payment Status:</span>
+        <strong style="color: #059669;">{{ transaction.status|default:"COMPLETED" }}</strong>
+      </div>
+      <div class="row">
+        <span style="color: #64748b;">Purchase Date:</span>
+        <strong>{{ transaction.created_at|date:"F j, Y, g:i A"|default:"Confirmed" }}</strong>
+      </div>
+      <div class="row">
+        <span style="color: #64748b;">Stripe Reference:</span>
+        <strong style="font-family: monospace;">{{ transaction.stripe_payment_intent_id|default:transaction.stripe_checkout_session_id|default:"Stripe Verified" }}</strong>
       </div>
     </div>
 

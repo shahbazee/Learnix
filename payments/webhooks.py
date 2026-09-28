@@ -1,6 +1,5 @@
 """
-Asynchronous Stripe Webhook Receiver with HMAC-SHA256 signature verification.
-SRS Section 12.2.
+Stripe Webhook Receiver with HMAC-SHA256 signature verification.
 """
 
 import json
@@ -16,7 +15,7 @@ from django.db import transaction as db_transaction
 
 from courses.models import Course, Enrollment
 from .models import PaymentTransaction, Invoice
-from .services import send_order_confirmation_email
+from .services import send_order_confirmation_email, fulfill_order_and_dispatch_emails
 from core.emails import (
     send_course_purchase_success_email,
     send_payment_receipt_invoice_email,
@@ -76,67 +75,22 @@ def stripe_webhook(request):
 
         if user_id and course_id:
             try:
-                user = User.objects.get(id=int(user_id))
-                course = Course.objects.get(id=int(course_id))
+                customer_details = session.get("customer_details", {}) if isinstance(session, dict) else getattr(session, "customer_details", {})
+                billing_name = customer_details.get("name") if isinstance(customer_details, dict) else getattr(customer_details, "name", None)
+                billing_email = customer_details.get("email") if isinstance(customer_details, dict) else getattr(customer_details, "email", None)
 
-                with db_transaction.atomic():
-                    # 1. Update or create transaction
-                    tx = None
-                    if order_number:
-                        tx = PaymentTransaction.objects.filter(order_number=order_number).first()
-                    if not tx and session_id:
-                        tx = PaymentTransaction.objects.filter(stripe_checkout_session_id=session_id).first()
-
-                    already_completed = (tx is not None and tx.status == "COMPLETED")
-
-                    if not tx:
-                        tx = PaymentTransaction.objects.create(
-                            user=user,
-                            course=course,
-                            order_number=order_number or PaymentTransaction.generate_order_number(),
-                            amount=course.price,
-                            currency=settings.STRIPE_CURRENCY.upper(),
-                            status="COMPLETED",
-                            stripe_checkout_session_id=session_id,
-                            stripe_payment_intent_id=payment_intent,
-                        )
-                    else:
-                        tx.status = "COMPLETED"
-                        tx.stripe_checkout_session_id = session_id or tx.stripe_checkout_session_id
-                        tx.stripe_payment_intent_id = payment_intent or tx.stripe_payment_intent_id
-                        tx.save()
-
-                    # 2. Grant Active Enrollment (Idempotent get_or_create)
-                    enrollment, _ = Enrollment.objects.get_or_create(
-                        user=user,
-                        course=course,
-                        defaults={"is_active": True, "progress_percent": 0.00}
-                    )
-                    enrollment.is_active = True
-                    enrollment.save(update_fields=["is_active"])
-
-                    # 3. Create Formal Tax Invoice (Idempotent get_or_create)
-                    invoice, invoice_created = Invoice.objects.get_or_create(
-                        transaction=tx,
-                        defaults={
-                            "invoice_number": Invoice.generate_invoice_number(),
-                            "billing_name": user.get_full_name() or user.username,
-                            "billing_email": user.email or f"{user.username}@learnix.edu",
-                            "subtotal": tx.amount,
-                            "tax_amount": Decimal("0.00"),
-                            "total_amount": tx.amount,
-                        }
-                    )
-
-                # 4. Dispatch Email only on first verified fulfillment
-                if not already_completed or invoice_created:
-                    send_course_purchase_success_email(user, course, tx)
-                    send_payment_receipt_invoice_email(user, course, tx, invoice)
-                    send_course_enrollment_email(user, course, enrollment)
-                    logger.info(f"Successfully fulfilled order #{tx.order_number} and sent confirmation emails to {user.username}")
-                else:
-                    logger.info(f"Order #{tx.order_number} was already fulfilled; skipping duplicate confirmation email.")
-
+                fulfillment_result = fulfill_order_and_dispatch_emails(
+                    user_id=int(user_id),
+                    course_id=int(course_id),
+                    order_number=order_number,
+                    session_id=session_id,
+                    stripe_payment_intent=payment_intent,
+                    billing_name=billing_name,
+                    billing_email=billing_email,
+                )
+                if not fulfillment_result:
+                    logger.error(f"Fulfillment returned None for order #{order_number}")
+                    return HttpResponse(status=500)
             except Exception as e:
                 logger.error(f"Error fulfilling webhook order: {e}")
                 return HttpResponse(status=500)
