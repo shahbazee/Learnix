@@ -216,7 +216,7 @@ def _send_platform_email(subject, template_name, context, recipient_email, fallb
 # ==============================================================================
 # 1. REGISTRATION SUCCESS
 # ==============================================================================
-def send_registration_success_email(user):
+def send_registration_success_email(user, async_send=False):
     """
     Triggered when a student successfully verifies their registration OTP.
     """
@@ -232,13 +232,15 @@ def send_registration_success_email(user):
         f"You can log in and explore our masterclass catalog at: https://learnix-ofqe.onrender.com/courses/\n\n"
         f"— The Learnix Team"
     )
+    if async_send:
+        return send_platform_email_async(subject, 'emails/registration_success.html', context, recipient_email, fallback_text)
     return _send_platform_email(subject, 'emails/registration_success.html', context, recipient_email, fallback_text)
 
 
 # ==============================================================================
 # 2. OTP VERIFICATION
 # ==============================================================================
-def send_otp_verification_email(user, otp_code, expires_minutes=10):
+def send_otp_verification_email(user, otp_code, expires_minutes=10, async_send=False):
     """
     Triggered when a student registers; dispatches the 6-digit activation code.
     Always logs the OTP securely to server logs for verification and diagnostics.
@@ -261,13 +263,15 @@ def send_otp_verification_email(user, otp_code, expires_minutes=10):
     if getattr(settings, 'DEBUG', False) or os.getenv('RENDER', ''):
         print(f"[LEARNIX OTP VERIFICATION] Code for {recipient_email}: {otp_code}")
 
+    if async_send:
+        return send_platform_email_async(subject, 'emails/otp_verification.html', context, recipient_email, fallback_text)
     return _send_platform_email(subject, 'emails/otp_verification.html', context, recipient_email, fallback_text)
 
 
 # ==============================================================================
 # 3. FORGOT PASSWORD OTP
 # ==============================================================================
-def send_forgot_password_otp_email(user, reset_code, expires_minutes=10):
+def send_forgot_password_otp_email(user, reset_code, expires_minutes=10, async_send=False):
     """
     Triggered when a user initiates a password reset request.
     Always logs the reset OTP to server logs for diagnostics.
@@ -291,13 +295,15 @@ def send_forgot_password_otp_email(user, reset_code, expires_minutes=10):
     if getattr(settings, 'DEBUG', False) or os.getenv('RENDER', ''):
         print(f"[LEARNIX PASSWORD RESET OTP] Code for {recipient_email}: {reset_code}")
 
+    if async_send:
+        return send_platform_email_async(subject, 'emails/forgot_password_otp.html', context, recipient_email, fallback_text)
     return _send_platform_email(subject, 'emails/forgot_password_otp.html', context, recipient_email, fallback_text)
 
 
 # ==============================================================================
 # 4. PASSWORD CHANGED
 # ==============================================================================
-def send_password_changed_email(user):
+def send_password_changed_email(user, async_send=False):
     """
     Triggered when a user successfully updates or resets their password.
     """
@@ -314,6 +320,8 @@ def send_password_changed_email(user):
         f"If you did NOT change your password, please contact support immediately.\n\n"
         f"— The Learnix Security Team"
     )
+    if async_send:
+        return send_platform_email_async(subject, 'emails/password_changed.html', context, recipient_email, fallback_text)
     return _send_platform_email(subject, 'emails/password_changed.html', context, recipient_email, fallback_text)
 
 

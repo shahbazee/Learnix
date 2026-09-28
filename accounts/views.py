@@ -103,7 +103,7 @@ class SignUpView(FormView):
 
         email_sent = False
         try:
-            email_sent = send_otp_verification_email(user, otp_record.otp_code)
+            email_sent = send_otp_verification_email(user, otp_record.otp_code, async_send=True)
             if email_sent:
                 self.request.session['otp_last_sent'] = timezone.now().timestamp()
         except Exception as e:
@@ -149,10 +149,10 @@ class SignUpView(FormView):
         self.request.session['otp_token'] = token
         self.request.session.modified = True
 
-        # Dispatch email notification defensively via centralized email service
+        # Dispatch email notification asynchronously in background daemon thread
         email_sent = False
         try:
-            email_sent = send_otp_verification_email(user, otp_record.otp_code)
+            email_sent = send_otp_verification_email(user, otp_record.otp_code, async_send=True)
             if email_sent:
                 self.request.session['otp_last_sent'] = timezone.now().timestamp()
         except Exception as e:
@@ -276,9 +276,9 @@ class VerifyOTPView(FormView):
         self.request.session.pop('otp_user_id', None)
         self.request.session.pop('otp_last_sent', None)
 
-        # Dispatch registration success notification defensively via centralized email service
+        # Dispatch registration success notification asynchronously
         try:
-            send_registration_success_email(user)
+            send_registration_success_email(user, async_send=True)
         except Exception as e:
             logger.error(f"Failed to dispatch registration success email: {e}")
 
@@ -325,21 +325,23 @@ class ResendOTPView(View):
             if elapsed < self.RATE_LIMIT_SECONDS:
                 remaining = int(self.RATE_LIMIT_SECONDS - elapsed)
                 messages.warning(request, f"Please wait {remaining} seconds before requesting a new code.")
-                return redirect('accounts:verify_otp')
+                target_url = f"{reverse('accounts:verify_otp')}?token={token}" if token else reverse('accounts:verify_otp')
+                return redirect(target_url)
 
         # Issue new code
         otp_record = EmailOTP.create_for_user(user, purpose='registration')
 
-        # Send fresh verification email defensively via centralized email service
+        # Send fresh verification email asynchronously in background thread
         try:
-            send_otp_verification_email(user, otp_record.otp_code)
+            send_otp_verification_email(user, otp_record.otp_code, async_send=True)
             request.session['otp_last_sent'] = timezone.now().timestamp()
             messages.info(request, f"A fresh verification code has been dispatched to {user.email}.")
         except Exception as e:
             logger.error(f"Failed to resend OTP verification email to {user.email}: {e}")
             messages.warning(request, "Could not send verification email. Please check your network or try again in a moment.")
 
-        return redirect('accounts:verify_otp')
+        target_url = f"{reverse('accounts:verify_otp')}?token={token}" if token else reverse('accounts:verify_otp')
+        return redirect(target_url)
 
 
 # ==============================================================================
@@ -422,8 +424,8 @@ class ForgotPasswordView(FormView):
             self.request.session['reset_user_id'] = user.id
             self.request.session['reset_otp_last_sent'] = timezone.now().timestamp()
 
-            # Dispatch password reset OTP email via centralized email service
-            send_forgot_password_otp_email(user, otp_record.otp_code)
+            # Dispatch password reset OTP email asynchronously
+            send_forgot_password_otp_email(user, otp_record.otp_code, async_send=True)
         else:
             # Privacy preservation: do not disclose that account does not exist
             self.request.session.pop('reset_user_id', None)
@@ -519,8 +521,8 @@ class ResendResetOTPView(View):
         otp_record = EmailOTP.create_for_user(user, purpose='password_reset')
         request.session['reset_otp_last_sent'] = timezone.now().timestamp()
 
-        # Dispatch fresh reset OTP via centralized email service
-        send_forgot_password_otp_email(user, otp_record.otp_code)
+        # Dispatch fresh reset OTP asynchronously
+        send_forgot_password_otp_email(user, otp_record.otp_code, async_send=True)
 
         messages.info(request, "A fresh password reset code has been sent to your email.")
         return redirect('accounts:verify_reset_otp')
@@ -562,8 +564,8 @@ class ResetPasswordView(FormView):
         # Invalidate all password reset OTPs for this user
         EmailOTP.objects.filter(user=user, purpose='password_reset').delete()
 
-        # Dispatch password changed security alert email via centralized email service
-        send_password_changed_email(user)
+        # Dispatch password changed security alert email asynchronously
+        send_password_changed_email(user, async_send=True)
 
         # Clear session
         self.request.session.pop('reset_user_id', None)
