@@ -182,11 +182,15 @@ class PaymentSuccessView(LoginRequiredMixin, TemplateView):
 
         tx = None
         if order_ref:
-            tx = PaymentTransaction.objects.filter(user=user, order_number=order_ref).select_related('course', 'invoice').first()
+            tx = PaymentTransaction.objects.filter(order_number=order_ref).select_related('course', 'invoice').first()
+            if tx and tx.user != user and not user.is_staff:
+                tx = None
         elif session_id:
-            tx = PaymentTransaction.objects.filter(user=user, stripe_checkout_session_id=session_id).select_related('course', 'invoice').first()
+            tx = PaymentTransaction.objects.filter(stripe_checkout_session_id=session_id).select_related('course', 'invoice').first()
+            if tx and tx.user != user and not user.is_staff:
+                tx = None
 
-        # Fallback to most recent completed transaction if query parameters were not passed
+        # Fallback to most recent transaction if query parameters were not passed
         if not tx:
             tx = PaymentTransaction.objects.filter(user=user, status='COMPLETED').select_related('course', 'invoice').order_by('-created_at').first()
 
@@ -218,6 +222,7 @@ class PaymentSuccessView(LoginRequiredMixin, TemplateView):
                 stripe_confirmed = True
 
             if stripe_confirmed:
+                logger.info(f"[PAYMENT SUCCESS] Confirmed payment for order #{tx.order_number} (session={session_id}). Fulfilling order and dispatching invoice emails via Brevo.")
                 fulfill_order_and_dispatch_emails(
                     transaction=tx,
                     session_id=session_id,
