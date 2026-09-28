@@ -196,12 +196,22 @@ class UserLoginForm(AuthenticationForm):
         password = self.cleaned_data.get('password')
 
         if username and password:
-            self.user_cache = authenticate(self.request, username=username, password=password)
+            clean_input = str(username).strip()
+
+            # First attempt: authenticate directly (EmailOrUsernameModelBackend handles username or email)
+            self.user_cache = authenticate(self.request, username=clean_input, password=password)
+
+            # Fallback attempt: if direct auth returned None, resolve email to username explicitly
+            if self.user_cache is None and '@' in clean_input:
+                user_by_email = User.objects.filter(email__iexact=clean_input).first()
+                if user_by_email:
+                    self.user_cache = authenticate(self.request, username=user_by_email.get_username(), password=password)
+
             if self.user_cache is None:
                 # Check if an inactive account exists with matching credentials
                 inactive_user = (
-                    User.objects.filter(username__iexact=username, is_active=False).first() or
-                    User.objects.filter(email__iexact=username, is_active=False).first()
+                    User.objects.filter(username__iexact=clean_input, is_active=False).first() or
+                    User.objects.filter(email__iexact=clean_input, is_active=False).first()
                 )
                 if inactive_user and inactive_user.check_password(password):
                     raise ValidationError(
