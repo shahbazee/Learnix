@@ -1,42 +1,36 @@
-"""
-Django settings for Learnix E-Learning Platform.
-
-Configured strictly for PostgreSQL 15+ and decoupled environment variables.
-"""
-
 import os
-import sys
 from pathlib import Path
-from decouple import config, Csv
+import sys
 
-# Build paths inside the project: BASE_DIR / 'subdir'.
+from decouple import Csv, config
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Quick-start development settings - unsuitable for production
-SECRET_KEY = config('SECRET_KEY', default='django-insecure-learnix-dev-key-change-in-production')
+SECRET_KEY = config(
+    'SECRET_KEY',
+    default='django-insecure-learnix-dev-key-change-in-production'
+)
 
 DEBUG = config('DEBUG', default=True, cast=bool)
 
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1', cast=Csv())
+ALLOWED_HOSTS = config(
+    'ALLOWED_HOSTS', default='localhost,127.0.0.1', cast=Csv()
+)
 
-# Platform Identity
 SITE_NAME = 'Learnix'
 
-# Application definition
 INSTALLED_APPS = [
-    # Django Built-in
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
-    # Learnix Core Apps
     'core.apps.CoreConfig',
     'accounts.apps.AccountsConfig',
     'courses.apps.CoursesConfig',
     'payments.apps.PaymentsConfig',
+    'anymail',
 ]
 
 MIDDLEWARE = [
@@ -72,19 +66,19 @@ TEMPLATES = [
 WSGI_APPLICATION = 'learnix_project.wsgi.application'
 ASGI_APPLICATION = 'learnix_project.asgi.application'
 
-# Database Configuration: PostgreSQL 15+ ONLY
-# SQLite is strictly prohibited per architectural requirements
+
 def _resolve_database_config():
-    raw_url = os.environ.get('DATABASE_URL') or config('DATABASE_URL', default=None)
+    raw_url = (
+        os.environ.get('DATABASE_URL') or
+        config('DATABASE_URL', default=None)
+    )
     if not raw_url:
         return None
 
-    # Strip any leading/trailing whitespace, backslashes, and accidental quotes (common when pasting into Render/PaaS dashboards)
-    cleaned_url = str(raw_url).strip().strip("'\"\\ \t\n\r")
+    cleaned_url = str(raw_url).strip().strip("'\"\\  \t\n\r")
     if not cleaned_url:
         return None
 
-    # Auto-repair URL missing protocol scheme
     if cleaned_url.startswith('://'):
         cleaned_url = f'postgres{cleaned_url}'
     elif cleaned_url.startswith('//'):
@@ -102,9 +96,9 @@ def _resolve_database_config():
     except Exception as exc:
         raise ValueError(
             f"Invalid DATABASE_URL provided ('{raw_url}'). "
-            "Please ensure your DATABASE_URL in the Render dashboard starts with "
-            "'postgres://' or 'postgresql://' and has no surrounding quotes. "
-            f"Details: {exc}"
+            "Please ensure your DATABASE_URL in the Render dashboard starts "
+            "with 'postgres://' or 'postgresql://' and has no surrounding "
+            f"quotes. Details: {exc}"
         ) from exc
 
 
@@ -125,38 +119,46 @@ else:
         }
     }
 
-
 AUTHENTICATION_BACKENDS = [
     'accounts.backends.EmailOrUsernameModelBackend',
     'django.contrib.auth.backends.ModelBackend',
 ]
 
-# Password validation
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        'NAME': (
+            'django.contrib.auth.password_validation.'
+            'UserAttributeSimilarityValidator'
+        ),
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        'NAME': (
+            'django.contrib.auth.password_validation.'
+            'MinimumLengthValidator'
+        ),
         'OPTIONS': {
             'min_length': 8,
         },
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+        'NAME': (
+            'django.contrib.auth.password_validation.'
+            'CommonPasswordValidator'
+        ),
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+        'NAME': (
+            'django.contrib.auth.password_validation.'
+            'NumericPasswordValidator'
+        ),
     },
 ]
 
-# Internationalization
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 
-# Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
@@ -173,67 +175,49 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 WHITENOISE_USE_FINDERS = True
 WHITENOISE_MANIFEST_STRICT = False
 
-# Media files (User uploads, avatars, PDF invoices)
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-# Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Accelerated password hasher for automated tests
 if 'test' in sys.argv:
     PASSWORD_HASHERS = [
         'django.contrib.auth.hashers.MD5PasswordHasher',
     ]
 
-# Session Security
-SESSION_ENGINE = 'django.contrib.sessions.backends.db'  # PostgreSQL-backed sessions (cross-worker safe on Render)
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 SESSION_COOKIE_HTTPONLY = True
-SESSION_COOKIE_AGE = 1209600  # 2 weeks
-SESSION_SAVE_EVERY_REQUEST = False  # Only save when modified (performance)
-CSRF_COOKIE_HTTPONLY = False  # Allows JS to read for AJAX CSRF headers
+SESSION_COOKIE_AGE = 1209600
+SESSION_SAVE_EVERY_REQUEST = False
+CSRF_COOKIE_HTTPONLY = False
 
-# Email Subsystem (SMTP & API Backend Configuration)
-EMAIL_BACKEND = os.getenv("EMAIL_BACKEND") or config("EMAIL_BACKEND", default="django.core.mail.backends.smtp.EmailBackend")
+EMAIL_BACKEND = 'anymail.backends.brevo.EmailBackend'
 
-EMAIL_HOST = os.getenv("EMAIL_HOST") or config("EMAIL_HOST", default="smtp.gmail.com")
-EMAIL_PORT = int(os.getenv("EMAIL_PORT") or config("EMAIL_PORT", default=587, cast=int))
+ANYMAIL = {
+    'BREVO_API_KEY': config('BREVO_API_KEY', default=''),
+}
 
-# Explicit TLS/SSL from env — os.getenv takes precedence so Render env vars win
-_email_use_tls_raw = os.getenv("EMAIL_USE_TLS") or config("EMAIL_USE_TLS", default=None)
-EMAIL_USE_TLS = (_email_use_tls_raw.strip().lower() in ('true', '1', 'yes')) if _email_use_tls_raw else (EMAIL_PORT == 587)
+DEFAULT_FROM_EMAIL = 'Learnix <shahbazbutt22ee@gmail.com>'
 
-_email_use_ssl_raw = os.getenv("EMAIL_USE_SSL") or config("EMAIL_USE_SSL", default=None)
-EMAIL_USE_SSL = (_email_use_ssl_raw.strip().lower() in ('true', '1', 'yes')) if _email_use_ssl_raw else (EMAIL_PORT == 465)
-
-EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER") or config("EMAIL_HOST_USER", default="shahbazbutt22ee@gmail.com")
-EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD") or config("EMAIL_HOST_PASSWORD", default="")
-EMAIL_TIMEOUT = int(os.getenv("EMAIL_TIMEOUT") or config("EMAIL_TIMEOUT", default=10, cast=int))
-
-DEFAULT_FROM_EMAIL = os.getenv(
-    "DEFAULT_FROM_EMAIL",
-    config("DEFAULT_FROM_EMAIL", default="Learnix <shahbazbutt22ee@gmail.com>")
+STRIPE_PUBLISHABLE_KEY = config(
+    'STRIPE_PUBLISHABLE_KEY',
+    default=config('STRIPE_PUBLIC_KEY', default='pk_test_placeholder')
 )
-
-# Optional HTTP-based email API providers (bypasses cloud host SMTP port restrictions)
-RESEND_API_KEY = os.getenv("RESEND_API_KEY") or config("RESEND_API_KEY", default="")
-BREVO_API_KEY = os.getenv("BREVO_API_KEY") or config("BREVO_API_KEY", default="")
-
-# Stripe Configuration (Test/Sandbox Mode Only per requirements)
-STRIPE_PUBLISHABLE_KEY = config('STRIPE_PUBLISHABLE_KEY', default=config('STRIPE_PUBLIC_KEY', default='pk_test_placeholder'))
 STRIPE_PUBLIC_KEY = STRIPE_PUBLISHABLE_KEY
-STRIPE_SECRET_KEY = config('STRIPE_SECRET_KEY', default='sk_test_placeholder')
-STRIPE_WEBHOOK_SECRET = config('STRIPE_WEBHOOK_SECRET', default='whsec_placeholder')
+STRIPE_SECRET_KEY = config(
+    'STRIPE_SECRET_KEY', default='sk_test_placeholder'
+)
+STRIPE_WEBHOOK_SECRET = config(
+    'STRIPE_WEBHOOK_SECRET', default='whsec_placeholder'
+)
 STRIPE_CURRENCY = config('STRIPE_CURRENCY', default='usd')
 
 if 'test' in sys.argv:
     STRIPE_WEBHOOK_SECRET = 'whsec_placeholder'
 
-# Google OAuth 2.0 Configuration
 GOOGLE_CLIENT_ID = config('GOOGLE_CLIENT_ID', default='')
 GOOGLE_CLIENT_SECRET = config('GOOGLE_CLIENT_SECRET', default='')
 
-# Render & Production Hostname / CSRF Configuration (Phase 11)
 RENDER_EXTERNAL_HOSTNAME = config('RENDER_EXTERNAL_HOSTNAME', default=None)
 if RENDER_EXTERNAL_HOSTNAME:
     ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
@@ -249,9 +233,10 @@ for origin in custom_csrf:
     if origin and origin not in CSRF_TRUSTED_ORIGINS:
         CSRF_TRUSTED_ORIGINS.append(origin)
 
-# Production Deployment Security Hardening (Phase 11)
 if not DEBUG:
-    SECURE_SSL_REDIRECT = config('SECURE_SSL_REDIRECT', default=True, cast=bool)
+    SECURE_SSL_REDIRECT = config(
+        'SECURE_SSL_REDIRECT', default=True, cast=bool
+    )
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
     SECURE_BROWSER_XSS_FILTER = True
@@ -262,9 +247,6 @@ if not DEBUG:
     SECURE_HSTS_PRELOAD = True
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
-# ─── Logging ──────────────────────────────────────────────────────────────────
-# Streams all WARNING+ logs (including SMTP failures and OTP dispatch events) to
-# Render's stdout log collector so they appear in the Render dashboard log viewer.
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -302,20 +284,3 @@ LOGGING = {
         },
     },
 }
-# ─── Production startup diagnostics ─────────────────────────────────────────
-# Prints a safe SMTP/email configuration summary to Render's stdout log stream
-# on every worker startup, helping diagnose email delivery failures quickly.
-_is_render_env = bool(os.getenv('RENDER', ''))
-if _is_render_env:
-    _smtp_pwd_status = "SET (length={})".format(len(EMAIL_HOST_PASSWORD)) if EMAIL_HOST_PASSWORD else "NOT SET"
-    _brevo_status = "SET (length={}) ✓ PRIMARY".format(len(BREVO_API_KEY)) if BREVO_API_KEY else "NOT SET"
-    _resend_status = "SET ✓" if RESEND_API_KEY else "NOT SET"
-    print(
-        f"\n[LEARNIX STARTUP] ── Email Channel Status ──────────────────────────────\n"
-        f"[LEARNIX STARTUP]  Brevo HTTP API  : {_brevo_status}\n"
-        f"[LEARNIX STARTUP]  Resend HTTP API : {_resend_status}\n"
-        f"[LEARNIX STARTUP]  Gmail SMTP      : host={EMAIL_HOST}:{EMAIL_PORT} "
-        f"user={EMAIL_HOST_USER} password={_smtp_pwd_status}\n"
-        f"[LEARNIX STARTUP] ─────────────────────────────────────────────────────────",
-        flush=True
-    )
