@@ -1,17 +1,10 @@
-"""
-Database models for Payment Transactions, Checkout Sessions, and Invoicing.
-PostgreSQL 15+ compatible models for Learnix.
-"""
-
-from django.db import models
-from django.conf import settings
 import uuid
+
+from django.conf import settings
+from django.db import models
 
 
 class PaymentTransaction(models.Model):
-    """
-    Records completed or pending financial transactions via Stripe Checkout.
-    """
     STATUS_CHOICES = (
         ("PENDING", "Pending"),
         ("COMPLETED", "Completed"),
@@ -56,7 +49,10 @@ class PaymentTransaction(models.Model):
     confirmation_emails_sent = models.BooleanField(
         default=False,
         db_index=True,
-        help_text="Ensures purchase confirmation and invoice emails are dispatched exactly once."
+        help_text=(
+            "Ensures purchase confirmation and invoice emails "
+            "are dispatched exactly once."
+        )
     )
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -68,18 +64,17 @@ class PaymentTransaction(models.Model):
         ]
 
     def __str__(self):
-        return f"Order #{self.order_number} - {self.course.title} (${self.amount} {self.currency})"
+        return (
+            f"Order #{self.order_number} - {self.course.title} "
+            f"(${self.amount} {self.currency})"
+        )
 
     @classmethod
     def generate_order_number(cls) -> str:
-        """Generates unique Learnix order code e.g. LRN-84920."""
         return f"LRN-{uuid.uuid4().hex[:6].upper()}"
 
 
 class Invoice(models.Model):
-    """
-    Formal tax invoice generated for completed tuition payments.
-    """
     transaction = models.OneToOneField(
         PaymentTransaction,
         on_delete=models.CASCADE,
@@ -94,7 +89,9 @@ class Invoice(models.Model):
     billing_name = models.CharField(max_length=200)
     billing_email = models.EmailField()
     subtotal = models.DecimalField(max_digits=8, decimal_places=2)
-    tax_amount = models.DecimalField(max_digits=8, decimal_places=2, default=0.00)
+    tax_amount = models.DecimalField(
+        max_digits=8, decimal_places=2, default=0.00
+    )
     total_amount = models.DecimalField(max_digits=8, decimal_places=2)
     issued_at = models.DateTimeField(auto_now_add=True)
     pdf_file = models.FileField(upload_to="invoices/", null=True, blank=True)
@@ -107,7 +104,6 @@ class Invoice(models.Model):
 
     @classmethod
     def generate_invoice_number(cls) -> str:
-        """Generates unique tax invoice identifier e.g. INV-2026-00481."""
         from django.utils import timezone
         year = timezone.now().year
         suffix = uuid.uuid4().hex[:5].upper()

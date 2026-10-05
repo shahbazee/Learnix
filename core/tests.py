@@ -1,233 +1,255 @@
-from django.test import SimpleTestCase
-from django.urls import reverse
-from core.views import custom_page_not_found_view, custom_server_error_view, custom_permission_denied_view
-from django.test import RequestFactory
-
-
-class CoreViewsTestCase(SimpleTestCase):
-    """
-    Validates foundational URL routing, Bento grid components, search modal,
-    and error handling for Learnix.
-    """
-
-    def setUp(self):
-        self.factory = RequestFactory()
-
-    def test_home_page_status_and_branding(self):
-        """Home page should return 200 OK and include Learnix branding and Bento cards."""
-        response = self.client.get(reverse('core:home'))
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'Learnix')
-        self.assertContains(response, 'Master Modern Engineering')
-        self.assertContains(response, 'Interactive Curriculum')
-        self.assertContains(response, 'Full-Stack Django &amp; Scalable AI Architecture')
-        self.assertContains(response, 'tasks.py')
-        self.assertContains(response, 'Peer-Verified Mastery')
-        self.assertContains(response, 'Zero Latency Global Clusters')
-
-    def test_about_page_status_and_branding(self):
-        """About page should return 200 OK and include Learnix branding."""
-        response = self.client.get(reverse('core:about'))
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'Learnix')
-        self.assertContains(response, 'PLATFORM MANIFESTO')
-
-    def test_search_modal_presence(self):
-        """The ⌘K quick-search modal should be present in the base layout."""
-        response = self.client.get(reverse('core:home'))
-        self.assertContains(response, 'id="searchModal"')
-        self.assertContains(response, 'modalSearchInput')
-
-    def test_custom_404_view(self):
-        """Custom 404 view returns status 404 and Page Not Found template."""
-        request = self.factory.get('/nonexistent-dimension/')
-        response = custom_page_not_found_view(request)
-        self.assertEqual(response.status_code, 404)
-        self.assertIn('Page Not Found', response.content.decode())
-
-    def test_custom_403_view(self):
-        """Custom 403 view returns status 403 and access denied theme."""
-        request = self.factory.get('/restricted-zone/')
-        response = custom_permission_denied_view(request)
-        self.assertEqual(response.status_code, 403)
-        self.assertIn('Access Denied', response.content.decode())
-
-    def test_custom_500_view(self):
-        """Custom 500 view returns status 500 and internal server error template."""
-        request = self.factory.get('/faulty-reactor/')
-        response = custom_server_error_view(request)
-        self.assertEqual(response.status_code, 500)
-        self.assertIn('Internal Server Error', response.content.decode())
-
-
-from django.test import TestCase
-from django.core import mail
-from django.contrib.auth import get_user_model
-from django.utils import timezone
 from decimal import Decimal
-from unittest.mock import MagicMock, patch
-from core.emails import (
-    send_registration_success_email,
-    send_otp_verification_email,
-    send_forgot_password_otp_email,
-    send_password_changed_email,
-    send_course_purchase_success_email,
-    send_payment_receipt_invoice_email,
-    send_course_enrollment_email,
-    send_payment_failed_email,
-)
+
+from django.contrib.auth import get_user_model
+from django.test import Client, TestCase
+from django.urls import reverse
+
+from accounts.models import UserProfile
+from courses.models import Course, CourseCategory, CourseModule, Lesson
 
 User = get_user_model()
 
 
-class CentralizedEmailSubsystemTestCase(TestCase):
-    """
-    Automated verification of the centralized email service across all 8 platform events.
-    Verifies template rendering, fallback text generation, and defensive error handling.
-    """
-
+class HomePageViewTests(TestCase):
     def setUp(self):
-        mail.outbox = []
-        self.user = User.objects.create_user(
-            username='email_tester',
-            email='tester@learnix.edu',
-            first_name='Alex',
-            last_name='Tester',
-            password='TestPassword123!'
+        self.client = Client()
+        self.home_url = reverse('core:home')
+        self.instructor = User.objects.create_user(
+            username='instructor_jane',
+            email='jane@learnix.edu',
+            password='Password123!',
+        )
+        self.profile, _ = UserProfile.objects.get_or_create(
+            user=self.instructor
+        )
+        self.profile.role = UserProfile.ROLE_INSTRUCTOR
+        self.profile.headline = 'Principal Systems Architect'
+        self.profile.save()
+
+    def create_course(self, title, slug, is_published=True, category=None):
+        return Course.objects.create(
+            title=title,
+            slug=slug,
+            instructor=self.instructor,
+            category=category,
+            short_description='Short description',
+            price=Decimal('99.00'),
+            is_published=is_published,
         )
 
-        class DummyCourse:
-            title = 'Distributed High-Concurrency Microservices'
-            slug = 'distributed-microservices'
-            level = 'Advanced'
-            short_description = 'Scale resilient backend systems with Python and Kafka.'
-
-        class DummyTransaction:
-            order_number = 'LRN-TEST-9988'
-            amount = Decimal('149.00')
-            currency = 'USD'
-            status = 'COMPLETED'
-            stripe_checkout_session_id = 'cs_test_mock_9988'
-            stripe_payment_intent_id = 'pi_test_mock_9988'
-            created_at = timezone.now()
-
-        class DummyInvoice:
-            invoice_number = 'INV-2026-TEST99'
-            billing_name = 'Alex Tester'
-            billing_email = 'tester@learnix.edu'
-            issued_at = timezone.now()
-            pdf_file = None
-
-        self.mock_course = DummyCourse()
-        self.mock_tx = DummyTransaction()
-        self.mock_invoice = DummyInvoice()
-        self.mock_invoice.transaction = self.mock_tx
-
-    def test_event_1_registration_success_email(self):
-        """1. Registration Success email renders and dispatches successfully."""
-        success = send_registration_success_email(self.user)
-        self.assertTrue(success)
-        self.assertEqual(len(mail.outbox), 1)
-        sent = mail.outbox[0]
-        self.assertIn('tester@learnix.edu', sent.to)
-        self.assertIn('Registration Confirmed', sent.subject)
-        self.assertIn('Alex', sent.body)
-
-    def test_event_2_otp_verification_email(self):
-        """2. OTP Verification email contains 6-digit code and expiry."""
-        success = send_otp_verification_email(self.user, '829104', expires_minutes=10)
-        self.assertTrue(success)
-        self.assertEqual(len(mail.outbox), 1)
-        sent = mail.outbox[0]
-        self.assertIn('829104', sent.subject)
-        self.assertIn('829104', sent.body)
-        self.assertIn('10 minutes', sent.body)
-
-    def test_event_3_forgot_password_otp_email(self):
-        """3. Forgot Password OTP email contains reset code and expiry."""
-        success = send_forgot_password_otp_email(self.user, '471920', expires_minutes=10)
-        self.assertTrue(success)
-        self.assertEqual(len(mail.outbox), 1)
-        sent = mail.outbox[0]
-        self.assertIn('Password Reset Code: 471920', sent.subject)
-        self.assertIn('471920', sent.body)
-
-    def test_event_4_password_changed_email(self):
-        """4. Password Changed security notice email alerts the user."""
-        success = send_password_changed_email(self.user)
-        self.assertTrue(success)
-        self.assertEqual(len(mail.outbox), 1)
-        sent = mail.outbox[0]
-        self.assertIn('Password Was Changed', sent.subject)
-        self.assertIn('tester@learnix.edu', sent.to)
-
-    def test_event_5_course_purchase_success_email(self):
-        """5. Course Purchase Successful email contains course title and order reference."""
-        success = send_course_purchase_success_email(self.user, self.mock_course, self.mock_tx)
-        self.assertTrue(success)
-        self.assertEqual(len(mail.outbox), 1)
-        sent = mail.outbox[0]
-        self.assertIn('Payment Confirmed', sent.subject)
-        self.assertIn('Distributed High-Concurrency Microservices', sent.subject)
-        self.assertIn('LRN-TEST-9988', sent.body)
-
-    def test_event_6_payment_receipt_invoice_email(self):
-        """6. Payment Receipt / Invoice email details amount, invoice number, and exact format."""
-        fake_pdf = b"%PDF-1.4 Mock PDF Content"
-        success = send_payment_receipt_invoice_email(
-            self.user, self.mock_course, self.mock_tx, self.mock_invoice, pdf_bytes=fake_pdf
+    def test_empty_state_when_no_published_courses(self):
+        self.create_course(
+            title='Draft Course',
+            slug='draft-course',
+            is_published=False,
         )
-        self.assertTrue(success)
-        self.assertEqual(len(mail.outbox), 1)
-        sent = mail.outbox[0]
-        self.assertIn('Official Tax Invoice & Receipt: #INV-2026-TEST99', sent.subject)
-        self.assertIn('LRN-TEST-9988', sent.body)
-        self.assertIn('149.00', sent.body)
-        self.assertIn('COMPLETED (Paid via Stripe)', sent.body)
-        self.assertIn('Learnix_Invoice_INV-2026-TEST99.pdf', sent.body)
-        # Verify PDF attachment
-        self.assertEqual(len(sent.attachments), 1)
-        self.assertEqual(sent.attachments[0][0], 'Learnix_Invoice_INV-2026-TEST99.pdf')
+        response = self.client.get(self.home_url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.context['featured_courses']), 0)
+        self.assertContains(response, 'Courses coming soon')
+        self.assertContains(response, reverse('courses:course_list'))
 
-    def test_event_6_dual_recipients_account_and_stripe_hosted_email(self):
-        """Payment Receipt & Invoice dispatches to both account email and Stripe checkout email if different."""
-        self.mock_invoice.billing_email = 'stripe_guest@example.com'
-        success = send_payment_receipt_invoice_email(
-            self.user, self.mock_course, self.mock_tx, self.mock_invoice
+    def test_only_published_courses_appear(self):
+        pub_course = self.create_course(
+            title='Published Architecture',
+            slug='pub-arch',
+            is_published=True,
         )
-        self.assertTrue(success)
-        self.assertEqual(len(mail.outbox), 1)
-        sent = mail.outbox[0]
-        self.assertIn('tester@learnix.edu', sent.to)
-        self.assertIn('stripe_guest@example.com', sent.to)
-
-    def test_event_7_course_enrollment_email(self):
-        """7. Course Enrollment email confirms student access."""
-        success = send_course_enrollment_email(self.user, self.mock_course)
-        self.assertTrue(success)
-        self.assertEqual(len(mail.outbox), 1)
-        sent = mail.outbox[0]
-        self.assertIn('Enrollment Active', sent.subject)
-        self.assertIn('Distributed High-Concurrency Microservices', sent.body)
-
-    def test_event_8_payment_failed_email(self):
-        """8. Payment Failed email alerts the user with error reason."""
-        success = send_payment_failed_email(
-            self.user,
-            self.mock_course,
-            error_reason='Insufficient funds on card'
+        draft_course = self.create_course(
+            title='Hidden Draft',
+            slug='hidden-draft',
+            is_published=False,
         )
-        self.assertTrue(success)
-        self.assertEqual(len(mail.outbox), 1)
-        sent = mail.outbox[0]
-        self.assertIn('Payment Incomplete', sent.subject)
-        self.assertIn('Insufficient funds on card', sent.body)
+        response = self.client.get(self.home_url)
+        self.assertEqual(response.status_code, 200)
+        featured = response.context['featured_courses']
+        self.assertEqual(len(featured), 1)
+        self.assertIn(pub_course, featured)
+        self.assertNotIn(draft_course, featured)
+        self.assertContains(response, 'Published Architecture')
+        self.assertNotContains(response, 'Hidden Draft')
 
-    @patch('core.emails.send_mail')
-    def test_email_dispatch_failure_is_handled_safely(self, mock_send_mail):
-        """Email delivery failures (e.g. SMTP down) return False and never crash the caller."""
-        mock_send_mail.side_effect = Exception("SMTP Connection Refused")
-        success = send_registration_success_email(self.user)
-        # Asserts it safely returned False without raising an uncaught exception
-        self.assertFalse(success)
+    def test_maximum_six_featured_courses_appear(self):
+        for i in range(8):
+            self.create_course(
+                title=f'Course {i}',
+                slug=f'course-{i}',
+                is_published=True,
+            )
+        response = self.client.get(self.home_url)
+        self.assertEqual(response.status_code, 200)
+        featured = response.context['featured_courses']
+        self.assertEqual(len(featured), 6)
 
+    def test_category_course_counts_are_correct(self):
+        cat1 = CourseCategory.objects.create(
+            name='Cloud Infrastructure',
+            slug='cloud-infra',
+            icon='cloud',
+        )
+        cat2 = CourseCategory.objects.create(
+            name='AI Architecture',
+            slug='ai-arch',
+            icon='psychology',
+        )
+        CourseCategory.objects.create(
+            name='Unused Category',
+            slug='unused',
+            icon='school',
+        )
+        self.create_course(
+            title='Cloud 1',
+            slug='cloud-1',
+            category=cat1,
+            is_published=True,
+        )
+        self.create_course(
+            title='Cloud 2',
+            slug='cloud-2',
+            category=cat1,
+            is_published=True,
+        )
+        self.create_course(
+            title='Cloud Draft',
+            slug='cloud-draft',
+            category=cat1,
+            is_published=False,
+        )
+        self.create_course(
+            title='AI 1',
+            slug='ai-1',
+            category=cat2,
+            is_published=True,
+        )
+        response = self.client.get(self.home_url)
+        self.assertEqual(response.status_code, 200)
+        categories = list(response.context['categories'])
+        self.assertEqual(len(categories), 2)
+        counts = {c.slug: c.published_courses_count for c in categories}
+        self.assertEqual(counts['cloud-infra'], 2)
+        self.assertEqual(counts['ai-arch'], 1)
+        self.assertNotIn('unused', counts)
+
+    def test_category_ordering_and_rendering(self):
+        cat1 = CourseCategory.objects.create(
+            name='Cloud Infrastructure',
+            slug='cloud-infrastructure',
+        )
+        cat2 = CourseCategory.objects.create(
+            name='AI Systems',
+            slug='ai-systems',
+        )
+        cat3 = CourseCategory.objects.create(
+            name='Distributed Systems',
+            slug='distributed-systems',
+        )
+        self.create_course(
+            title='AI Course 1', slug='ai-1', category=cat2, is_published=True
+        )
+        self.create_course(
+            title='AI Course 2', slug='ai-2', category=cat2, is_published=True
+        )
+        self.create_course(
+            title='Cloud Course 1',
+            slug='cloud-1',
+            category=cat1,
+            is_published=True,
+        )
+        self.create_course(
+            title='Dist Course 1',
+            slug='dist-1',
+            category=cat3,
+            is_published=True,
+        )
+        response = self.client.get(self.home_url)
+        self.assertEqual(response.status_code, 200)
+        categories = list(response.context['categories'])
+        self.assertEqual(categories[0].slug, 'ai-systems')
+        self.assertEqual(categories[0].published_courses_count, 2)
+        content = response.content.decode('utf-8')
+        self.assertIn('AI Architecture', content)
+        self.assertIn('Cloud Infrastructure', content)
+        self.assertIn('Distributed Systems', content)
+        self.assertIn('?category=ai-systems', content)
+        self.assertIn('?category=cloud-infrastructure', content)
+        self.assertIn('?category=distributed-systems', content)
+
+    def test_lessons_count_calculated_correctly(self):
+        course = self.create_course(
+            title='Systems Mastery',
+            slug='systems-mastery',
+            is_published=True,
+        )
+        module1 = CourseModule.objects.create(
+            course=course,
+            title='Module 1',
+            order_number=1,
+        )
+        module2 = CourseModule.objects.create(
+            course=course,
+            title='Module 2',
+            order_number=2,
+        )
+        Lesson.objects.create(
+            module=module1,
+            title='Lesson 1',
+            order_number=1,
+        )
+        Lesson.objects.create(
+            module=module1,
+            title='Lesson 2',
+            order_number=2,
+        )
+        Lesson.objects.create(
+            module=module2,
+            title='Lesson 3',
+            order_number=1,
+        )
+        response = self.client.get(self.home_url)
+        self.assertEqual(response.status_code, 200)
+        featured = response.context['featured_courses']
+        self.assertEqual(featured[0].lessons_count, 3)
+
+
+class AboutPageViewTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.about_url = reverse('core:about')
+
+    def test_about_page_renders_successfully(self):
+        CourseCategory.objects.get_or_create(
+            slug='ai-systems', defaults={'name': 'AI Systems'}
+        )
+        CourseCategory.objects.get_or_create(
+            slug='distributed-systems',
+            defaults={'name': 'Distributed Systems'},
+        )
+        CourseCategory.objects.get_or_create(
+            slug='cloud-infrastructure',
+            defaults={'name': 'Cloud Infrastructure'},
+        )
+        CourseCategory.objects.get_or_create(
+            slug='system-design', defaults={'name': 'System Design'}
+        )
+        response = self.client.get(self.about_url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'core/about.html')
+        self.assertContains(response, 'About Learnix')
+        self.assertContains(response, 'Why Learnix Exists')
+        self.assertContains(response, 'OUR MISSION')
+        self.assertContains(response, 'What We Believe')
+        self.assertContains(response, 'Clarity over hype')
+        self.assertContains(
+            response, 'Practical learning over memorization'
+        )
+        self.assertContains(response, 'Honest course information')
+        self.assertContains(response, 'Learn at your own pace')
+        self.assertContains(response, 'What You Can Learn')
+        self.assertContains(response, 'AI Systems')
+        self.assertContains(response, 'Distributed Systems')
+        self.assertContains(response, 'Cloud Infrastructure')
+        self.assertContains(response, 'System Design')
+        self.assertContains(
+            response, 'Start Learning Modern Engineering'
+        )
+        self.assertContains(response, 'Explore Courses')

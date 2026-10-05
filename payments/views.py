@@ -1,48 +1,44 @@
-"""
-Class-Based Views for Stripe Checkout, Payment Success, and Aborted Transactions.
-"""
-
-import stripe
+from decimal import Decimal
+from io import BytesIO
 import logging
 import zipfile
-from io import BytesIO
-from decimal import Decimal
-from django.views.generic import View, TemplateView
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.shortcuts import get_object_or_404, redirect, render
-from django.http import HttpResponse, Http404
-from django.core.exceptions import PermissionDenied
+
 from django.conf import settings
 from django.contrib import messages
-from django.urls import reverse
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.exceptions import PermissionDenied
 from django.db import transaction as db_transaction
+from django.http import HttpResponse
+from django.shortcuts import get_object_or_404, redirect
+from django.urls import reverse
+from django.views.generic import TemplateView, View
+import stripe
 
-from courses.models import Course, Enrollment, Lesson
-from .models import PaymentTransaction, Invoice
+from courses.models import Course, Enrollment
+from .models import Invoice, PaymentTransaction
 from .services import (
-    send_order_confirmation_email,
     generate_invoice_pdf,
     generate_receipt_pdf,
-    fulfill_order_and_dispatch_emails
+    send_order_confirmation_email,
 )
 
 logger = logging.getLogger(__name__)
 
 
 class CreateCheckoutSessionView(LoginRequiredMixin, View):
-    """
-    Initiates Stripe Checkout session in Sandbox/Test Mode.
-    Falls back gracefully to the interactive Learnix Checkout Modal Simulator if live keys are absent.
-    """
     def post(self, request, course_slug):
-        course = get_object_or_404(Course, slug=course_slug, is_published=True)
+        course = get_object_or_404(
+            Course, slug=course_slug, is_published=True
+        )
 
-        # 1. Prevent duplicate purchase if student already has active enrollment
-        if request.user.enrollments.filter(course=course, is_active=True).exists():
-            messages.info(request, f"You are already enrolled in {course.title}.")
+        if request.user.enrollments.filter(
+            course=course, is_active=True
+        ).exists():
+            messages.info(
+                request, f"You are already enrolled in {course.title}."
+            )
             return redirect('courses:dashboard')
 
-        # 2. Handle Free Courses
         if course.is_free:
             with db_transaction.atomic():
                 order_num = PaymentTransaction.generate_order_number()
@@ -65,18 +61,30 @@ class CreateCheckoutSessionView(LoginRequiredMixin, View):
                     transaction=tx,
                     defaults={
                         'invoice_number': Invoice.generate_invoice_number(),
-                        'billing_name': request.user.get_full_name() or request.user.username,
-                        'billing_email': request.user.email or f"{request.user.username}@learnix.edu",
+                        'billing_name': (
+                            request.user.get_full_name() or
+                            request.user.username
+                        ),
+                        'billing_email': (
+                            request.user.email or
+                            f"{request.user.username}@learnix.edu"
+                        ),
                         'subtotal': Decimal('0.00'),
                         'tax_amount': Decimal('0.00'),
                         'total_amount': Decimal('0.00')
                     }
                 )
             send_order_confirmation_email(request.user, course, tx, inv)
-            messages.success(request, f"Welcome to {course.title}! Your complimentary access is active.")
-            return redirect(f"{reverse('payments:payment_success')}?order={tx.order_number}")
+            messages.success(
+                request,
+                f"Welcome to {course.title}! "
+                f"Your complimentary access is active."
+            )
+            return redirect(
+                f"{reverse('payments:payment_success')}?"
+                f"order={tx.order_number}"
+            )
 
-        # 3. Create or retrieve pending order
         order_num = PaymentTransaction.generate_order_number()
         tx, _ = PaymentTransaction.objects.get_or_create(
             user=request.user,
@@ -89,18 +97,23 @@ class CreateCheckoutSessionView(LoginRequiredMixin, View):
             }
         )
 
-        # 4. Initiate Stripe Official Hosted Checkout Session
         try:
             stripe.api_key = settings.STRIPE_SECRET_KEY
             unit_amount = int(course.price * 100)
 
             success_url = request.build_absolute_uri(
-                f"{reverse('payments:payment_success')}?session_id={{CHECKOUT_SESSION_ID}}&order={tx.order_number}"
+                f"{reverse('payments:payment_success')}?"
+                f"session_id={{CHECKOUT_SESSION_ID}}&order={tx.order_number}"
             )
             cancel_url = request.build_absolute_uri(
                 f"{reverse('payments:payment_cancel')}?order={tx.order_number}"
             )
 
+            desc = (
+                course.short_description[:200]
+                if course.short_description
+                else 'Masterclass Architecture Track'
+            )
             checkout_session = stripe.checkout.Session.create(
                 customer_email=request.user.email or None,
                 payment_method_types=['card'],
@@ -110,7 +123,7 @@ class CreateCheckoutSessionView(LoginRequiredMixin, View):
                             'currency': settings.STRIPE_CURRENCY.lower(),
                             'product_data': {
                                 'name': course.title,
-                                'description': course.short_description[:200] if course.short_description else 'Masterclass Architecture Track',
+                                'description': desc,
                             },
                             'unit_amount': unit_amount,
                         },
@@ -136,7 +149,8 @@ class CreateCheckoutSessionView(LoginRequiredMixin, View):
             logger.error(f"Stripe Authentication Error: {e}")
             messages.error(
                 request,
-                "Stripe configuration error: A valid Stripe sandbox secret key (sk_test_...) is required to open Stripe Checkout."
+                "Stripe configuration error: A valid Stripe sandbox secret "
+                "key (sk_test_...) is required to open Stripe Checkout."
             )
             return redirect('courses:course_detail', slug=course.slug)
 
@@ -146,8 +160,13 @@ class CreateCheckoutSessionView(LoginRequiredMixin, View):
             return redirect('courses:course_detail', slug=course.slug)
 
         except Exception as e:
-            logger.error(f"Unexpected error in CreateCheckoutSessionView: {e}")
-            messages.error(request, "Unable to initiate payment session. Please try again.")
+            logger.error(
+                f"Unexpected error in CreateCheckoutSessionView: {e}"
+            )
+            messages.error(
+                request,
+                "Unable to initiate payment session. Please try again."
+            )
             return redirect('courses:course_detail', slug=course.slug)
 
     def get(self, request, course_slug):
@@ -155,22 +174,18 @@ class CreateCheckoutSessionView(LoginRequiredMixin, View):
 
 
 class CheckoutModalView(LoginRequiredMixin, View):
-    """
-    Deprecated legacy modal endpoint.
-    Per project requirements, custom on-site payment forms are removed in favor of Stripe hosted Checkout.
-    Redirects immediately to official Stripe hosted Checkout session.
-    """
     def get(self, request, course_slug):
-        return redirect('payments:create_checkout_session', course_slug=course_slug)
+        return redirect(
+            'payments:create_checkout_session', course_slug=course_slug
+        )
 
     def post(self, request, course_slug):
-        return redirect('payments:create_checkout_session', course_slug=course_slug)
+        return redirect(
+            'payments:create_checkout_session', course_slug=course_slug
+        )
 
 
 class PaymentSuccessView(LoginRequiredMixin, TemplateView):
-    """
-    Renders the celebratory Payment Success & Onboarding page.
-    """
     template_name = 'payments/success.html'
 
     def get_context_data(self, **kwargs):
@@ -182,81 +197,86 @@ class PaymentSuccessView(LoginRequiredMixin, TemplateView):
 
         tx = None
         if order_ref:
-            tx = PaymentTransaction.objects.filter(order_number=order_ref).select_related('course', 'invoice').first()
-            if tx and tx.user != user and not user.is_staff:
-                tx = None
+            qs = PaymentTransaction.objects.filter(order_number=order_ref)
+            if not user.is_staff:
+                qs = qs.filter(user=user)
+            tx = qs.select_related('course', 'invoice').first()
         elif session_id:
-            tx = PaymentTransaction.objects.filter(stripe_checkout_session_id=session_id).select_related('course', 'invoice').first()
-            if tx and tx.user != user and not user.is_staff:
-                tx = None
+            qs = PaymentTransaction.objects.filter(
+                stripe_checkout_session_id=session_id
+            )
+            if not user.is_staff:
+                qs = qs.filter(user=user)
+            tx = qs.select_related('course', 'invoice').first()
+        else:
+            tx = PaymentTransaction.objects.filter(
+                user=user, status='COMPLETED'
+            ).select_related(
+                'course', 'invoice'
+            ).order_by('-created_at').first()
 
-        # Fallback to most recent transaction if query parameters were not passed
-        if not tx:
-            tx = PaymentTransaction.objects.filter(user=user, status='COMPLETED').select_related('course', 'invoice').order_by('-created_at').first()
-
-        # If transaction found but not yet fulfilled or emails not yet dispatched:
-        if tx and (tx.status != 'COMPLETED' or not getattr(tx, 'confirmation_emails_sent', False)):
-            stripe_confirmed = False
-            payment_intent = None
-            billing_name = None
-            billing_email = None
-
-            if session_id and not session_id.startswith('{'):
-                try:
-                    stripe.api_key = settings.STRIPE_SECRET_KEY
-                    if settings.STRIPE_SECRET_KEY and not settings.STRIPE_SECRET_KEY.endswith('_placeholder'):
-                        s_obj = stripe.checkout.Session.retrieve(session_id)
-                        if getattr(s_obj, 'payment_status', None) == 'paid':
-                            stripe_confirmed = True
-                            payment_intent = getattr(s_obj, 'payment_intent', None)
-                            cust = getattr(s_obj, 'customer_details', None) or {}
-                            raw_name = cust.get('name') if isinstance(cust, dict) else getattr(cust, 'name', None)
-                            raw_email = cust.get('email') if isinstance(cust, dict) else getattr(cust, 'email', None)
-                            billing_name = str(raw_name).strip() if isinstance(raw_name, str) and raw_name.strip() else None
-                            billing_email = str(raw_email).strip() if isinstance(raw_email, str) and raw_email.strip() else None
-                    elif settings.DEBUG:
-                        stripe_confirmed = True
-                except Exception as e:
-                    logger.warning(f"Could not verify session with Stripe API: {e}")
-            elif tx.status == 'COMPLETED':
-                stripe_confirmed = True
-
-            if stripe_confirmed:
-                logger.info(f"[PAYMENT SUCCESS] Confirmed payment for order #{tx.order_number} (session={session_id}). Fulfilling order and dispatching invoice emails via Brevo.")
-                fulfill_order_and_dispatch_emails(
-                    transaction=tx,
-                    session_id=session_id,
-                    stripe_payment_intent=payment_intent,
-                    order_number=order_ref,
-                    billing_name=billing_name,
-                    billing_email=billing_email,
-                )
-                tx.refresh_from_db()
-
-        # Find first lesson of course for direct "Launch Classroom" CTA
-        first_lesson = None
+        is_enrolled = False
         if tx and tx.course:
-            first_module = tx.course.modules.prefetch_related('lessons').order_by('order_number').first()
+            is_enrolled = Enrollment.objects.filter(
+                user=tx.user,
+                course=tx.course,
+                is_active=True
+            ).exists()
+
+        is_completed = bool(
+            tx and tx.status == 'COMPLETED' and is_enrolled
+        )
+
+        first_lesson = None
+        start_course_url = None
+        if tx and tx.course:
+            first_module = (
+                tx.course.modules.prefetch_related('lessons')
+                .order_by('order_number').first()
+            )
             if first_module:
-                first_lesson = first_module.lessons.order_by('order_number').first()
+                first_lesson = (
+                    first_module.lessons.order_by('order_number').first()
+                )
+            if first_lesson:
+                start_course_url = reverse(
+                    'courses:lesson_view',
+                    kwargs={
+                        'slug': tx.course.slug,
+                        'lesson_id': first_lesson.id,
+                    }
+                )
+            else:
+                start_course_url = reverse('courses:dashboard')
+
+        transaction_id = None
+        if tx:
+            transaction_id = (
+                tx.stripe_payment_intent_id or
+                tx.stripe_checkout_session_id or
+                tx.order_number
+            )
+
+        invoice = None
+        if tx and hasattr(tx, 'invoice'):
+            invoice = tx.invoice
 
         context.update({
             'transaction': tx,
             'course': tx.course if tx else None,
-            'invoice': tx.invoice if tx and hasattr(tx, 'invoice') else None,
+            'invoice': invoice,
             'first_lesson': first_lesson,
-            'transaction_code': f"txn_{tx.order_number.replace('LRN-', '3M9x')}" if tx else "txn_3M9x882194aL",
-            'auth_code': f"#{tx.id * 1829 + 1024}-OK" if tx else "#89102-OK",
-            'card_last4': "4242",
-            'card_brand': "VISA",
+            'start_course_url': start_course_url,
+            'transaction_id': transaction_id,
+            'is_completed': is_completed,
+            'is_enrolled': is_enrolled,
+            'card_brand': None,
+            'card_last4': None,
         })
         return context
 
 
 class PaymentCancelView(TemplateView):
-    """
-    Renders friendly aborted checkout notice with link back to course catalog.
-    """
     template_name = 'payments/cancel.html'
 
     def get_context_data(self, **kwargs):
@@ -264,45 +284,53 @@ class PaymentCancelView(TemplateView):
         order_ref = self.request.GET.get('order')
         tx = None
         if order_ref:
-            tx = PaymentTransaction.objects.filter(order_number=order_ref).select_related('course').first()
+            tx = PaymentTransaction.objects.filter(
+                order_number=order_ref
+            ).select_related('course').first()
         context['transaction'] = tx
         return context
 
 
 class BillingHubView(LoginRequiredMixin, TemplateView):
-    """
-    Student Billing & Invoices Management Hub.
-    """
     template_name = 'payments/billing_hub.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         user = self.request.user
 
-        # Fetch all transactions for this student
-        transactions = PaymentTransaction.objects.filter(user=user).select_related('course', 'invoice').order_by('-created_at')
+        transactions = PaymentTransaction.objects.filter(
+            user=user
+        ).select_related('course', 'invoice').order_by('-created_at')
 
-        # Ensure completed transactions have an Invoice record
         for tx in transactions:
             if tx.status == 'COMPLETED' and not hasattr(tx, 'invoice'):
                 Invoice.objects.get_or_create(
                     transaction=tx,
                     defaults={
                         'invoice_number': Invoice.generate_invoice_number(),
-                        'billing_name': user.get_full_name() or user.username,
-                        'billing_email': user.email or f"{user.username}@learnix.edu",
+                        'billing_name': (
+                            user.get_full_name() or user.username
+                        ),
+                        'billing_email': (
+                            user.email or f"{user.username}@learnix.edu"
+                        ),
                         'subtotal': tx.amount,
                         'tax_amount': Decimal('0.00'),
                         'total_amount': tx.amount
                     }
                 )
 
-        # Refresh transactions with invoices
-        transactions = PaymentTransaction.objects.filter(user=user).select_related('course', 'invoice').order_by('-created_at')
-        completed_txs = [tx for tx in transactions if tx.status == 'COMPLETED']
+        transactions = PaymentTransaction.objects.filter(
+            user=user
+        ).select_related('course', 'invoice').order_by('-created_at')
+        completed_txs = [
+            tx for tx in transactions if tx.status == 'COMPLETED'
+        ]
 
         total_courses = len(completed_txs)
-        lifetime_spend = sum((tx.amount for tx in completed_txs), Decimal('0.00'))
+        lifetime_spend = sum(
+            (tx.amount for tx in completed_txs), Decimal('0.00')
+        )
 
         context.update({
             'transactions': transactions,
@@ -316,22 +344,27 @@ class BillingHubView(LoginRequiredMixin, TemplateView):
 
 
 class DownloadInvoicePDFView(LoginRequiredMixin, View):
-    """
-    Streams official Tax Invoice PDF generated via server-side xhtml2pdf.
-    """
     def get(self, request, invoice_number):
         invoice = get_object_or_404(
-            Invoice.objects.select_related('transaction', 'transaction__user', 'transaction__course'),
+            Invoice.objects.select_related(
+                'transaction',
+                'transaction__user',
+                'transaction__course'
+            ),
             invoice_number=invoice_number
         )
 
-        # Security check: User can only download their own invoice, unless staff
-        if invoice.transaction.user != request.user and not request.user.is_staff:
+        if (
+            invoice.transaction.user != request.user and
+            not request.user.is_staff
+        ):
             raise PermissionDenied("You do not have access to this invoice.")
 
         pdf_bytes = generate_invoice_pdf(invoice)
         if not pdf_bytes:
-            messages.error(request, "Could not generate invoice PDF. Please try again.")
+            messages.error(
+                request, "Could not generate invoice PDF. Please try again."
+            )
             return redirect('payments:billing_hub')
 
         response = HttpResponse(pdf_bytes, content_type='application/pdf')
@@ -341,22 +374,22 @@ class DownloadInvoicePDFView(LoginRequiredMixin, View):
 
 
 class DownloadReceiptPDFView(LoginRequiredMixin, View):
-    """
-    Streams official Payment Receipt PDF generated via server-side xhtml2pdf.
-    """
     def get(self, request, order_number):
         tx = get_object_or_404(
-            PaymentTransaction.objects.select_related('user', 'course', 'invoice'),
+            PaymentTransaction.objects.select_related(
+                'user', 'course', 'invoice'
+            ),
             order_number=order_number
         )
 
-        # Security check: User can only download their own receipt, unless staff
         if tx.user != request.user and not request.user.is_staff:
             raise PermissionDenied("You do not have access to this receipt.")
 
         pdf_bytes = generate_receipt_pdf(tx)
         if not pdf_bytes:
-            messages.error(request, "Could not generate receipt PDF. Please try again.")
+            messages.error(
+                request, "Could not generate receipt PDF. Please try again."
+            )
             return redirect('payments:billing_hub')
 
         response = HttpResponse(pdf_bytes, content_type='application/pdf')
@@ -366,11 +399,10 @@ class DownloadReceiptPDFView(LoginRequiredMixin, View):
 
 
 class ExportAllInvoicesZipView(LoginRequiredMixin, View):
-    """
-    Packages all student tax invoices and receipts into a single downloadable .ZIP archive.
-    """
     def get(self, request):
-        transactions = PaymentTransaction.objects.filter(user=request.user).select_related('course', 'invoice').order_by('-created_at')
+        transactions = PaymentTransaction.objects.filter(
+            user=request.user
+        ).select_related('course', 'invoice').order_by('-created_at')
         if not transactions.exists():
             messages.info(request, "No transaction records found to export.")
             return redirect('payments:billing_hub')
@@ -378,20 +410,28 @@ class ExportAllInvoicesZipView(LoginRequiredMixin, View):
         zip_buffer = BytesIO()
         with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as archive:
             for tx in transactions:
-                # 1. Payment receipt
                 rec_bytes = generate_receipt_pdf(tx)
                 if rec_bytes:
-                    archive.writestr(f"Receipt_{tx.order_number}.pdf", rec_bytes)
+                    archive.writestr(
+                        f"Receipt_{tx.order_number}.pdf", rec_bytes
+                    )
 
-                # 2. Tax invoice if completed
                 inv = getattr(tx, 'invoice', None)
                 if not inv and tx.status == 'COMPLETED':
                     inv, _ = Invoice.objects.get_or_create(
                         transaction=tx,
                         defaults={
-                            'invoice_number': Invoice.generate_invoice_number(),
-                            'billing_name': request.user.get_full_name() or request.user.username,
-                            'billing_email': request.user.email or f"{request.user.username}@learnix.edu",
+                            'invoice_number': (
+                                Invoice.generate_invoice_number()
+                            ),
+                            'billing_name': (
+                                request.user.get_full_name() or
+                                request.user.username
+                            ),
+                            'billing_email': (
+                                request.user.email or
+                                f"{request.user.username}@learnix.edu"
+                            ),
                             'subtotal': tx.amount,
                             'tax_amount': Decimal('0.00'),
                             'total_amount': tx.amount
@@ -400,11 +440,14 @@ class ExportAllInvoicesZipView(LoginRequiredMixin, View):
                 if inv:
                     inv_bytes = generate_invoice_pdf(inv)
                     if inv_bytes:
-                        archive.writestr(f"Invoice_{inv.invoice_number}.pdf", inv_bytes)
+                        archive.writestr(
+                            f"Invoice_{inv.invoice_number}.pdf", inv_bytes
+                        )
 
         zip_buffer.seek(0)
-        response = HttpResponse(zip_buffer.getvalue(), content_type='application/zip')
+        response = HttpResponse(
+            zip_buffer.getvalue(), content_type='application/zip'
+        )
         filename = f"Learnix_Billing_Archive_{request.user.username}.zip"
         response['Content-Disposition'] = f'attachment; filename="{filename}"'
         return response
-
