@@ -1,23 +1,20 @@
-"""
-Database models for Course Management, Modules, Lessons, and Categories.
-PostgreSQL 15+ compatible models for Learnix.
-"""
-
-import uuid
-import hashlib
 from decimal import Decimal
-from django.db import models
+import hashlib
+from pathlib import Path
+import uuid
+
 from django.conf import settings
+from django.db import models
 from django.utils.text import slugify
 
 
 class CourseCategory(models.Model):
-    """
-    Categorizes technical domains (e.g., AI & LLMs, Distributed Systems, Cloud Architecture).
-    """
     name = models.CharField(max_length=100, unique=True)
     slug = models.SlugField(max_length=120, unique=True)
-    icon = models.CharField(max_length=50, default='school', help_text="Material symbol icon name")
+    icon = models.CharField(
+        max_length=50, default='school',
+        help_text="Material symbol icon name"
+    )
     description = models.TextField(blank=True, default='')
 
     class Meta:
@@ -34,9 +31,6 @@ class CourseCategory(models.Model):
 
 
 class Course(models.Model):
-    """
-    Core curriculum entity defining masterclass architecture tracks.
-    """
     LEVEL_CHOICES = (
         ("BEGINNER", "Beginner"),
         ("INTERMEDIATE", "Intermediate"),
@@ -58,18 +52,34 @@ class Course(models.Model):
         related_name="courses"
     )
     short_description = models.TextField(
-        help_text="One or two sentences summarizing the architectural mastery track"
+        help_text=(
+            "One or two sentences summarizing the architectural mastery track"
+        )
     )
     full_description = models.TextField(
         blank=True,
         default='',
-        help_text="Comprehensive syllabus outline, prerequisites, and learning outcomes"
+        help_text=(
+            "Comprehensive syllabus outline, prerequisites, "
+            "and learning outcomes"
+        )
     )
-    price = models.DecimalField(max_digits=8, decimal_places=2, default=0.00)
-    level = models.CharField(max_length=15, choices=LEVEL_CHOICES, default="BEGINNER")
-    thumbnail = models.ImageField(upload_to="course_thumbnails/", null=True, blank=True)
-    thumbnail_url = models.URLField(max_length=500, blank=True, default='', help_text="Fallback external URL for demo images")
-    rating = models.DecimalField(max_digits=3, decimal_places=2, default=4.90)
+    price = models.DecimalField(
+        max_digits=8, decimal_places=2, default=0.00
+    )
+    level = models.CharField(
+        max_length=15, choices=LEVEL_CHOICES, default="BEGINNER"
+    )
+    thumbnail = models.ImageField(
+        upload_to="course_thumbnails/", null=True, blank=True
+    )
+    thumbnail_url = models.URLField(
+        max_length=500, blank=True, default='',
+        help_text="Fallback external URL for demo images"
+    )
+    rating = models.DecimalField(
+        max_digits=3, decimal_places=2, default=4.90
+    )
     reviews_count = models.PositiveIntegerField(default=120)
     is_published = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -88,17 +98,14 @@ class Course(models.Model):
 
     @property
     def total_lessons_count(self) -> int:
-        """Calculates total lessons across all modules efficiently."""
         return Lesson.objects.filter(module__course=self).count()
 
     @property
     def is_free(self) -> bool:
-        """Returns True if the course has a zero tuition price."""
         return self.price == 0.00
 
     @property
     def total_duration_seconds(self) -> int:
-        """Aggregates duration in seconds across all curriculum lessons."""
         return sum(
             lesson.duration_seconds
             for module in self.modules.all()
@@ -107,7 +114,6 @@ class Course(models.Model):
 
     @property
     def total_duration_hours_display(self) -> str:
-        """Formatted hours (e.g. '18h Total' or '14.5 hrs')."""
         total_sec = self.total_duration_seconds
         if not total_sec:
             return "10h Total"
@@ -118,22 +124,39 @@ class Course(models.Model):
 
     @property
     def get_thumbnail_url(self) -> str:
-        """
-        Resolves the primary course thumbnail URL in priority order:
-        1. Uploaded ImageField thumbnail (if file exists).
-        2. Configured thumbnail_url.
-        3. Curated local vector fallback (/static/images/courses/<slug>.svg).
-        4. Default masterclass fallback (/static/images/courses/default-course.svg).
-        """
-        if self.thumbnail and hasattr(self.thumbnail, 'url'):
+        if self.thumbnail:
             try:
-                return self.thumbnail.url
+                if self.thumbnail.url:
+                    return self.thumbnail.url
             except Exception:
                 pass
         if self.thumbnail_url and self.thumbnail_url.strip():
             return self.thumbnail_url.strip()
-        return f"/static/images/courses/{self.slug}.svg"
 
+        static_root = Path(settings.BASE_DIR) / 'static'
+        static_img = static_root / 'images'
+        slug_paths = [
+            static_img / 'courses' / 'thumbnails' / f"{self.slug}.svg",
+            static_img / 'courses' / f"{self.slug}.svg",
+        ]
+        for path in slug_paths:
+            if path.is_file():
+                rel = path.relative_to(static_root).as_posix()
+                return f"/static/{rel}"
+
+        if self.category and self.category.slug:
+            cat_slug = self.category.slug
+            cat_paths = [
+                static_img / 'courses' / 'thumbnails' / f"{cat_slug}.svg",
+                static_img / 'categories' / f"{cat_slug}.svg",
+                static_img / 'courses' / f"{cat_slug}.svg",
+            ]
+            for path in cat_paths:
+                if path.is_file():
+                    rel = path.relative_to(static_root).as_posix()
+                    return f"/static/{rel}"
+
+        return "/static/images/courses/default-course.svg"
 
     def save(self, *args, **kwargs):
         if not self.slug:
@@ -142,9 +165,6 @@ class Course(models.Model):
 
 
 class CourseModule(models.Model):
-    """
-    Curriculum unit or chapter organizing lessons sequentially.
-    """
     course = models.ForeignKey(
         Course,
         on_delete=models.CASCADE,
@@ -157,17 +177,19 @@ class CourseModule(models.Model):
         ordering = ["order_number"]
 
     def __str__(self):
-        return f"{self.course.title} — Module {self.order_number}: {self.title}"
+        return (
+            f"{self.course.title} — Module {self.order_number}: "
+            f"{self.title}"
+        )
 
     @property
     def total_duration_seconds(self) -> int:
-        return sum(lesson.duration_seconds for lesson in self.lessons.all())
+        return sum(
+            lesson.duration_seconds for lesson in self.lessons.all()
+        )
 
 
 class Lesson(models.Model):
-    """
-    Individual learning unit containing interactive video player streams and rich text.
-    """
     module = models.ForeignKey(
         CourseModule,
         on_delete=models.CASCADE,
@@ -188,7 +210,10 @@ class Lesson(models.Model):
     order_number = models.PositiveIntegerField(default=1)
     is_preview = models.BooleanField(
         default=False,
-        help_text="If True, guests and unenrolled students can stream this lesson for free"
+        help_text=(
+            "If True, guests and unenrolled students can "
+            "stream this lesson for free"
+        )
     )
 
     class Meta:
@@ -205,9 +230,6 @@ class Lesson(models.Model):
 
 
 class Enrollment(models.Model):
-    """
-    Represents an active or historical course enrollment for a student.
-    """
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -237,13 +259,15 @@ class Enrollment(models.Model):
         ]
 
     def __str__(self):
-        return f"{self.user.username} enrolled in {self.course.title} ({self.progress_percent}%)"
+        return (
+            f"{self.user.username} enrolled in {self.course.title} "
+            f"({self.progress_percent}%)"
+        )
 
     def calculate_progress(self) -> float:
-        """
-        Recalculates completion percentage based on LessonProgress records and saves.
-        """
-        total_lessons = Lesson.objects.filter(module__course=self.course).count()
+        total_lessons = Lesson.objects.filter(
+            module__course=self.course
+        ).count()
         if total_lessons == 0:
             self.progress_percent = 0.00
         else:
@@ -252,7 +276,9 @@ class Enrollment(models.Model):
                 lesson__module__course=self.course,
                 is_completed=True
             ).count()
-            self.progress_percent = round((completed_count / total_lessons) * 100, 2)
+            self.progress_percent = round(
+                (completed_count / total_lessons) * 100, 2
+            )
             if self.progress_percent > 100.0:
                 self.progress_percent = 100.00
         self.save(update_fields=["progress_percent"])
@@ -278,7 +304,6 @@ class Enrollment(models.Model):
 
     @property
     def next_uncompleted_lesson(self):
-        """Finds the next unfinished lesson in sequential curriculum order."""
         completed_ids = set(
             LessonProgress.objects.filter(
                 user=self.user,
@@ -286,21 +311,21 @@ class Enrollment(models.Model):
                 is_completed=True
             ).values_list("lesson_id", flat=True)
         )
-        for module in self.course.modules.prefetch_related("lessons").order_by("order_number"):
+        for module in self.course.modules.prefetch_related(
+            "lessons"
+        ).order_by("order_number"):
             for lesson in module.lessons.order_by("order_number"):
                 if lesson.id not in completed_ids:
                     return lesson
-        # If all completed or none, return the first lesson
-        first_module = self.course.modules.prefetch_related("lessons").order_by("order_number").first()
+        first_module = self.course.modules.prefetch_related(
+            "lessons"
+        ).order_by("order_number").first()
         if first_module:
             return first_module.lessons.order_by("order_number").first()
         return None
 
 
 class LessonProgress(models.Model):
-    """
-    Granular completion and progress tracking per lesson per student.
-    """
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -329,9 +354,6 @@ class LessonProgress(models.Model):
 
 
 class Certificate(models.Model):
-    """
-    Cryptographically verifiable Certificate of Completion.
-    """
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -357,9 +379,13 @@ class Certificate(models.Model):
         max_length=64,
         help_text="SHA-256 cryptographic verification ledger hash"
     )
-    ceus = models.DecimalField(max_digits=4, decimal_places=1, default=Decimal('4.5'))
+    ceus = models.DecimalField(
+        max_digits=4, decimal_places=1, default=Decimal('4.5')
+    )
     issued_at = models.DateTimeField(auto_now_add=True)
-    pdf_file = models.FileField(upload_to="certificates/", null=True, blank=True)
+    pdf_file = models.FileField(
+        upload_to="certificates/", null=True, blank=True
+    )
 
     class Meta:
         ordering = ["-issued_at"]
@@ -369,7 +395,10 @@ class Certificate(models.Model):
         ]
 
     def __str__(self):
-        return f"Certificate {self.certificate_id} - {self.user.username} - {self.course.title}"
+        return (
+            f"Certificate {self.certificate_id} - "
+            f"{self.user.username} - {self.course.title}"
+        )
 
     @classmethod
     def generate_certificate_id(cls) -> str:
@@ -377,15 +406,19 @@ class Certificate(models.Model):
         return f"LRN-{suffix}-X"
 
     @classmethod
-    def compute_verification_hash(cls, user_id, course_slug, timestamp_str) -> str:
-        raw = f"LEARNIX_CERT:{user_id}:{course_slug}:{timestamp_str}:SHA256_AUTH"
-        return "0x" + hashlib.sha256(raw.encode('utf-8')).hexdigest()[:38]
+    def compute_verification_hash(
+        cls, user_id, course_slug, timestamp_str
+    ) -> str:
+        raw = (
+            f"LEARNIX_CERT:{user_id}:{course_slug}:"
+            f"{timestamp_str}:SHA256_AUTH"
+        )
+        return "0x" + hashlib.sha256(
+            raw.encode('utf-8')
+        ).hexdigest()[:38]
 
     @classmethod
     def issue_for_enrollment(cls, enrollment):
-        """
-        Issues or retrieves verifiable certificate if enrollment is 100% complete.
-        """
         if not enrollment.is_completed:
             return None
 
@@ -393,7 +426,9 @@ class Certificate(models.Model):
         if not cert:
             from django.utils import timezone
             now_str = timezone.now().isoformat()
-            v_hash = cls.compute_verification_hash(enrollment.user.id, enrollment.course.slug, now_str)
+            v_hash = cls.compute_verification_hash(
+                enrollment.user.id, enrollment.course.slug, now_str
+            )
             cert, _ = cls.objects.get_or_create(
                 enrollment=enrollment,
                 defaults={
@@ -405,5 +440,3 @@ class Certificate(models.Model):
                 }
             )
         return cert
-
-

@@ -1,10 +1,6 @@
-"""
-Services for courses application: Certificate PDF generation, cryptographic verification,
-and academic credentials rendering.
-"""
-
-import logging
 from io import BytesIO
+import logging
+
 from django.conf import settings
 from django.core.files.base import ContentFile
 from django.template.loader import render_to_string
@@ -14,10 +10,6 @@ logger = logging.getLogger(__name__)
 
 
 def generate_certificate_pdf(certificate) -> bytes:
-    """
-    Renders the official Certificate of Completion HTML template into a landscape
-    high-resolution PDF using xhtml2pdf. Also persists the generated PDF file if not yet cached.
-    """
     context = {
         'certificate': certificate,
         'user': certificate.user,
@@ -33,7 +25,10 @@ def generate_certificate_pdf(certificate) -> bytes:
         encoding='utf-8'
     )
     if pdf.err:
-        logger.error(f"xhtml2pdf error generating certificate PDF {certificate.certificate_id}: {pdf.err}")
+        logger.error(
+            f"xhtml2pdf error generating certificate PDF "
+            f"{certificate.certificate_id}: {pdf.err}"
+        )
         return None
 
     pdf_bytes = result_buffer.getvalue()
@@ -46,6 +41,9 @@ def generate_certificate_pdf(certificate) -> bytes:
                 save=True
             )
         except Exception as e:
-            logger.warning(f"Could not persist certificate PDF file for {certificate.id}: {e}")
+            logger.warning(
+                f"Could not persist certificate PDF file for "
+                f"{certificate.id}: {e}"
+            )
 
     return pdf_bytes

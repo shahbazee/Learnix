@@ -1,17 +1,25 @@
-"""
-Management command to seed Learnix database with courses and curriculum.
-Populates categories, instructors, courses, modules, and lessons.
-"""
-
-from django.core.management.base import BaseCommand
-from django.contrib.auth import get_user_model
-from django.utils import timezone
 from decimal import Decimal
 
-from courses.models import CourseCategory, Course, CourseModule, Lesson, Enrollment, LessonProgress
-from payments.models import PaymentTransaction, Invoice
+from django.contrib.auth import get_user_model
+from django.core.management.base import BaseCommand
+from django.utils import timezone
+
+from courses.models import (
+    Course,
+    CourseCategory,
+    CourseModule,
+    Enrollment,
+    Lesson,
+    LessonProgress,
+)
+from payments.models import Invoice, PaymentTransaction
 
 User = get_user_model()
+
+SAMPLE_VIDEO_URL = (
+    "https://commondatastorage.googleapis.com/"
+    "gtv-videos-bucket/sample/BigBuckBunny.mp4"
+)
 
 
 class Command(BaseCommand):
@@ -20,13 +28,27 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         self.stdout.write(self.style.NOTICE("Seeding Learnix curricula..."))
 
-        # 1. Instructors
         instructors_data = [
-            ("elena_rostova", "Elena", "Rostova", "Lead AI Fellow · Ex-DeepMind"),
-            ("alex_vance", "Alex", "Vance", "Staff Architect · Ex-Google Brain"),
-            ("marcus_jin", "Marcus", "Jin", "Principal SRE · Cloud Infrastructure"),
-            ("sarah_lin", "Sarah", "Lin", "NLP Lab Lead, PhD · Vector Systems"),
-            ("devon_hayes", "Devon", "Hayes", "Red Team Director · Zero-Trust"),
+            (
+                "elena_rostova", "Elena", "Rostova",
+                "Lead AI Fellow · Ex-DeepMind"
+            ),
+            (
+                "alex_vance", "Alex", "Vance",
+                "Staff Architect · Ex-Google Brain"
+            ),
+            (
+                "marcus_jin", "Marcus", "Jin",
+                "Principal SRE · Cloud Infrastructure"
+            ),
+            (
+                "sarah_lin", "Sarah", "Lin",
+                "NLP Lab Lead, PhD · Vector Systems"
+            ),
+            (
+                "devon_hayes", "Devon", "Hayes",
+                "Red Team Director · Zero-Trust"
+            ),
         ]
 
         instructors = {}
@@ -48,7 +70,6 @@ class Command(BaseCommand):
                 user.profile.save()
             instructors[username] = user
 
-        # 2. Categories
         categories_data = [
             ("Python & Django", "python-django", "terminal"),
             ("Machine Learning & LLMs", "ml-llms", "psychology"),
@@ -66,7 +87,6 @@ class Command(BaseCommand):
             )
             categories[slug] = cat
 
-        # 3. Courses Data
         courses_catalog = [
             {
                 "title": "Full-Stack Django 5 & Multi-Agent AI",
@@ -77,23 +97,57 @@ class Command(BaseCommand):
                 "price": Decimal("89.00"),
                 "rating": Decimal("4.98"),
                 "reviews_count": 1120,
-                "short_description": "Build autonomous multi-agent swarms with LangGraph, Django 5 async websockets, PGVector embeddings, and sub-50ms inference orchestration.",
-                "thumbnail_url": "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=1200&q=80",
+                "short_description": (
+                    "Build autonomous multi-agent swarms with LangGraph, "
+                    "Django 5 async websockets, PGVector embeddings, and "
+                    "sub-50ms inference orchestration."
+                ),
+                "thumbnail_url": (
+                    "https://images.unsplash.com/photo-1555066931-4365d14bab8c"
+                    "?auto=format&fit=crop&w=1200&q=80"
+                ),
                 "modules": [
                     ("Foundations: Asynchronous Django & Channels", [
-                        ("1.1 Architecture Overview & ASGI Event Loops", 860, True),
-                        ("1.2 WebSockets & ASGI Handlers Setup", 1335, True),
-                        ("1.3 Redis Pub/Sub Layer Integration", 1720, False),
-                        ("1.4 ASGI Middleware & Cryptographic Handshakes", 1185, False),
+                        (
+                            "1.1 Architecture Overview & ASGI Event Loops",
+                            860, True
+                        ),
+                        (
+                            "1.2 WebSockets & ASGI Handlers Setup",
+                            1335, True
+                        ),
+                        (
+                            "1.3 Redis Pub/Sub Layer Integration",
+                            1720, False
+                        ),
+                        (
+                            "1.4 ASGI Middleware & Cryptographic Handshakes",
+                            1185, False
+                        ),
                     ]),
                     ("Agentic Workflows with LangGraph & Django", [
-                        ("2.1 Multi-Agent State Graph Architecture", 1450, False),
-                        ("2.2 Tool Calling & ReAct Execution Loops", 1620, False),
-                        ("2.3 Human-in-the-Loop Interrupt Workflows", 1980, False),
+                        (
+                            "2.1 Multi-Agent State Graph Architecture",
+                            1450, False
+                        ),
+                        (
+                            "2.2 Tool Calling & ReAct Execution Loops",
+                            1620, False
+                        ),
+                        (
+                            "2.3 Human-in-the-Loop Interrupt Workflows",
+                            1980, False
+                        ),
                     ]),
                     ("Vector Databases & Hybrid Search Indexing", [
-                        ("3.1 Qdrant Vector Cluster Deployment", 1200, False),
-                        ("3.2 Dense vs Sparse Vector Hybrids", 1400, False),
+                        (
+                            "3.1 Qdrant Vector Cluster Deployment",
+                            1200, False
+                        ),
+                        (
+                            "3.2 Dense vs Sparse Vector Hybrids",
+                            1400, False
+                        ),
                     ]),
                 ]
             },
@@ -106,17 +160,41 @@ class Command(BaseCommand):
                 "price": Decimal("99.00"),
                 "rating": Decimal("4.94"),
                 "reviews_count": 640,
-                "short_description": "Master Raft consensus, concurrent actor models, sharded distributed key-value stores, and fault-tolerant network topologies under extreme partition failure.",
-                "thumbnail_url": "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1200&q=80",
+                "short_description": (
+                    "Master Raft consensus, concurrent actor models, "
+                    "sharded distributed key-value stores, and "
+                    "fault-tolerant network topologies under extreme "
+                    "partition failure."
+                ),
+                "thumbnail_url": (
+                    "https://images.unsplash.com/"
+                    "photo-1518770660439-4636190af475"
+                    "?auto=format&fit=crop&w=1200&q=80"
+                ),
                 "modules": [
                     ("Raft Consensus & Distributed Log Replication", [
-                        ("1.1 Leader Election State Transitions", 1100, True),
-                        ("1.2 Log Invariants & Snapshotting", 1420, True),
-                        ("1.3 Network Split-Brain Simulations", 1850, False),
+                        (
+                            "1.1 Leader Election State Transitions",
+                            1100, True
+                        ),
+                        (
+                            "1.2 Log Invariants & Snapshotting",
+                            1420, True
+                        ),
+                        (
+                            "1.3 Network Split-Brain Simulations",
+                            1850, False
+                        ),
                     ]),
                     ("High-Performance Sharding Topologies", [
-                        ("2.1 Consistent Hashing with Virtual Nodes", 1250, False),
-                        ("2.2 Multi-Paxos and Dynamic Membership", 1950, False),
+                        (
+                            "2.1 Consistent Hashing with Virtual Nodes",
+                            1250, False
+                        ),
+                        (
+                            "2.2 Multi-Paxos and Dynamic Membership",
+                            1950, False
+                        ),
                     ]),
                 ]
             },
@@ -129,13 +207,29 @@ class Command(BaseCommand):
                 "price": Decimal("119.00"),
                 "rating": Decimal("4.89"),
                 "reviews_count": 480,
-                "short_description": "Custom CRDs, zero-downtime deployments with Istio, multi-region cluster federation, and eBPF kernel network monitoring in live production clusters.",
-                "thumbnail_url": "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=1200&q=80",
+                "short_description": (
+                    "Custom CRDs, zero-downtime deployments with Istio, "
+                    "multi-region cluster federation, and eBPF kernel network "
+                    "monitoring in live production clusters."
+                ),
+                "thumbnail_url": (
+                    "https://images.unsplash.com/photo-1558494949-ef010cbdcc31"
+                    "?auto=format&fit=crop&w=1200&q=80"
+                ),
                 "modules": [
                     ("Advanced Operator SDK & Custom Resource Controllers", [
-                        ("1.1 Controller-Runtime Architecture", 1020, True),
-                        ("1.2 Reconcile Loops & Finalizers", 1450, False),
-                        ("1.3 Multi-Cluster Global Ingress Meshes", 1750, False),
+                        (
+                            "1.1 Controller-Runtime Architecture",
+                            1020, True
+                        ),
+                        (
+                            "1.2 Reconcile Loops & Finalizers",
+                            1450, False
+                        ),
+                        (
+                            "1.3 Multi-Cluster Global Ingress Meshes",
+                            1750, False
+                        ),
                     ]),
                 ]
             },
@@ -148,12 +242,26 @@ class Command(BaseCommand):
                 "price": Decimal("95.00"),
                 "rating": Decimal("4.92"),
                 "reviews_count": 890,
-                "short_description": "QLoRA parameter-efficient training, reranking with hybrid sparse-dense vectors, evaluation pipelines, and low-latency vLLM inference clusters.",
-                "thumbnail_url": "https://images.unsplash.com/photo-1620712943543-bcc4688e7485?auto=format&fit=crop&w=1200&q=80",
+                "short_description": (
+                    "QLoRA parameter-efficient training, reranking with "
+                    "hybrid sparse-dense vectors, evaluation pipelines, "
+                    "and low-latency vLLM inference clusters."
+                ),
+                "thumbnail_url": (
+                    "https://images.unsplash.com/"
+                    "photo-1620712943543-bcc4688e7485"
+                    "?auto=format&fit=crop&w=1200&q=80"
+                ),
                 "modules": [
                     ("Quantized Model LoRA Architectures", [
-                        ("1.1 4-bit NormalFloat & Double Quantization", 1150, True),
-                        ("1.2 Supervised Fine-Tuning on Custom Corpora", 1640, False),
+                        (
+                            "1.1 4-bit NormalFloat & Double Quantization",
+                            1150, True
+                        ),
+                        (
+                            "1.2 Supervised Fine-Tuning on Custom Corpora",
+                            1640, False
+                        ),
                     ]),
                 ]
             },
@@ -166,12 +274,25 @@ class Command(BaseCommand):
                 "price": Decimal("79.00"),
                 "rating": Decimal("4.91"),
                 "reviews_count": 312,
-                "short_description": "mTLS handshakes, OAuth2.1 + PKCE flows, continuous device attestation, supply chain SBOM verification, and defense against sub-domain takeovers.",
-                "thumbnail_url": "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=1200&q=80",
+                "short_description": (
+                    "mTLS handshakes, OAuth2.1 + PKCE flows, continuous "
+                    "device attestation, supply chain SBOM verification, "
+                    "and defense against sub-domain takeovers."
+                ),
+                "thumbnail_url": (
+                    "https://images.unsplash.com/photo-1550751827-4bd374c3f58b"
+                    "?auto=format&fit=crop&w=1200&q=80"
+                ),
                 "modules": [
                     ("Identity Foundation & Cryptographic Tokens", [
-                        ("1.1 PKCE Authorization Code Flows", 950, True),
-                        ("1.2 Mutual TLS & SPIFFE/SPIRE Attestation", 1320, False),
+                        (
+                            "1.1 PKCE Authorization Code Flows",
+                            950, True
+                        ),
+                        (
+                            "1.2 Mutual TLS & SPIFFE/SPIRE Attestation",
+                            1320, False
+                        ),
                     ]),
                 ]
             },
@@ -184,18 +305,31 @@ class Command(BaseCommand):
                 "price": Decimal("119.00"),
                 "rating": Decimal("4.95"),
                 "reviews_count": 530,
-                "short_description": "Architect HNSW graph indices, product quantization, scalar compression, and distributed Milvus & Qdrant sharding for billion-scale retrieval.",
-                "thumbnail_url": "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1200&q=80",
+                "short_description": (
+                    "Architect HNSW graph indices, product quantization, "
+                    "scalar compression, and distributed Milvus & Qdrant "
+                    "sharding for billion-scale retrieval."
+                ),
+                "thumbnail_url": (
+                    "https://images.unsplash.com/"
+                    "photo-1516321318423-f06f85e504b3"
+                    "?auto=format&fit=crop&w=1200&q=80"
+                ),
                 "modules": [
                     ("Vector Indexing Math & HNSW Graphs", [
-                        ("1.1 Approximate Nearest Neighbor Math", 1080, True),
-                        ("1.2 Product Quantization & Cache Alignment", 1540, False),
+                        (
+                            "1.1 Approximate Nearest Neighbor Math",
+                            1080, True
+                        ),
+                        (
+                            "1.2 Product Quantization & Cache Alignment",
+                            1540, False
+                        ),
                     ]),
                 ]
             },
         ]
 
-        # 4. Insert or Update Courses
         for cdata in courses_catalog:
             course, _ = Course.objects.update_or_create(
                 slug=cdata["slug"],
@@ -213,26 +347,28 @@ class Command(BaseCommand):
                 }
             )
 
-            # Insert Modules & Lessons
-            for mod_idx, (mod_title, lessons) in enumerate(cdata["modules"], start=1):
+            for mod_idx, (m_title, lessons) in enumerate(
+                cdata["modules"], start=1
+            ):
                 module, _ = CourseModule.objects.update_or_create(
                     course=course,
                     order_number=mod_idx,
-                    defaults={"title": mod_title}
+                    defaults={"title": m_title}
                 )
-                for les_idx, (les_title, duration, is_prev) in enumerate(lessons, start=1):
+                for les_idx, (l_title, duration, is_prev) in enumerate(
+                    lessons, start=1
+                ):
                     Lesson.objects.update_or_create(
                         module=module,
                         order_number=les_idx,
                         defaults={
-                            "title": les_title,
+                            "title": l_title,
                             "duration_seconds": duration,
                             "is_preview": is_prev,
-                            "video_url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+                            "video_url": SAMPLE_VIDEO_URL
                         }
                     )
 
-        # 5. Seed Demo Student Sarah Jenkins with active enrollment & progress
         student, created = User.objects.get_or_create(
             username="sarah",
             defaults={
@@ -245,29 +381,40 @@ class Command(BaseCommand):
         student.set_password("LearnixDemo2026!")
         student.save()
         if hasattr(student, 'profile'):
-            student.profile.headline = "Staff Engineer // Autonomous Agentic Systems"
-            student.profile.bio = "Building resilient distributed microservices and multi-agent AI pipelines with Django and LangGraph."
+            student.profile.headline = (
+                "Staff Engineer // Autonomous Agentic Systems"
+            )
+            student.profile.bio = (
+                "Building resilient distributed microservices and multi-agent "
+                "AI pipelines with Django and LangGraph."
+            )
             student.profile.save()
 
-        # Enroll in primary course: full-stack-django-5-multi-agent-ai
-        primary_course = Course.objects.filter(slug="full-stack-django-5-multi-agent-ai").first()
+        primary_course = Course.objects.filter(
+            slug="full-stack-django-5-multi-agent-ai"
+        ).first()
         if primary_course:
             enrollment, _ = Enrollment.objects.get_or_create(
                 user=student,
                 course=primary_course,
                 defaults={"is_active": True, "progress_percent": 78.00}
             )
-            # Mark first 6 lessons completed
-            all_lessons = list(Lesson.objects.filter(module__course=primary_course).order_by("module__order_number", "order_number"))
+            all_lessons = list(
+                Lesson.objects.filter(
+                    module__course=primary_course
+                ).order_by("module__order_number", "order_number")
+            )
             for les in all_lessons[:6]:
                 LessonProgress.objects.get_or_create(
                     user=student,
                     lesson=les,
-                    defaults={"is_completed": True, "completed_at": timezone.now()}
+                    defaults={
+                        "is_completed": True,
+                        "completed_at": timezone.now()
+                    }
                 )
             enrollment.calculate_progress()
 
-            # Seed billing transaction & invoice
             tx, _ = PaymentTransaction.objects.get_or_create(
                 user=student,
                 course=primary_course,
@@ -291,10 +438,11 @@ class Command(BaseCommand):
                     }
                 )
 
-        # Enroll in secondary course: distributed-systems-rust-go
-        secondary_course = Course.objects.filter(slug="distributed-systems-rust-go").first()
+        secondary_course = Course.objects.filter(
+            slug="distributed-systems-rust-go"
+        ).first()
         if secondary_course:
-            e2, _ = Enrollment.objects.get_or_create(
+            Enrollment.objects.get_or_create(
                 user=student,
                 course=secondary_course,
                 defaults={"is_active": True, "progress_percent": 35.00}
@@ -322,4 +470,9 @@ class Command(BaseCommand):
                     }
                 )
 
-        self.stdout.write(self.style.SUCCESS(f"Successfully seeded {len(courses_catalog)} courses and demo student Sarah Jenkins into Learnix!"))
+        self.stdout.write(
+            self.style.SUCCESS(
+                f"Successfully seeded {len(courses_catalog)} courses and demo "
+                f"student Sarah Jenkins into Learnix!"
+            )
+        )
