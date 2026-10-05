@@ -1,9 +1,5 @@
-"""
-Database models for user accounts, profiles, and email OTP verification.
-PostgreSQL 15+ compatible models for Learnix.
-"""
-
 import secrets
+
 from django.db import models
 from django.conf import settings
 from django.utils import timezone
@@ -11,9 +7,6 @@ from datetime import timedelta
 
 
 class UserProfile(models.Model):
-    """
-    Extends the Django User model with avatar, biography, headline, currency preferences, and role.
-    """
     ROLE_STUDENT = 'student'
     ROLE_INSTRUCTOR = 'instructor'
     ROLE_CHOICES = (
@@ -42,7 +35,11 @@ class UserProfile(models.Model):
     headline = models.CharField(max_length=255, blank=True, default='')
     phone_number = models.CharField(max_length=30, blank=True, default='')
     country_code = models.CharField(max_length=10, blank=True, default='+1')
-    location_timezone = models.CharField(max_length=150, blank=True, default='San Francisco, CA · Pacific Daylight (UTC-7)')
+    location_timezone = models.CharField(
+        max_length=150,
+        blank=True,
+        default='San Francisco, CA · Pacific Daylight (UTC-7)'
+    )
     academic_suffix = models.CharField(max_length=50, blank=True, default='')
     public_directory = models.BooleanField(default=True)
     google_email = models.CharField(max_length=255, blank=True, default='')
@@ -59,20 +56,14 @@ class UserProfile(models.Model):
 
     @property
     def is_instructor(self) -> bool:
-        """Returns True if the profile role is instructor."""
         return self.role == self.ROLE_INSTRUCTOR
 
     @property
     def is_student(self) -> bool:
-        """Returns True if the profile role is student."""
         return self.role == self.ROLE_STUDENT
 
 
 class EmailOTP(models.Model):
-    """
-    Cryptographic 6-digit OTP for two-phase email verification.
-    Enforces a 10-minute validity window and maximum 5 verification attempts.
-    """
     MAX_ATTEMPTS = 5
     EXPIRY_MINUTES = 10
 
@@ -104,17 +95,17 @@ class EmailOTP(models.Model):
         ]
 
     def __str__(self):
-        return f"OTP ({self.purpose}) for {self.user.username} ({'Verified' if self.is_verified else 'Pending'})"
+        return (
+            f"OTP ({self.purpose}) for {self.user.username} "
+            f"({'Verified' if self.is_verified else 'Pending'})"
+        )
 
     @classmethod
     def create_for_user(cls, user, purpose='registration'):
-        """
-        Generates a secure 6-digit cryptographic OTP expiring in 10 minutes.
-        """
-        # Invalidate any existing pending OTPs for this user and purpose
-        cls.objects.filter(user=user, purpose=purpose, is_verified=False).delete()
+        cls.objects.filter(
+            user=user, purpose=purpose, is_verified=False
+        ).delete()
 
-        # Cryptographically secure random 6 digits
         digits = "0123456789"
         code = "".join(secrets.choice(digits) for _ in range(6))
         expires_at = timezone.now() + timedelta(minutes=cls.EXPIRY_MINUTES)
@@ -130,10 +121,8 @@ class EmailOTP(models.Model):
 
     @property
     def is_expired(self) -> bool:
-        """Evaluates whether the OTP has passed its 10-minute validity window."""
         return timezone.now() > self.expires_at
 
     @property
     def is_locked(self) -> bool:
-        """Enforces brute-force ceiling (max 5 attempts)."""
         return self.attempts_count >= self.MAX_ATTEMPTS
