@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" width="100%" height="100%">
+  <defs>
+    <linearGradient id="llm-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#050714"/>
+      <stop offset="50%" stop-color="#0E1029"/>
+      <stop offset="100%" stop-color="#211035"/>
+    </linearGradient>
+
+    <linearGradient id="llm-layer1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#A855F7"/>
+      <stop offset="50%" stop-color="#7C3AED"/>
+      <stop offset="100%" stop-color="#4F46E5"/>
+    </linearGradient>
+
+    <linearGradient id="llm-layer2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F43F5E"/>
+      <stop offset="50%" stop-color="#E11D48"/>
+      <stop offset="100%" stop-color="#9333EA"/>
+    </linearGradient>
+
+    <linearGradient id="llm-layer3" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38BDF8"/>
+      <stop offset="50%" stop-color="#0284C7"/>
+      <stop offset="100%" stop-color="#0F766E"/>
+    </linearGradient>
+
+    <filter id="llm-shadow" x="-10%" y="-10%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="16" stdDeviation="20" flood-color="#000000" flood-opacity="0.65"/>
+    </filter>
+
+    <filter id="llm-glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="20" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <rect width="1200" height="675" fill="url(#llm-bg)"/>
+
+  <circle cx="340" cy="380" r="160" fill="#38BDF8" opacity="0.12" filter="url(#llm-glow)"/>
+  <circle cx="600" cy="380" r="180" fill="#EC4899" opacity="0.12" filter="url(#llm-glow)"/>
+  <circle cx="860" cy="380" r="160" fill="#A855F7" opacity="0.12" filter="url(#llm-glow)"/>
+
+  <g stroke="#38BDF8" stroke-width="6" opacity="0.4" stroke-linecap="round">
+    <line x1="340" y1="160" x2="340" y2="600"/>
+    <line x1="600" y1="160" x2="600" y2="600"/>
+    <line x1="860" y1="160" x2="860" y2="600"/>
+  </g>
+
+  <g filter="url(#llm-shadow)">
+    <g transform="translate(150, 185)">
+      <rect width="900" height="95" rx="22" fill="url(#llm-layer1)" stroke="#EDE9FE" stroke-width="4"/>
+      <rect x="25" y="25" width="120" height="45" rx="10" fill="#EDE9FE" opacity="0.4"/>
+      <rect x="175" y="25" width="220" height="45" rx="10" fill="#EDE9FE" opacity="0.3"/>
+      <rect x="425" y="25" width="160" height="45" rx="10" fill="#EDE9FE" opacity="0.3"/>
+      <rect x="615" y="25" width="260" height="45" rx="10" fill="#EDE9FE" opacity="0.4"/>
+    </g>
+
+    <g transform="translate(150, 325)">
+      <rect width="900" height="95" rx="22" fill="url(#llm-layer2)" stroke="#FFE4E6" stroke-width="4"/>
+      <rect x="25" y="25" width="240" height="45" rx="10" fill="#FFE4E6" opacity="0.35"/>
+      <rect x="295" y="25" width="180" height="45" rx="10" fill="#FFE4E6" opacity="0.3"/>
+      <rect x="505" y="25" width="210" height="45" rx="10" fill="#FFE4E6" opacity="0.35"/>
+      <rect x="745" y="25" width="130" height="45" rx="10" fill="#FFE4E6" opacity="0.4"/>
+    </g>
+
+    <g transform="translate(150, 465)">
+      <rect width="900" height="95" rx="22" fill="url(#llm-layer3)" stroke="#CFFAFE" stroke-width="4"/>
+      <rect x="25" y="25" width="180" height="45" rx="10" fill="#CFFAFE" opacity="0.35"/>
+      <rect x="235" y="25" width="260" height="45" rx="10" fill="#CFFAFE" opacity="0.3"/>
+      <rect x="525" y="25" width="150" height="45" rx="10" fill="#CFFAFE" opacity="0.35"/>
+      <rect x="705" y="25" width="170" height="45" rx="10" fill="#CFFAFE" opacity="0.4"/>
+    </g>
+
+    <circle cx="340" cy="155" r="28" fill="#38BDF8" stroke="#FFFFFF" stroke-width="5"/>
+    <circle cx="600" cy="232" r="30" fill="#F43F5E" stroke="#FFFFFF" stroke-width="5"/>
+    <circle cx="860" cy="372" r="30" fill="#FBBF24" stroke="#FFFFFF" stroke-width="5"/>
+    <circle cx="340" cy="512" r="28" fill="#A855F7" stroke="#FFFFFF" stroke-width="5"/>
+    <circle cx="600" cy="595" r="30" fill="#34D399" stroke="#FFFFFF" stroke-width="5"/>
+  </g>
+</svg>

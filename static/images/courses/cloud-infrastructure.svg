@@ -1,0 +1,93 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" width="100%" height="100%">
+  <defs>
+    <linearGradient id="k8s-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#040914"/>
+      <stop offset="50%" stop-color="#091426"/>
+      <stop offset="100%" stop-color="#0E2338"/>
+    </linearGradient>
+
+    <linearGradient id="k8s-core" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38BDF8"/>
+      <stop offset="50%" stop-color="#6366F1"/>
+      <stop offset="100%" stop-color="#8B5CF6"/>
+    </linearGradient>
+
+    <linearGradient id="k8s-box1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#06B6D4"/>
+      <stop offset="100%" stop-color="#0284C7"/>
+    </linearGradient>
+
+    <linearGradient id="k8s-box2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8B5CF6"/>
+      <stop offset="100%" stop-color="#6D28D9"/>
+    </linearGradient>
+
+    <linearGradient id="k8s-box3" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#EC4899"/>
+      <stop offset="100%" stop-color="#BE185D"/>
+    </linearGradient>
+
+    <filter id="k8s-shadow" x="-10%" y="-10%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="16" stdDeviation="20" flood-color="#000000" flood-opacity="0.6"/>
+    </filter>
+
+    <filter id="k8s-glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="20" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <rect width="1200" height="675" fill="url(#k8s-bg)"/>
+
+  <circle cx="600" cy="245" r="140" fill="#38BDF8" opacity="0.18" filter="url(#k8s-glow)"/>
+  <circle cx="300" cy="485" r="150" fill="#06B6D4" opacity="0.12" filter="url(#k8s-glow)"/>
+  <circle cx="900" cy="485" r="150" fill="#EC4899" opacity="0.12" filter="url(#k8s-glow)"/>
+
+  <g filter="url(#k8s-shadow)">
+    <path d="M 600 325 L 295 435" stroke="#38BDF8" stroke-width="12" stroke-linecap="round"/>
+    <path d="M 600 325 L 600 435" stroke="#818CF8" stroke-width="12" stroke-linecap="round"/>
+    <path d="M 600 325 L 905 435" stroke="#F472B6" stroke-width="12" stroke-linecap="round"/>
+
+    <g transform="translate(600, 245)">
+      <circle cx="0" cy="0" r="85" fill="url(#k8s-core)" stroke="#E0F2FE" stroke-width="6"/>
+      <circle cx="0" cy="0" r="52" fill="#0F172A" stroke="#38BDF8" stroke-width="5"/>
+      <circle cx="0" cy="0" r="24" fill="#38BDF8"/>
+      <circle cx="0" cy="-60" r="7" fill="#FFFFFF"/>
+      <circle cx="52" cy="-30" r="7" fill="#FFFFFF"/>
+      <circle cx="52" cy="30" r="7" fill="#FFFFFF"/>
+      <circle cx="0" cy="60" r="7" fill="#FFFFFF"/>
+      <circle cx="-52" cy="30" r="7" fill="#FFFFFF"/>
+      <circle cx="-52" cy="-30" r="7" fill="#FFFFFF"/>
+    </g>
+
+    <g transform="translate(160, 435)">
+      <rect width="270" height="150" rx="20" fill="url(#k8s-box1)" stroke="#CFFAFE" stroke-width="4"/>
+      <line x1="68" y1="0" x2="68" y2="150" stroke="#042F2E" stroke-width="8"/>
+      <line x1="68" y1="0" x2="68" y2="150" stroke="#67E8F9" stroke-width="4"/>
+      <line x1="135" y1="0" x2="135" y2="150" stroke="#042F2E" stroke-width="8"/>
+      <line x1="135" y1="0" x2="135" y2="150" stroke="#67E8F9" stroke-width="4"/>
+      <line x1="202" y1="0" x2="202" y2="150" stroke="#042F2E" stroke-width="8"/>
+      <line x1="202" y1="0" x2="202" y2="150" stroke="#67E8F9" stroke-width="4"/>
+    </g>
+
+    <g transform="translate(465, 435)">
+      <rect width="270" height="150" rx="20" fill="url(#k8s-box2)" stroke="#EDE9FE" stroke-width="4"/>
+      <line x1="68" y1="0" x2="68" y2="150" stroke="#2E1065" stroke-width="8"/>
+      <line x1="68" y1="0" x2="68" y2="150" stroke="#C4B5FD" stroke-width="4"/>
+      <line x1="135" y1="0" x2="135" y2="150" stroke="#2E1065" stroke-width="8"/>
+      <line x1="135" y1="0" x2="135" y2="150" stroke="#C4B5FD" stroke-width="4"/>
+      <line x1="202" y1="0" x2="202" y2="150" stroke="#2E1065" stroke-width="8"/>
+      <line x1="202" y1="0" x2="202" y2="150" stroke="#C4B5FD" stroke-width="4"/>
+    </g>
+
+    <g transform="translate(770, 435)">
+      <rect width="270" height="150" rx="20" fill="url(#k8s-box3)" stroke="#FCE7F3" stroke-width="4"/>
+      <line x1="68" y1="0" x2="68" y2="150" stroke="#4C0519" stroke-width="8"/>
+      <line x1="68" y1="0" x2="68" y2="150" stroke="#F9A8D4" stroke-width="4"/>
+      <line x1="135" y1="0" x2="135" y2="150" stroke="#4C0519" stroke-width="8"/>
+      <line x1="135" y1="0" x2="135" y2="150" stroke="#F9A8D4" stroke-width="4"/>
+      <line x1="202" y1="0" x2="202" y2="150" stroke="#4C0519" stroke-width="8"/>
+      <line x1="202" y1="0" x2="202" y2="150" stroke="#F9A8D4" stroke-width="4"/>
+    </g>
+  </g>
+</svg>

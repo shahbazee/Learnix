@@ -1,29 +1,23 @@
 {% extends 'base.html' %}
+{% load static %}
 
-{% block title %}Learnix — Master Modern Engineering. Faster.{% endblock %}
+{% block title %}Learnix — Master Modern Engineering Faster{% endblock %}
 
 {% block content %}
 <div class="flex flex-col w-full relative overflow-hidden">
-  
-  <!-- HERO SECTION -->
+
   <section class="relative w-full max-w-7xl mx-auto px-4 md:px-8 pt-8 md:pt-16 pb-16 flex flex-col items-center text-center">
-    
-
-
-    <!-- Main Headline with Gradient Clip -->
     <h1 class="text-4xl sm:text-5xl md:text-7xl font-extrabold tracking-tight text-[#0f172a] max-w-4xl mx-auto leading-tight">
-      Master Modern Engineering.
+      Master Modern Engineering
       <span class="block bg-gradient-to-r from-cyan-500 via-violet-600 to-pink-500 bg-clip-text text-transparent drop-shadow-xs">
-        Faster.
+        Faster
       </span>
     </h1>
 
-    <!-- Subheadline -->
     <p class="text-base sm:text-lg text-slate-600 max-w-2xl mx-auto mt-4 mb-8 leading-relaxed font-normal">
-      Hyper-focused curricula in AI Architecture, Distributed Systems, and High-Scale Cloud infrastructure, taught by principal engineers from Tier-1 tech laboratories.
+      Hyper-focused curricula in AI Architecture, Distributed Systems, and High-Scale Cloud Infrastructure, taught by principal engineers from Tier-1 tech laboratories.
     </p>
 
-    <!-- Dual CTAs -->
     <div class="flex flex-col sm:flex-row items-center justify-center gap-4 w-full max-w-md mx-auto">
       <a href="{% url 'courses:course_list' %}" class="group relative w-full sm:w-auto inline-flex items-center justify-center p-[2px] rounded-full overflow-hidden shadow-[0_12px_32px_-4px_rgba(124,58,237,0.4)] hover:shadow-[0_16px_40px_-2px_rgba(6,182,212,0.5)] hover:scale-[1.02] transition-all duration-300">
         <span class="absolute inset-0 bg-gradient-to-r from-violet-600 via-indigo-600 to-cyan-500 transition-all duration-500"></span>
@@ -33,249 +27,298 @@
         </span>
       </a>
 
-      <button type="button" class="relative w-full sm:w-auto inline-flex items-center justify-center px-7 py-3.5 rounded-full bg-white/80 hover:bg-white backdrop-blur-xl border border-indigo-100 text-slate-800 text-sm font-bold shadow-xs hover:shadow-md hover:scale-[1.02] transition-all duration-300">
+      {% if preview_course %}
+      <a href="{% url 'courses:course_detail' preview_course.slug %}" class="relative w-full sm:w-auto inline-flex items-center justify-center px-7 py-3.5 rounded-full bg-white/80 hover:bg-white backdrop-blur-xl border border-indigo-100 text-slate-800 text-sm font-bold shadow-xs hover:shadow-md hover:scale-[1.02] transition-all duration-300">
         <span class="material-symbols-outlined text-[20px] text-cyan-500 mr-2 transition-transform hover:scale-110" style="font-variation-settings: 'FILL' 1;">play_circle</span>
         Watch 2-Min Trailer
-      </button>
-    </div>
-
-    <!-- Trust Bar -->
-    <div class="mt-14 inline-flex flex-col sm:flex-row items-center gap-4 px-6 py-3 rounded-full bg-white/75 backdrop-blur-xl border border-white/80 shadow-xs">
-      <span class="text-[11px] font-mono text-slate-500 uppercase tracking-wider font-semibold">
-        Trusted by engineers at
-      </span>
-      <div class="flex items-center gap-6 opacity-75">
-        <span class="text-base font-bold tracking-tighter text-slate-700 hover:text-slate-900 transition-colors">Google</span>
-        <span class="text-base font-bold tracking-tight text-slate-700 hover:text-slate-900 transition-colors">Meta</span>
-        <span class="text-base font-extrabold tracking-tight text-slate-700 hover:text-slate-900 transition-colors">stripe</span>
-        <span class="text-base font-black tracking-normal text-slate-700 hover:text-slate-900 transition-colors">NETFLIX</span>
-      </div>
+      </a>
+      {% endif %}
     </div>
   </section>
 
-  <!-- BENTO GRID SHOWCASE (Screenshot 1) -->
-  <section id="curriculum" class="w-full max-w-7xl mx-auto px-4 md:px-8 pb-24">
-    
-    <!-- Section Header -->
-    <div class="mb-8">
-      <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight text-[#0f172a]">Interactive Curriculum</h2>
+  <section id="featured" class="w-full max-w-7xl mx-auto px-4 md:px-8 py-16">
+    <div class="text-center max-w-2xl mx-auto mb-12">
+      <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight text-[#0f172a] mb-3">Featured Courses</h2>
+      <p class="text-slate-500 text-sm md:text-base">Start with our most-loved masterclasses</p>
     </div>
 
-    <!-- 3-Column Bento Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-      
-      <!-- CARD 1: Full-Stack Django & Scalable AI Architecture (Spans 2 Columns) -->
-      <div class="md:col-span-2 relative rounded-3xl bg-white/70 backdrop-blur-xl border border-white/80 p-8 md:p-10 shadow-[0_12px_32px_rgba(99,102,241,0.08)] overflow-hidden group hover:bg-white/85 transition-all duration-500 flex flex-col justify-between gap-8">
-        <!-- Ambient background glow inside card -->
-        <div class="absolute -right-24 -bottom-24 w-80 h-80 bg-violet-400/15 rounded-full blur-3xl pointer-events-none group-hover:scale-125 transition-transform duration-700"></div>
-        
-        <div class="relative z-10 flex flex-col justify-between gap-6">
-          <div>
-
-            <h3 class="text-2xl md:text-3xl font-bold text-[#0f172a] tracking-tight mb-3">
-              Full-Stack Django &amp; Scalable AI Architecture
-            </h3>
-            <p class="text-slate-600 text-sm md:text-base max-w-xl leading-relaxed">
-              Construct enterprise-grade microservices leveraging distributed Python, Redis caching layers, vector databases (Qdrant), and LLM orchestration with sub-50ms latency.
-            </p>
+    {% if featured_courses %}
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      {% for course in featured_courses %}
+      <div class="group relative rounded-3xl bg-white/80 backdrop-blur-xl border border-slate-200/80 shadow-[0_10px_30px_rgba(79,70,229,0.06)] hover:shadow-[0_20px_45px_rgba(99,102,241,0.14)] hover:border-violet-300 transition-all duration-300 flex flex-col justify-between overflow-hidden">
+        <div class="relative h-48 sm:h-52 w-full overflow-hidden bg-slate-900">
+          <img src="{{ course.get_thumbnail_url }}" alt="{{ course.title }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" onerror="this.onerror=null; this.src='{% static 'images/courses/default-course.svg' %}';" loading="lazy"/>
+          <div class="absolute inset-0 bg-gradient-to-t from-slate-950/75 via-slate-900/30 to-slate-900/40"></div>
+          <div class="absolute top-4 left-4 right-4 flex items-center justify-between pointer-events-none">
+            {% if course.category %}
+            <span class="px-3 py-1 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-white font-mono text-[11px] font-semibold">
+              {{ course.category.name }}
+            </span>
+            {% else %}
+            <span></span>
+            {% endif %}
+            <span class="px-3 py-1 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-white font-mono text-[11px] font-semibold">
+              {{ course.get_level_display }}
+            </span>
           </div>
-
-          <!-- Interactive Mini Syllabus Preview -->
-          <div class="rounded-2xl bg-white/90 border border-slate-200/70 p-5 shadow-xs relative overflow-hidden">
-            <div class="flex items-center justify-between mb-4 text-xs font-mono">
-              <span class="text-slate-500 uppercase tracking-wider font-semibold">Module 04 // Dynamic Embedding Pipelines</span>
-              <span class="text-violet-600 font-bold">78% Complete</span>
-            </div>
-            <!-- Glowing Progress Bar -->
-            <div class="w-full h-2 rounded-full bg-slate-100 relative overflow-hidden">
-              <div class="h-full rounded-full bg-gradient-to-r from-violet-500 via-cyan-400 to-pink-500 w-[78%] relative">
-                <span class="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-white shadow-[0_0_8px_rgba(6,182,212,0.8)] border border-cyan-400"></span>
-              </div>
-            </div>
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4 pt-3 text-left">
-              <div class="flex items-center gap-2 text-xs text-slate-700 font-medium">
-                <span class="material-symbols-outlined text-cyan-600 text-[18px]">check_circle</span>
-                <span>Asynchronous Celery</span>
-              </div>
-              <div class="flex items-center gap-2 text-xs text-slate-700 font-medium">
-                <span class="material-symbols-outlined text-cyan-600 text-[18px]">check_circle</span>
-                <span>CUDA Kernel Sharding</span>
-              </div>
-              <div class="flex items-center gap-2 text-xs text-violet-700 font-semibold">
-                <span class="material-symbols-outlined text-violet-600 text-[18px] animate-spin">sync</span>
-                <span>RAG Guardrail Tuning</span>
-              </div>
-            </div>
+          <div class="absolute bottom-3 right-4 text-white/30 pointer-events-none">
+            <span class="material-symbols-outlined text-[36px]">{{ course.category.icon|default:'school' }}</span>
           </div>
+        </div>
 
-          <!-- Bottom Footer Info & Instructor Pill -->
-          <div class="flex flex-wrap items-center justify-between gap-4 pt-2">
-            <div class="inline-flex items-center gap-3 p-1.5 pr-4 rounded-full bg-white/90 border border-slate-200/70 shadow-xs">
-              <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-violet-600 to-cyan-500 text-white flex items-center justify-center font-bold text-sm shadow-xs">
-                LV
+        <div class="p-6 flex flex-col flex-grow justify-between gap-6">
+          <div class="space-y-4">
+            <a href="{% url 'courses:course_detail' course.slug %}" class="block group-hover:text-violet-700 transition-colors">
+              <h3 class="text-lg md:text-xl font-bold text-[#0f172a] tracking-tight line-clamp-2">
+                {{ course.title }}
+              </h3>
+            </a>
+
+            <div class="flex items-center gap-3">
+              {% if course.instructor.profile.avatar %}
+              <img src="{{ course.instructor.profile.avatar.url }}" alt="{{ course.instructor.get_full_name|default:course.instructor.username }}" class="w-9 h-9 rounded-full object-cover shrink-0 ring-1 ring-slate-200" loading="lazy"/>
+              {% else %}
+              <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-violet-600 to-cyan-500 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-xs">
+                {{ course.instructor.first_name|default:course.instructor.username|slice:":1"|upper }}
               </div>
-              <div class="flex flex-col text-left">
-                <span class="text-xs font-semibold text-slate-900 flex items-center gap-1.5">
-                  Dr. Liam Vance
-                  <span class="material-symbols-outlined text-[15px] text-cyan-600" style="font-variation-settings: 'FILL' 1;">verified</span>
+              {% endif %}
+              <div class="flex flex-col min-w-0">
+                <span class="text-xs font-bold text-slate-900 truncate">
+                  {{ course.instructor.get_full_name|default:course.instructor.username }}
                 </span>
-                <span class="font-mono text-[10px] text-slate-500 font-medium">Staff Architect · Ex-Google Brain</span>
+                {% if course.instructor.profile.headline %}
+                <span class="text-[11px] text-slate-400 font-medium truncate">
+                  {{ course.instructor.profile.headline }}
+                </span>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+
+          <div class="space-y-4">
+            <div class="pt-4 border-t border-slate-100 flex items-center justify-between text-xs">
+              <div>
+                {% if course.rating %}
+                <span class="flex items-center gap-1 font-bold text-slate-900">
+                  <span class="text-amber-500 text-[14px]">★</span> {{ course.rating }}
+                </span>
+                {% endif %}
+              </div>
+              <div class="text-slate-500 font-medium">
+                {{ course.lessons_count }} lesson{{ course.lessons_count|pluralize }}
+              </div>
+              <div class="font-extrabold text-sm text-[#0f172a]">
+                {% if course.is_free %}
+                Free
+                {% else %}
+                ${{ course.price|floatformat:"-2" }}
+                {% endif %}
               </div>
             </div>
 
-            <a class="inline-flex items-center gap-1 text-xs font-bold text-violet-700 hover:text-cyan-600 transition-colors" href="{% url 'courses:course_list' %}">
-              View Syllabus
-              <span class="material-symbols-outlined text-[16px]">chevron_right</span>
+            <a href="{% url 'courses:course_detail' course.slug %}" class="w-full py-2.5 rounded-full bg-violet-50 hover:bg-violet-100 text-violet-700 font-bold text-xs text-center transition-colors block">
+              View Course
             </a>
           </div>
         </div>
       </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="rounded-3xl bg-white/70 backdrop-blur-xl border border-slate-200/80 p-12 text-center max-w-xl mx-auto shadow-sm">
+      <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center">
+        <span class="material-symbols-outlined text-[32px]">school</span>
+      </div>
+      <h3 class="text-xl font-bold text-slate-900 mb-2">Courses coming soon</h3>
+      <p class="text-slate-600 text-sm mb-6">Our engineering masterclasses are currently being updated with the latest industry architectures.</p>
+      <a href="{% url 'courses:course_list' %}" class="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-violet-600 to-cyan-500 text-white font-bold text-xs shadow-md hover:scale-105 transition-all">
+        Explore Catalog
+        <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+      </a>
+    </div>
+    {% endif %}
+  </section>
 
-      <!-- CARD 2: Interactive Code Editor / Runner (Spans 1 Column) -->
-      <div class="relative rounded-3xl bg-white/70 backdrop-blur-xl border border-white/80 p-7 shadow-[0_12px_32px_rgba(99,102,241,0.08)] overflow-hidden flex flex-col justify-between group hover:bg-white/85 transition-all duration-500">
-        <div class="absolute -top-12 -left-12 w-48 h-48 bg-cyan-400/15 rounded-full blur-3xl pointer-events-none"></div>
-        <div>
-          <!-- Mock OS Window Top Bar -->
-          <div class="flex items-center justify-between pb-4 mb-4 border-b border-slate-100">
-            <div class="flex items-center gap-2">
-              <span class="w-3 h-3 rounded-full bg-[#ff5f56]"></span>
-              <span class="w-3 h-3 rounded-full bg-[#ffbd2e]"></span>
-              <span class="w-3 h-3 rounded-full bg-[#27c93f]"></span>
-            </div>
-            <div class="font-mono text-xs text-slate-600 font-medium flex items-center gap-1">
-              <span class="material-symbols-outlined text-[15px] text-slate-400">terminal</span>
-              tasks.py
-            </div>
-          </div>
+  <section id="categories" class="w-full max-w-7xl mx-auto px-4 md:px-8 py-16">
+    <div class="text-center max-w-2xl mx-auto mb-12">
+      <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight text-[#0f172a] mb-3">Explore by Category</h2>
+      <p class="text-slate-500 text-sm md:text-base">Targeted domains crafted for current industry demands</p>
+    </div>
 
-          <!-- Code Window -->
-          <div class="rounded-2xl bg-slate-900 p-4 font-mono text-[11px] leading-relaxed overflow-x-auto shadow-md">
-            <p class="text-slate-300"><span class="text-pink-400 font-semibold">import</span> asyncio</p>
-            <p class="text-slate-300"><span class="text-pink-400 font-semibold">from</span> django.core.cache <span class="text-pink-400 font-semibold">import</span> cache</p>
-            <p class="text-cyan-300 mt-2">@cache.cache_page<span class="text-slate-400">(timeout=300)</span></p>
-            <p class="text-white"><span class="text-purple-400 font-semibold">async def</span> <span class="text-cyan-300 font-semibold">stream_courses</span>(request):</p>
-            <p class="text-slate-300 pl-4">catalog = await sync_to_async(get_catalog)()</p>
-            <p class="text-slate-300 pl-4">response = await process_stream(catalog)</p>
-            <p class="text-cyan-300 pl-4"><span class="text-pink-400 font-semibold">return</span> JsonResponse(response)</p>
-          </div>
+    {% if categories %}
+    <div class="flex flex-wrap items-stretch justify-center gap-4 md:gap-5 lg:gap-6 max-w-6xl mx-auto">
+      {% for cat in categories %}
+      <a href="{% url 'courses:course_list' %}?category={{ cat.slug }}" class="group w-[calc(50%-0.5rem)] md:w-[calc(33.333%-1rem)] lg:w-44 xl:w-48 rounded-3xl p-5 sm:p-6 bg-white/95 backdrop-blur-xl border border-slate-200/80 hover:border-violet-300 shadow-[0_6px_24px_rgba(79,70,229,0.05)] hover:shadow-[0_16px_36px_rgba(124,58,237,0.14)] hover:-translate-y-1 transition-all duration-300 flex flex-col items-center justify-between text-center">
+        {% if cat.slug == 'ai-systems' or cat.slug == 'ai-architecture' or 'ai' in cat.slug %}
+        <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-violet-600 to-indigo-500 text-white flex items-center justify-center mb-3.5 shadow-md shadow-violet-500/25 group-hover:scale-105 transition-transform duration-300">
+          <span class="material-symbols-outlined text-[26px]">bolt</span>
         </div>
+        {% elif cat.slug == 'distributed-systems' or 'distributed' in cat.slug %}
+        <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-cyan-500 to-blue-600 text-white flex items-center justify-center mb-3.5 shadow-md shadow-cyan-500/25 group-hover:scale-105 transition-transform duration-300">
+          <span class="material-symbols-outlined text-[26px]">deployed_code</span>
+        </div>
+        {% elif cat.slug == 'cloud-infrastructure' or 'cloud' in cat.slug %}
+        <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-sky-400 to-blue-500 text-white flex items-center justify-center mb-3.5 shadow-md shadow-sky-400/25 group-hover:scale-105 transition-transform duration-300">
+          <span class="material-symbols-outlined text-[26px]">cloud</span>
+        </div>
+        {% elif cat.slug == 'data-engineering' or 'data' in cat.slug %}
+        <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-emerald-400 to-teal-500 text-white flex items-center justify-center mb-3.5 shadow-md shadow-emerald-400/25 group-hover:scale-105 transition-transform duration-300">
+          <span class="material-symbols-outlined text-[26px]">database</span>
+        </div>
+        {% elif cat.slug == 'devops' %}
+        <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-pink-500 to-rose-500 text-white flex items-center justify-center mb-3.5 shadow-md shadow-pink-500/25 group-hover:scale-105 transition-transform duration-300">
+          <span class="material-symbols-outlined text-[26px]">terminal</span>
+        </div>
+        {% elif cat.slug == 'system-design' or 'system' in cat.slug %}
+        <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-purple-600 to-fuchsia-600 text-white flex items-center justify-center mb-3.5 shadow-md shadow-purple-600/25 group-hover:scale-105 transition-transform duration-300">
+          <span class="material-symbols-outlined text-[26px]">layers</span>
+        </div>
+        {% elif forloop.counter|divisibleby:4 %}
+        <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-cyan-500 to-blue-600 text-white flex items-center justify-center mb-3.5 shadow-md shadow-cyan-500/25 group-hover:scale-105 transition-transform duration-300">
+          <span class="material-symbols-outlined text-[26px]">lan</span>
+        </div>
+        {% elif forloop.counter|divisibleby:3 %}
+        <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-sky-400 to-blue-500 text-white flex items-center justify-center mb-3.5 shadow-md shadow-sky-400/25 group-hover:scale-105 transition-transform duration-300">
+          <span class="material-symbols-outlined text-[26px]">cloud</span>
+        </div>
+        {% elif forloop.counter|divisibleby:2 %}
+        <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-pink-500 to-rose-500 text-white flex items-center justify-center mb-3.5 shadow-md shadow-pink-500/25 group-hover:scale-105 transition-transform duration-300">
+          <span class="material-symbols-outlined text-[26px]">terminal</span>
+        </div>
+        {% else %}
+        <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-violet-600 to-indigo-500 text-white flex items-center justify-center mb-3.5 shadow-md shadow-violet-500/25 group-hover:scale-105 transition-transform duration-300">
+          <span class="material-symbols-outlined text-[26px]">bolt</span>
+        </div>
+        {% endif %}
+        <div class="h-10 sm:h-11 flex items-center justify-center w-full px-1 mb-1">
+          <h3 class="text-xs sm:text-sm font-bold text-[#0f172a] group-hover:text-violet-600 transition-colors leading-tight text-center">
+            {% if cat.slug == 'ai-systems' or cat.name == 'AI Systems' %}AI Architecture{% else %}{{ cat.name }}{% endif %}
+          </h3>
+        </div>
+        <span class="text-[11px] sm:text-xs text-slate-400 font-medium">
+          {{ cat.published_courses_count }} Course{{ cat.published_courses_count|pluralize }}
+        </span>
+      </a>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </section>
 
-        <!-- Performance Panel -->
-        <div class="mt-6 pt-4">
-          <div class="flex items-center justify-between p-3 rounded-xl bg-slate-100/80 border border-slate-200/60 backdrop-blur-md">
-            <div class="flex items-center gap-2">
-              <span class="material-symbols-outlined text-cyan-600 text-[18px]">memory</span>
-              <span class="font-mono text-xs text-slate-800 font-semibold">Execution Speed</span>
-            </div>
-            <span class="font-mono text-xs text-cyan-600 font-bold">1.2ms / Batch</span>
-          </div>
+  <section id="how-it-works" class="w-full max-w-7xl mx-auto px-4 md:px-8 py-16">
+    <div class="text-center max-w-2xl mx-auto mb-16">
+      <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight text-[#0f172a] mb-3">How Learnix Works</h2>
+      <p class="text-slate-500 text-sm md:text-base">An engineering-first methodology for rapid career progression</p>
+    </div>
+
+    <div class="relative grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-6">
+      <div class="hidden md:block absolute top-7 left-[16%] right-[16%] h-0.5 bg-gradient-to-r from-violet-200 via-purple-300 to-cyan-200 z-0"></div>
+
+      <div class="relative z-10 flex flex-col items-center text-center">
+        <div class="w-14 h-14 rounded-full bg-violet-600 text-white font-extrabold text-lg flex items-center justify-center shadow-lg shadow-violet-600/30 mb-5 ring-4 ring-white">
+          1
+        </div>
+        <h3 class="text-base md:text-lg font-bold text-slate-900 mb-2">Choose Your Course</h3>
+        <p class="text-xs md:text-sm text-slate-500 max-w-xs leading-relaxed">Pick a masterclass that matches your goal.</p>
+      </div>
+
+      <div class="relative z-10 flex flex-col items-center text-center">
+        <div class="w-14 h-14 rounded-full bg-violet-600 text-white font-extrabold text-lg flex items-center justify-center shadow-lg shadow-violet-600/30 mb-5 ring-4 ring-white">
+          2
+        </div>
+        <h3 class="text-base md:text-lg font-bold text-slate-900 mb-2">Learn by Building</h3>
+        <p class="text-xs md:text-sm text-slate-500 max-w-xs leading-relaxed">Watch lessons, build projects, track your progress.</p>
+      </div>
+
+      <div class="relative z-10 flex flex-col items-center text-center">
+        <div class="w-14 h-14 rounded-full bg-violet-600 text-white font-extrabold text-lg flex items-center justify-center shadow-lg shadow-violet-600/30 mb-5 ring-4 ring-white">
+          3
+        </div>
+        <h3 class="text-base md:text-lg font-bold text-slate-900 mb-2">Get Certified</h3>
+        <p class="text-xs md:text-sm text-slate-500 max-w-xs leading-relaxed">Complete the course and earn your verified certificate.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="faq" class="w-full max-w-7xl mx-auto px-4 md:px-8 py-16">
+    <div class="text-center max-w-2xl mx-auto mb-12">
+      <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight text-[#0f172a] mb-3">Frequently Asked Questions</h2>
+      <p class="text-slate-500 text-sm md:text-base">Everything you need to know about elevating your curriculum</p>
+    </div>
+
+    <div class="max-w-3xl mx-auto space-y-4">
+      <div class="rounded-2xl bg-white/80 backdrop-blur-xl border border-slate-200/80 shadow-xs overflow-hidden transition-all">
+        <button type="button" aria-expanded="true" aria-controls="faq-ans-1" id="faq-btn-1" class="faq-toggle w-full flex items-center justify-between p-5 text-left font-bold text-slate-900 hover:text-violet-700 transition-colors">
+          <span class="text-sm md:text-base">Do I get a certificate after completing a course?</span>
+          <span class="material-symbols-outlined text-[20px] text-slate-400 transition-transform duration-200 rotate-180">expand_more</span>
+        </button>
+        <div id="faq-ans-1" role="region" aria-labelledby="faq-btn-1" class="faq-content px-5 pb-5 text-xs md:text-sm text-slate-600 leading-relaxed">
+          Yes. Once you complete all modules and pass the final hands-on capstone project, you receive a cryptographically signed digital certificate that you can showcase on LinkedIn and tech resumes.
         </div>
       </div>
 
-      <!-- CARD 3: Peer-Verified Mastery (Spans 1 Column) -->
-      <div id="instructors" class="relative rounded-3xl bg-white/70 backdrop-blur-xl border border-white/80 p-7 shadow-[0_12px_32px_rgba(99,102,241,0.08)] overflow-hidden flex flex-col justify-between group hover:bg-white/85 transition-all duration-500">
-        <div class="absolute -bottom-10 -right-10 w-44 h-44 bg-pink-400/15 rounded-full blur-2xl pointer-events-none"></div>
-        <div>
-          <div class="flex items-center justify-between mb-4">
-            <span class="font-mono text-[11px] text-slate-500 uppercase tracking-wider font-semibold">Student Feedback</span>
-          </div>
-          <h3 class="text-xl font-bold text-[#0f172a]">Peer-Verified Mastery</h3>
-          <p class="text-xs text-slate-600 mt-1">Direct evaluations from alumni currently employed in industry software engineering roles.</p>
-        </div>
-
-        <!-- Circular Liquid Metric Progress Ring -->
-        <div class="my-6 flex items-center justify-center relative">
-          <div class="relative w-36 h-36 flex items-center justify-center">
-            <svg class="w-full h-full -rotate-90 transform" viewBox="0 0 100 100">
-              <!-- Background Ring -->
-              <circle class="text-slate-100 fill-none" cx="50" cy="50" r="42" stroke="currentColor" stroke-width="8"></circle>
-              <!-- Progress Ring with metallic gradient -->
-              <circle class="fill-none transition-all duration-1000 ease-out" cx="50" cy="50" r="42" stroke="url(#vibrantGradient)" stroke-dasharray="264" stroke-dashoffset="13" stroke-linecap="round" stroke-width="8"></circle>
-              <defs>
-                <linearGradient id="vibrantGradient" x1="0%" x2="100%" y1="0%" y2="100%">
-                  <stop offset="0%" stop-color="#06b6d4"></stop>
-                  <stop offset="50%" stop-color="#7c3aed"></stop>
-                  <stop offset="100%" stop-color="#ec4899"></stop>
-                </linearGradient>
-              </defs>
-            </svg>
-            <div class="absolute flex flex-col items-center justify-center">
-              <span class="text-3xl font-extrabold text-slate-900 tracking-tight">4.98</span>
-              <span class="font-mono text-[10px] text-pink-600 font-bold">OUT OF 5.0</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="flex items-center justify-between pt-2 border-t border-slate-100">
-          <div class="flex items-center gap-1 text-amber-400">
-            <span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">star</span>
-            <span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">star</span>
-            <span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">star</span>
-            <span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">star</span>
-            <span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">star</span>
-          </div>
-          <span class="font-mono text-xs text-slate-600 font-semibold">12,480+ Reviews</span>
+      <div class="rounded-2xl bg-white/80 backdrop-blur-xl border border-slate-200/80 shadow-xs overflow-hidden transition-all">
+        <button type="button" aria-expanded="false" aria-controls="faq-ans-2" id="faq-btn-2" class="faq-toggle w-full flex items-center justify-between p-5 text-left font-bold text-slate-900 hover:text-violet-700 transition-colors">
+          <span class="text-sm md:text-base">Can I learn at my own pace?</span>
+          <span class="material-symbols-outlined text-[20px] text-slate-400 transition-transform duration-200">expand_more</span>
+        </button>
+        <div id="faq-ans-2" role="region" aria-labelledby="faq-btn-2" class="faq-content hidden px-5 pb-5 text-xs md:text-sm text-slate-600 leading-relaxed">
+          Yes, all courses include lifetime on-demand access to all modules, source code repositories, and hands-on lab environments so you can learn at your own schedule.
         </div>
       </div>
 
-      <!-- CARD 4: Zero Latency Global Clusters (Spans 2 Columns) -->
-      <div class="md:col-span-2 relative rounded-3xl bg-white/70 backdrop-blur-xl border border-white/80 p-8 shadow-[0_12px_32px_rgba(99,102,241,0.08)] overflow-hidden group hover:bg-white/85 transition-all duration-500">
-        <div class="absolute top-1/2 left-1/3 w-64 h-64 bg-cyan-400/10 rounded-full blur-3xl pointer-events-none"></div>
-        <div class="flex flex-col md:flex-row items-center justify-between gap-8 h-full">
-          <div class="max-w-md">
-            <h3 class="text-2xl font-bold text-[#0f172a] tracking-tight mb-2">
-              Zero Latency Global Clusters
-            </h3>
-            <p class="text-sm text-slate-600 leading-relaxed">
-              Interactive distributed labs deploy dynamically across 34 edge regions. Spin up real-world Kubernetes pods and GPU inference nodes in under 2 seconds.
-            </p>
-            <div class="mt-6 flex flex-wrap items-center gap-6">
-              <div>
-                <span class="text-3xl font-extrabold text-cyan-600">18<span class="text-lg font-normal text-slate-400">ms</span></span>
-                <span class="block font-mono text-xs text-slate-500 font-semibold">Avg Global RTT</span>
-              </div>
-              <div class="w-px h-10 bg-slate-200"></div>
-              <div>
-                <span class="text-3xl font-extrabold text-slate-900">99.99<span class="text-lg font-normal text-slate-400">%</span></span>
-                <span class="block font-mono text-xs text-slate-500 font-semibold">Cluster SLA</span>
-              </div>
-              <div class="w-px h-10 bg-slate-200"></div>
-              <div>
-                <span class="text-3xl font-extrabold text-violet-600">34</span>
-                <span class="block font-mono text-xs text-slate-500 font-semibold">Edge PoPs</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Performance Sparkline Chart -->
-          <div class="w-full md:w-64 h-36 rounded-2xl bg-white border border-slate-200/80 p-4 flex flex-col justify-between shadow-xs relative overflow-hidden">
-            <div class="flex items-center justify-between text-slate-500 font-mono text-xs font-semibold">
-              <span>Traffic Shards</span>
-              <span class="text-cyan-600 font-bold">14.8 Gbps</span>
-            </div>
-            <!-- Sparkline Vector -->
-            <svg class="w-full h-16 text-cyan-500" fill="none" viewBox="0 0 200 60">
-              <path d="M0 45 C 30 50, 40 10, 70 30 C 100 50, 110 5, 140 25 C 170 45, 180 15, 200 20" stroke="currentColor" stroke-linecap="round" stroke-width="2.5"></path>
-              <path d="M0 45 C 30 50, 40 10, 70 30 C 100 50, 110 5, 140 25 C 170 45, 180 15, 200 20 L 200 60 L 0 60 Z" fill="url(#sparklineLightGlow)" opacity="0.25"></path>
-              <defs>
-                <linearGradient id="sparklineLightGlow" x1="0%" x2="0%" y1="0%" y2="1">
-                  <stop offset="0%" stop-color="#06b6d4"></stop>
-                  <stop offset="100%" stop-color="transparent"></stop>
-                </linearGradient>
-              </defs>
-            </svg>
-            <div class="flex items-center justify-between text-slate-500 font-mono text-[10px] font-semibold">
-              <span>FRA · SFO · SIN · NRT</span>
-              <span class="flex items-center gap-1 text-violet-600 font-bold">
-                <span class="w-1.5 h-1.5 rounded-full bg-violet-600 animate-pulse"></span> Optimal
-              </span>
-            </div>
-          </div>
+      <div class="rounded-2xl bg-white/80 backdrop-blur-xl border border-slate-200/80 shadow-xs overflow-hidden transition-all">
+        <button type="button" aria-expanded="false" aria-controls="faq-ans-3" id="faq-btn-3" class="faq-toggle w-full flex items-center justify-between p-5 text-left font-bold text-slate-900 hover:text-violet-700 transition-colors">
+          <span class="text-sm md:text-base">Can I preview a course before buying?</span>
+          <span class="material-symbols-outlined text-[20px] text-slate-400 transition-transform duration-200">expand_more</span>
+        </button>
+        <div id="faq-ans-3" role="region" aria-labelledby="faq-btn-3" class="faq-content hidden px-5 pb-5 text-xs md:text-sm text-slate-600 leading-relaxed">
+          Every masterclass offers free preview lessons so you can evaluate the teaching style, curriculum depth, and hands-on exercises before enrolling.
         </div>
       </div>
 
+      <div class="rounded-2xl bg-white/80 backdrop-blur-xl border border-slate-200/80 shadow-xs overflow-hidden transition-all">
+        <button type="button" aria-expanded="false" aria-controls="faq-ans-4" id="faq-btn-4" class="faq-toggle w-full flex items-center justify-between p-5 text-left font-bold text-slate-900 hover:text-violet-700 transition-colors">
+          <span class="text-sm md:text-base">What payment methods do you accept?</span>
+          <span class="material-symbols-outlined text-[20px] text-slate-400 transition-transform duration-200">expand_more</span>
+        </button>
+        <div id="faq-ans-4" role="region" aria-labelledby="faq-btn-4" class="faq-content hidden px-5 pb-5 text-xs md:text-sm text-slate-600 leading-relaxed">
+          We accept all major credit and debit cards (Visa, MasterCard, American Express) through Stripe's secure payment infrastructure.
+        </div>
+      </div>
+
+      <div class="rounded-2xl bg-white/80 backdrop-blur-xl border border-slate-200/80 shadow-xs overflow-hidden transition-all">
+        <button type="button" aria-expanded="false" aria-controls="faq-ans-5" id="faq-btn-5" class="faq-toggle w-full flex items-center justify-between p-5 text-left font-bold text-slate-900 hover:text-violet-700 transition-colors">
+          <span class="text-sm md:text-base">How long do I have access to a course?</span>
+          <span class="material-symbols-outlined text-[20px] text-slate-400 transition-transform duration-200">expand_more</span>
+        </button>
+        <div id="faq-ans-5" role="region" aria-labelledby="faq-btn-5" class="faq-content hidden px-5 pb-5 text-xs md:text-sm text-slate-600 leading-relaxed">
+          You receive unlimited lifetime access to all course materials, including future updates, architectural revisions, and community discussions.
+        </div>
+      </div>
     </div>
   </section>
 
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.querySelectorAll('.faq-toggle').forEach(function(button) {
+    button.addEventListener('click', function() {
+      var isExpanded = button.getAttribute('aria-expanded') === 'true';
+      var panelId = button.getAttribute('aria-controls');
+      var panel = document.getElementById(panelId);
+      var icon = button.querySelector('.material-symbols-outlined');
+      if (isExpanded) {
+        button.setAttribute('aria-expanded', 'false');
+        if (panel) panel.classList.add('hidden');
+        if (icon) icon.classList.remove('rotate-180');
+      } else {
+        button.setAttribute('aria-expanded', 'true');
+        if (panel) panel.classList.remove('hidden');
+        if (icon) icon.classList.add('rotate-180');
+      }
+    });
+  });
+</script>
 {% endblock %}

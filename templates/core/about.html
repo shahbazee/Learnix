@@ -1,30 +1,155 @@
 {% extends 'base.html' %}
 
-{% block title %}About {{ SITE_NAME }} — Architectural Excellence{% endblock %}
+{% block title %}About {{ SITE_NAME }} — Modern Engineering Platform{% endblock %}
 
 {% block content %}
-<div class="max-w-4xl mx-auto px-6 py-12">
-  <div class="rounded-[2.5rem] bg-white/80 backdrop-blur-2xl border border-white/90 p-8 md:p-12 shadow-sm">
-    <div class="flex items-center gap-3 mb-4">
-      {% include 'includes/_logo.html' with size="w-10 h-10" unique_id="about" %}
-      <span class="text-xs font-mono uppercase tracking-wider text-violet-600 font-bold">// PLATFORM MANIFESTO</span>
-    </div>
-    <h1 class="text-4xl font-extrabold text-[#0f172a] mb-6">About {{ SITE_NAME }}</h1>
-    
-    <p class="text-slate-600 text-base leading-relaxed mb-6">
-      {{ SITE_NAME }} is an enterprise e-learning engineering platform created to bridge the chasm between academic theory and hyper-scale systems engineering. Our curricula are designed by principal engineers and architects from Tier-1 laboratories.
-    </p>
+<div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-16 sm:space-y-20">
 
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-8 pt-8 border-t border-slate-100">
-      <div class="p-6 rounded-2xl bg-slate-50/70 border border-slate-200/50">
-        <h3 class="text-base font-bold text-[#0f172a] mb-2">Battle-Tested Curricula</h3>
-        <p class="text-xs text-slate-500">Every lesson is verified against production systems handling tens of thousands of requests per second.</p>
+  <section class="text-center space-y-3 max-w-2xl mx-auto">
+    <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#0f172a] tracking-tight">About Learnix</h1>
+    <p class="text-sm sm:text-base text-slate-500 leading-relaxed font-normal">
+      Learnix is an online learning platform for modern engineering subjects.
+    </p>
+  </section>
+
+  <section class="text-center space-y-4 max-w-2xl mx-auto">
+    <h2 class="text-2xl sm:text-3xl font-extrabold text-[#0f172a] tracking-tight">Why Learnix Exists</h2>
+    <div class="space-y-3 text-xs sm:text-sm text-slate-600 leading-relaxed font-normal">
+      <p>
+        Advanced engineering topics are often scattered across random tutorials and difficult documentation. Learnix brings them into clear, step-by-step courses that are easier to follow.
+      </p>
+      <p>
+        Each course is organized into modules and lessons, so learners always know what to study next and can track their progress as they go.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <div class="rounded-3xl bg-white/95 backdrop-blur-xl border border-white/90 shadow-[0_10px_35px_-10px_rgba(99,102,241,0.12)] p-8 sm:p-12 lg:p-14 text-center max-w-4xl mx-auto">
+      <div class="inline-flex items-center justify-center px-3 py-1 rounded-full bg-violet-50 border border-violet-200/60 text-violet-600 text-[10px] font-bold tracking-wider uppercase mb-5 font-mono">
+        OUR MISSION
       </div>
-      <div class="p-6 rounded-2xl bg-slate-50/70 border border-slate-200/50">
-        <h3 class="text-base font-bold text-[#0f172a] mb-2">Direct Instructor Access</h3>
-        <p class="text-xs text-slate-500">Engage in asynchronous code reviews and technical office hours with staff architects.</p>
+      <p class="text-xl sm:text-2xl lg:text-3xl font-extrabold text-[#0f172a] leading-snug tracking-tight max-w-2xl mx-auto">
+        Our mission is to make modern engineering easier to learn through clear, structured and practical courses
+      </p>
+    </div>
+  </section>
+
+  <section class="space-y-8">
+    <div class="text-center max-w-2xl mx-auto">
+      <h2 class="text-2xl sm:text-3xl font-extrabold text-[#0f172a] tracking-tight mb-2">What We Believe</h2>
+      <p class="text-xs sm:text-sm text-slate-500">Principles behind every Learnix course</p>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      <div class="rounded-3xl p-6 bg-white/95 backdrop-blur-xl border border-white/90 shadow-[0_4px_25px_-5px_rgba(99,102,241,0.08)] flex flex-col justify-start text-left space-y-3">
+        <div class="w-10 h-10 rounded-xl bg-violet-50 text-violet-600 flex items-center justify-center shrink-0">
+          <span class="material-symbols-outlined text-[20px]" aria-hidden="true">lightbulb</span>
+        </div>
+        <h3 class="text-sm font-bold text-[#0f172a]">Clarity over hype</h3>
+        <p class="text-xs text-slate-500 leading-relaxed font-normal">
+          Direct explanations focused on foundational principles rather than buzzwords and transient trends.
+        </p>
+      </div>
+
+      <div class="rounded-3xl p-6 bg-white/95 backdrop-blur-xl border border-white/90 shadow-[0_4px_25px_-5px_rgba(99,102,241,0.08)] flex flex-col justify-start text-left space-y-3">
+        <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+          <span class="material-symbols-outlined text-[20px]" aria-hidden="true">code</span>
+        </div>
+        <h3 class="text-sm font-bold text-[#0f172a]">Practical learning over memorization</h3>
+        <p class="text-xs text-slate-500 leading-relaxed font-normal">
+          Structured lessons and practical examples that explain how real systems work.
+        </p>
+      </div>
+
+      <div class="rounded-3xl p-6 bg-white/95 backdrop-blur-xl border border-white/90 shadow-[0_4px_25px_-5px_rgba(99,102,241,0.08)] flex flex-col justify-start text-left space-y-3">
+        <div class="w-10 h-10 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center shrink-0">
+          <span class="material-symbols-outlined text-[20px]" aria-hidden="true">verified_user</span>
+        </div>
+        <h3 class="text-sm font-bold text-[#0f172a]">Honest course information</h3>
+        <p class="text-xs text-slate-500 leading-relaxed font-normal">
+          Clear curriculum, course level, and price before enrollment, without empty promises.
+        </p>
+      </div>
+
+      <div class="rounded-3xl p-6 bg-white/95 backdrop-blur-xl border border-white/90 shadow-[0_4px_25px_-5px_rgba(99,102,241,0.08)] flex flex-col justify-start text-left space-y-3">
+        <div class="w-10 h-10 rounded-xl bg-pink-50 text-pink-600 flex items-center justify-center shrink-0">
+          <span class="material-symbols-outlined text-[20px]" aria-hidden="true">schedule</span>
+        </div>
+        <h3 class="text-sm font-bold text-[#0f172a]">Learn at your own pace</h3>
+        <p class="text-xs text-slate-500 leading-relaxed font-normal">
+          Structured courses that respect your schedule, with no fixed class timings.
+        </p>
       </div>
     </div>
-  </div>
+  </section>
+
+  <section class="space-y-8">
+    <div class="text-center max-w-2xl mx-auto">
+      <h2 class="text-2xl sm:text-3xl font-extrabold text-[#0f172a] tracking-tight mb-2">What You Can Learn</h2>
+      <p class="text-xs sm:text-sm text-slate-500">The main engineering subjects covered on Learnix</p>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      {% for cat in categories %}
+      <a href="{% url 'courses:course_list' %}?category={{ cat.slug }}" class="group rounded-3xl p-6 bg-white/95 backdrop-blur-xl border border-white/90 shadow-[0_4px_25px_-5px_rgba(99,102,241,0.08)] hover:shadow-[0_16px_36px_rgba(124,58,237,0.14)] hover:border-violet-300 hover:-translate-y-1 transition-all duration-300 flex flex-col justify-start text-left space-y-3 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2">
+        {% if cat.slug == 'ai-systems' or 'ai' in cat.slug %}
+        <div class="w-10 h-10 rounded-xl bg-violet-50 text-violet-600 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform duration-300">
+          <span class="material-symbols-outlined text-[20px]" aria-hidden="true">bolt</span>
+        </div>
+        <h3 class="text-sm font-bold text-[#0f172a] group-hover:text-violet-600 transition-colors">AI Systems</h3>
+        <p class="text-xs text-slate-500 leading-relaxed font-normal">
+          Master deep learning models, embeddings, and intelligent systems.
+        </p>
+        {% elif cat.slug == 'distributed-systems' or 'distributed' in cat.slug %}
+        <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform duration-300">
+          <span class="material-symbols-outlined text-[20px]" aria-hidden="true">deployed_code</span>
+        </div>
+        <h3 class="text-sm font-bold text-[#0f172a] group-hover:text-violet-600 transition-colors">Distributed Systems</h3>
+        <p class="text-xs text-slate-500 leading-relaxed font-normal">
+          Build resilient, scalable architectures and fault-tolerant protocols.
+        </p>
+        {% elif cat.slug == 'cloud-infrastructure' or 'cloud' in cat.slug %}
+        <div class="w-10 h-10 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform duration-300">
+          <span class="material-symbols-outlined text-[20px]" aria-hidden="true">cloud</span>
+        </div>
+        <h3 class="text-sm font-bold text-[#0f172a] group-hover:text-violet-600 transition-colors">Cloud Infrastructure</h3>
+        <p class="text-xs text-slate-500 leading-relaxed font-normal">
+          Deploy containerized workloads and modern cloud environments.
+        </p>
+        {% elif cat.slug == 'system-design' or 'system' in cat.slug %}
+        <div class="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform duration-300">
+          <span class="material-symbols-outlined text-[20px]" aria-hidden="true">grid_view</span>
+        </div>
+        <h3 class="text-sm font-bold text-[#0f172a] group-hover:text-violet-600 transition-colors">System Design</h3>
+        <p class="text-xs text-slate-500 leading-relaxed font-normal">
+          Design high-scale architectures, caching strategies, and data flows.
+        </p>
+        {% else %}
+        <div class="w-10 h-10 rounded-xl bg-violet-50 text-violet-600 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform duration-300">
+          <span class="material-symbols-outlined text-[20px]" aria-hidden="true">school</span>
+        </div>
+        <h3 class="text-sm font-bold text-[#0f172a] group-hover:text-violet-600 transition-colors">{{ cat.name }}</h3>
+        <p class="text-xs text-slate-500 leading-relaxed font-normal">
+          {{ cat.description|default:"Master modern engineering topics with practical, structured lessons." }}
+        </p>
+        {% endif %}
+      </a>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="pt-4">
+    <div class="rounded-3xl bg-gradient-to-r from-violet-600 via-purple-600 to-cyan-500 p-8 sm:p-12 lg:p-14 text-white text-center shadow-[0_20px_50px_-10px_rgba(124,58,237,0.35)] overflow-hidden max-w-4xl mx-auto">
+      <h2 class="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight mb-3">Start Learning Modern Engineering</h2>
+      <p class="text-xs sm:text-sm text-white/90 max-w-xl mx-auto mb-8 font-normal">
+        Explore our courses and start learning practical engineering topics today.
+      </p>
+      <a href="{% url 'courses:course_list' %}" class="inline-flex items-center justify-center px-8 py-3.5 rounded-full bg-white text-violet-700 hover:text-violet-900 hover:bg-slate-50 font-bold text-xs sm:text-sm shadow-md hover:scale-[1.02] active:scale-[0.99] transition-all focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-violet-600">
+        Explore Courses
+      </a>
+    </div>
+  </section>
+
 </div>
 {% endblock %}

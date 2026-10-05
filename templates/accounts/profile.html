@@ -4,702 +4,568 @@
 {% block title %}Account Settings — {{ SITE_NAME }}{% endblock %}
 
 {% block content %}
-<div class="max-w-7xl mx-auto px-4 md:px-8 pt-4 pb-28">
+<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-32">
 
-  <!-- Breadcrumbs Navigation -->
-  <nav class="flex items-center gap-2 text-xs font-semibold text-slate-500 mb-3" aria-label="Breadcrumb">
-    <a href="{% url 'core:home' %}" class="hover:text-slate-800 transition-colors">Learnix Cloud</a>
+  <nav class="flex items-center gap-2 text-xs font-medium text-slate-400 mb-3" aria-label="Breadcrumb">
+    <a href="{% url 'core:home' %}" class="hover:text-slate-700 transition-colors">Learnix</a>
     <span class="text-slate-300">›</span>
-    <span class="text-slate-600">Preferences</span>
-    <span class="text-slate-300">›</span>
-    <span class="text-violet-600 font-bold">Account Settings</span>
+    <span class="text-slate-700 font-semibold">Settings</span>
   </nav>
 
-  <!-- Page Title & Status Header -->
-  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-    <div>
-      <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight text-[#0f172a]">
-        Account Settings
-      </h1>
-      <p class="text-sm text-slate-500 mt-1">
-        Manage your personal profile, credentials, connected integrations, and platform preferences.
-      </p>
-    </div>
-
+  <div class="mb-8">
+    <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-[#0f172a]">
+      Account Settings
+    </h1>
+    <p class="text-sm text-slate-500 mt-1.5">
+      Manage your profile and account preferences.
+    </p>
   </div>
 
-  <!-- Main Settings Layout -->
-  <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-    
-    <!-- ====================================================================
-         LEFT SIDEBAR: Navigation Tabs
-         ==================================================================== -->
-    <div class="lg:col-span-4 xl:col-span-3 space-y-5">
-      
-      <!-- Navigation Pills Card -->
-      <div class="rounded-3xl bg-white/85 backdrop-blur-xl border border-white/90 p-3 shadow-[0_10px_30px_rgba(99,102,241,0.06)] space-y-1">
-        
-        <!-- Tab 1: General Profile (Active by default) -->
-        <button type="button" onclick="switchSettingsTab('profile')" id="tabBtn-profile" class="settings-tab-btn active w-full flex items-center justify-between p-3 rounded-2xl transition-all text-left">
-          <div class="flex items-center gap-3">
-            <div class="w-9 h-9 rounded-xl bg-violet-100 text-violet-700 flex items-center justify-center shrink-0">
+  <form id="settingsForm" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <input type="hidden" name="remove_avatar" id="removeAvatarInput" value="false">
+    <input type="hidden" name="two_factor_submitted" value="1">
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+
+      <aside class="lg:col-span-4 xl:col-span-3 lg:sticky lg:top-28 z-20">
+        <div class="rounded-3xl bg-white/90 backdrop-blur-xl border border-slate-200/80 p-2 shadow-[0_4px_20px_rgba(99,102,241,0.04)]">
+          <nav class="flex lg:flex-col overflow-x-auto no-scrollbar gap-1" aria-label="Settings navigation">
+            <button type="button" onclick="switchSettingsTab('profile')" id="navBtn-profile" class="settings-nav-btn active flex items-center gap-3 px-4 py-3 rounded-2xl text-xs font-bold text-violet-700 bg-violet-50 transition-all text-left shrink-0 w-full">
               <span class="material-symbols-outlined text-[20px]">person</span>
-            </div>
-            <div>
-              <span class="block text-xs font-bold text-[#0f172a] leading-tight">General Profile</span>
-              <span class="block text-[11px] text-slate-500">Public info &amp; avatar</span>
-            </div>
-          </div>
-          <span class="w-2 h-2 rounded-full bg-violet-600 shrink-0"></span>
-        </button>
+              <span>Profile</span>
+            </button>
 
-        <!-- Tab 2: Security & Auth -->
-        <button type="button" onclick="switchSettingsTab('security')" id="tabBtn-security" class="settings-tab-btn w-full flex items-center justify-between p-3 rounded-2xl transition-all text-left hover:bg-slate-50">
-          <div class="flex items-center gap-3">
-            <div class="w-9 h-9 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center shrink-0">
+            <button type="button" onclick="switchSettingsTab('security')" id="navBtn-security" class="settings-nav-btn flex items-center gap-3 px-4 py-3 rounded-2xl text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-all text-left shrink-0 w-full">
               <span class="material-symbols-outlined text-[20px]">lock</span>
-            </div>
-            <div>
-              <span class="block text-xs font-bold text-[#0f172a] leading-tight">Security &amp; Auth</span>
-              <span class="block text-[11px] text-slate-500">Passwords, keys, 2FA</span>
-            </div>
-          </div>
-          <span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold">2FA Active</span>
-        </button>
+              <span>Security</span>
+            </button>
 
-        <!-- Tab 3: Billing & Tiers -->
-        <button type="button" onclick="switchSettingsTab('billing')" id="tabBtn-billing" class="settings-tab-btn w-full flex items-center justify-between p-3 rounded-2xl transition-all text-left hover:bg-slate-50">
-          <div class="flex items-center gap-3">
-            <div class="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-700 flex items-center justify-center shrink-0">
-              <span class="material-symbols-outlined text-[20px]">credit_card</span>
-            </div>
-            <div>
-              <span class="block text-xs font-bold text-[#0f172a] leading-tight">Billing &amp; Tiers</span>
-              <span class="block text-[11px] text-slate-500">Invoices &amp; card</span>
-            </div>
-          </div>
-          <span class="px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-800 text-[10px] font-bold">Pro Plan</span>
-        </button>
-
-        <!-- Tab 4: Notifications -->
-        <button type="button" onclick="switchSettingsTab('notifications')" id="tabBtn-notifications" class="settings-tab-btn w-full flex items-center justify-between p-3 rounded-2xl transition-all text-left hover:bg-slate-50">
-          <div class="flex items-center gap-3">
-            <div class="w-9 h-9 rounded-xl bg-sky-50 text-sky-700 flex items-center justify-center shrink-0">
+            <button type="button" onclick="switchSettingsTab('notifications')" id="navBtn-notifications" class="settings-nav-btn flex items-center gap-3 px-4 py-3 rounded-2xl text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-all text-left shrink-0 w-full">
               <span class="material-symbols-outlined text-[20px]">notifications</span>
-            </div>
-            <div>
-              <span class="block text-xs font-bold text-[#0f172a] leading-tight">Notifications</span>
-              <span class="block text-[11px] text-slate-500">Email &amp; in-app alerts</span>
-            </div>
-          </div>
-          <span class="material-symbols-outlined text-slate-400 text-[18px]">chevron_right</span>
-        </button>
+              <span>Notifications</span>
+            </button>
 
-        <!-- Tab 5: Integrations -->
-        <button type="button" onclick="switchSettingsTab('integrations')" id="tabBtn-integrations" class="settings-tab-btn w-full flex items-center justify-between p-3 rounded-2xl transition-all text-left hover:bg-slate-50">
-          <div class="flex items-center gap-3">
-            <div class="w-9 h-9 rounded-xl bg-cyan-50 text-cyan-700 flex items-center justify-center shrink-0">
+            <button type="button" onclick="switchSettingsTab('billing')" id="navBtn-billing" class="settings-nav-btn flex items-center gap-3 px-4 py-3 rounded-2xl text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-all text-left shrink-0 w-full">
+              <span class="material-symbols-outlined text-[20px]">credit_card</span>
+              <span>Billing</span>
+            </button>
+
+            <button type="button" onclick="switchSettingsTab('connected')" id="navBtn-connected" class="settings-nav-btn flex items-center gap-3 px-4 py-3 rounded-2xl text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-all text-left shrink-0 w-full">
               <span class="material-symbols-outlined text-[20px]">hub</span>
+              <span>Connected Accounts</span>
+            </button>
+          </nav>
+        </div>
+      </aside>
+
+      <main class="lg:col-span-8 xl:col-span-9 space-y-6">
+
+        <section id="tab-profile" class="settings-tab-pane rounded-3xl bg-white/90 backdrop-blur-xl border border-slate-200/80 p-6 sm:p-8 md:p-10 shadow-[0_10px_30px_rgba(99,102,241,0.05)]">
+          <div class="border-b border-slate-100 pb-6 mb-8">
+            <h2 class="text-xl font-bold text-[#0f172a]">Profile</h2>
+            <p class="text-xs text-slate-500 mt-1">Manage your public persona, avatar, and personal details.</p>
+          </div>
+
+          <div class="flex flex-col sm:flex-row sm:items-center gap-6 pb-8 border-b border-slate-100 mb-8">
+            <div class="relative w-20 h-20 rounded-full bg-gradient-to-tr from-violet-600 via-purple-600 to-cyan-500 text-white font-extrabold text-2xl flex items-center justify-center shadow-md ring-4 ring-white shrink-0 overflow-hidden">
+              {% if profile.avatar %}
+              <img id="avatarPreviewImg" src="{{ profile.avatar.url }}" alt="{{ user.username }}" class="w-full h-full object-cover"/>
+              {% endif %}
+              <span id="avatarInitials" class="{% if profile.avatar %}hidden{% else %}block{% endif %}">
+                {{ user.first_name|default:user.username|slice:":1"|upper }}
+              </span>
             </div>
-            <div>
-              <span class="block text-xs font-bold text-[#0f172a] leading-tight">Integrations</span>
-              <span class="block text-[11px] text-slate-500">OAuth &amp; Git repos</span>
+
+            <div class="space-y-2">
+              <div class="flex flex-wrap items-center gap-3">
+                <input type="file" id="avatarFileInput" name="avatar" accept="image/png,image/jpeg,image/webp" class="hidden" onchange="previewAvatar(event)"/>
+                <button type="button" onclick="document.getElementById('avatarFileInput').click()" class="px-4 py-2 rounded-full bg-white hover:bg-slate-50 text-slate-800 text-xs font-bold border border-slate-200 shadow-xs transition-all hover:border-violet-300">
+                  Upload Photo
+                </button>
+                <button type="button" onclick="removeAvatarAction()" class="px-3 py-2 text-xs font-bold text-rose-500 hover:text-rose-600 transition-colors">
+                  Remove
+                </button>
+              </div>
+              <p class="text-[11px] text-slate-400">PNG, JPG, or WEBP up to 5MB</p>
             </div>
           </div>
-          <span class="px-2 py-0.5 rounded-full bg-cyan-100 text-cyan-800 text-[10px] font-bold">2 Linked</span>
-        </button>
 
-      </div>
-
-      <!-- Workspace Cluster Card -->
-      <div class="rounded-3xl bg-white/85 backdrop-blur-xl border border-white/90 p-5 shadow-[0_10px_30px_rgba(99,102,241,0.06)] space-y-4">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-2">
-            <span class="material-symbols-outlined text-violet-600 text-[20px]">deployed_code</span>
-            <span class="text-xs font-extrabold text-[#0f172a]">Workspace Cluster</span>
-          </div>
-          <span class="px-2 py-0.5 rounded bg-violet-100 text-violet-800 font-mono text-[10px] font-bold">Pro Tier</span>
-        </div>
-
-        <div>
-          <div class="flex items-center justify-between text-xs mb-1.5 font-medium">
-            <span class="text-slate-500 text-[11px]">Student Storage &amp; GPU</span>
-            <span class="font-bold text-slate-900 font-mono text-[11px]">{{ storage_used }} GB <span class="text-slate-400 font-normal">/ {{ storage_total }} GB</span></span>
-          </div>
-          <!-- Progress bar -->
-          <div class="w-full h-2 rounded-full bg-slate-100 overflow-hidden">
-            <div class="h-full bg-gradient-to-r from-violet-600 to-cyan-500 rounded-full transition-all duration-500" style="width: {{ storage_percent }}%;"></div>
-          </div>
-        </div>
-
-        <div class="flex items-center justify-between pt-2 border-t border-slate-100 text-[11px]">
-          <span class="text-slate-500">Renews in 18 days</span>
-          <a href="{% url 'payments:billing_hub' %}" class="font-bold text-violet-700 hover:text-violet-800 transition-colors flex items-center gap-0.5">
-            <span>Upgrade Plan</span>
-            <span class="material-symbols-outlined text-[13px]">arrow_outward</span>
-          </a>
-        </div>
-      </div>
-
-      <!-- Need Assistance Concierge Card -->
-      <div class="rounded-3xl bg-white/85 backdrop-blur-xl border border-white/90 p-4 shadow-[0_10px_30px_rgba(99,102,241,0.06)] flex items-center justify-between gap-3">
-        <div class="flex items-center gap-3">
-          <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-violet-500 to-cyan-500 text-white flex items-center justify-center shrink-0 shadow-xs">
-            <span class="material-symbols-outlined text-[16px]">support_agent</span>
-          </div>
-          <div>
-            <span class="block text-xs font-bold text-[#0f172a] leading-tight">Need assistance?</span>
-            <span class="block text-[11px] text-slate-500 leading-tight">Learnix Enterprise concierge</span>
-          </div>
-        </div>
-        <a href="mailto:shahbazbutt22ee@gmail.com?subject=Learnix%20Concierge%20Support" class="px-3.5 py-1.5 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold transition-all shadow-xs">
-          Chat
-        </a>
-      </div>
-
-    </div>
-
-    <!-- ====================================================================
-         RIGHT MAIN CONTENT AREA: Interactive Settings Card
-         ==================================================================== -->
-    <div class="lg:col-span-8 xl:col-span-9">
-      <form id="accountSettingsForm" method="post" action="{% url 'accounts:profile' %}" enctype="multipart/form-data" class="space-y-8">
-        {% csrf_token %}
-        <input type="hidden" name="remove_avatar" id="removeAvatarInput" value="false"/>
-
-        <!-- TAB CONTENT CONTAINER 1: GENERAL PROFILE -->
-        <div id="tabContent-profile" class="settings-tab-content block space-y-10 rounded-3xl bg-white/90 backdrop-blur-2xl border border-white/90 p-6 md:p-10 shadow-[0_20px_50px_-15px_rgba(99,102,241,0.08)]">
-          
-          <!-- SECTION 1: Profile Picture & Public Avatar -->
           <div class="space-y-6">
-            <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <div>
-                <h2 class="text-lg font-extrabold text-[#0f172a] tracking-tight">Profile Picture &amp; Public Avatar</h2>
-                <p class="text-xs text-slate-500 mt-0.5">This identity is visible to professors, research peers, and collaborative study pods.</p>
-              </div>
-              <button type="button" onclick="showPublicVisibilityModal()" class="text-xs font-bold text-violet-700 hover:text-violet-800 transition-colors">
-                Public Visibility
-              </button>
-            </div>
-
-            <!-- Avatar Preview & Actions Row -->
-            <div class="flex flex-col sm:flex-row items-center gap-6 p-4 rounded-2xl bg-slate-50/60 border border-slate-200/60">
-              <!-- Avatar Circle with Camera Overlay Badge -->
-              <div class="relative shrink-0 group cursor-pointer" onclick="document.getElementById('avatarFileInput').click()">
-                <div class="w-24 h-24 rounded-full overflow-hidden ring-4 ring-violet-500/20 shadow-md bg-gradient-to-tr from-violet-600 via-indigo-600 to-cyan-500 flex items-center justify-center text-white text-3xl font-extrabold">
-                  <img id="avatarPreviewImg" src="{% if profile.avatar %}{{ profile.avatar.url }}{% else %}https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=400&q=80{% endif %}" alt="{{ user.username }}" class="w-full h-full object-cover"/>
-                </div>
-                <div class="absolute bottom-0 right-0 w-7 h-7 rounded-full bg-white text-slate-700 border border-slate-200 shadow-sm flex items-center justify-center group-hover:bg-violet-50 group-hover:text-violet-700 transition-colors" title="Change Avatar">
-                  <span class="material-symbols-outlined text-[15px]">photo_camera</span>
-                </div>
+                <label for="firstNameInput" class="block text-xs font-bold text-slate-700 mb-2">First Name</label>
+                <input type="text" id="firstNameInput" name="first_name" value="{{ user.first_name }}" class="w-full px-4 py-3 rounded-2xl bg-white border border-slate-200 text-sm font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-violet-500/30 focus:border-violet-600 transition-all"/>
               </div>
 
-              <!-- Upload Buttons & Info -->
-              <div class="flex-1 text-center sm:text-left space-y-2">
-                <input type="file" id="avatarFileInput" name="avatar" accept="image/png, image/jpeg, image/webp" class="hidden" onchange="previewAvatar(event)"/>
-
-                <div class="flex flex-wrap items-center justify-center sm:justify-start gap-3">
-                  <button type="button" onclick="document.getElementById('avatarFileInput').click()" class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white hover:bg-slate-50 text-slate-800 text-xs font-bold border border-slate-200 shadow-xs transition-all hover:border-violet-300">
-                    <span class="material-symbols-outlined text-[16px] text-violet-600">upload</span>
-                    <span>Upload New Picture</span>
-                  </button>
-
-                  <button type="button" id="removeAvatarBtn" onclick="removeAvatarAction()" class="text-xs font-bold text-rose-500 hover:text-rose-600 transition-colors px-2 py-1">
-                    Remove Avatar
-                  </button>
-                </div>
-
-                <p class="text-[11px] text-slate-400 leading-relaxed">
-                  Supports PNG, JPG, or WEBP up to 5MB. Optimal dimensions 400×400px. Automatic AI facial centering applied.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <!-- SECTION 2: Personal Information -->
-          <div class="space-y-6">
-            <div class="flex items-center justify-between pb-3 border-b border-slate-100">
               <div>
-                <h2 class="text-lg font-extrabold text-[#0f172a] tracking-tight">Personal Information</h2>
-                <p class="text-xs text-slate-500 mt-0.5">Update your contact details and academic credentials.</p>
-              </div>
-              <span class="font-mono text-[11px] text-slate-400 font-semibold">EN-US · UTC-7</span>
-            </div>
-
-            <div class="space-y-4">
-              <!-- Row 1: First Name & Last Name + Suffix -->
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label class="block text-xs font-bold text-slate-700 mb-1.5" for="id_first_name">First Name</label>
-                  <input type="text" id="id_first_name" name="first_name" value="{{ user.first_name|default:display_first_name }}" placeholder="Sarah" class="w-full px-4 py-3 rounded-2xl bg-slate-50/70 border border-slate-200 text-sm font-semibold text-[#0f172a] shadow-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-violet-500/40 focus:border-violet-600 transition-all"/>
-                </div>
-                <div>
-                  <label class="block text-xs font-bold text-slate-700 mb-1.5" for="id_last_name">Last Name &amp; Suffix</label>
-                  <input type="text" id="id_last_name" name="last_name" value="{{ user.last_name|default:display_last_name }}{% if profile.academic_suffix %}, {{ profile.academic_suffix }}{% endif %}" placeholder="Lin, Ph.D." class="w-full px-4 py-3 rounded-2xl bg-slate-50/70 border border-slate-200 text-sm font-semibold text-[#0f172a] shadow-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-violet-500/40 focus:border-violet-600 transition-all"/>
-                </div>
-              </div>
-
-              <!-- Row 2: Email Address (Editable with uniqueness check) -->
-              <div>
-                <div class="flex items-center justify-between mb-1.5">
-                  <label class="text-xs font-bold text-slate-700" for="id_email">Email Address</label>
-                  <span class="text-[11px] text-slate-400">Primary authentication email</span>
-                </div>
-                <div class="relative flex items-center">
-                  <span class="absolute left-4 text-slate-400 font-mono text-sm">@</span>
-                  <input type="email" id="id_email" name="email" value="{{ user.email }}" required class="w-full pl-9 pr-36 py-3 rounded-2xl bg-slate-50/70 border border-slate-200 text-sm font-semibold text-[#0f172a] shadow-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-violet-500/40 focus:border-violet-600 transition-all"/>
-                  <div class="absolute right-3 flex items-center gap-2">
-                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold">
-                      <span class="material-symbols-outlined text-[12px]">check_circle</span>
-                      <span>Verified</span>
-                    </span>
-                    <span class="px-2.5 py-0.5 rounded-full bg-slate-200/80 text-slate-700 text-[10px] font-bold">Primary</span>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Row 3: Phone Number & Location/Timezone -->
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label class="block text-xs font-bold text-slate-700 mb-1.5" for="id_phone">Phone Number <span class="text-slate-400 font-normal">(Optional)</span></label>
-                  <div class="flex items-center gap-2">
-                    <!-- Country Flag Code Selector -->
-                    <div class="flex items-center gap-1 px-3 py-3 rounded-2xl bg-slate-50/70 border border-slate-200 text-xs font-bold text-slate-700 shrink-0">
-                      <span>🇺🇸</span>
-                      <span>+1</span>
-                    </div>
-                    <input type="tel" id="id_phone" name="phone_number" value="{{ profile.phone_number|default:'415-890-2194' }}" placeholder="415-890-2194" class="w-full px-4 py-3 rounded-2xl bg-slate-50/70 border border-slate-200 text-sm font-semibold text-[#0f172a] shadow-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-violet-500/40 focus:border-violet-600 transition-all"/>
-                  </div>
-                </div>
-
-                <div>
-                  <label class="block text-xs font-bold text-slate-700 mb-1.5" for="id_location">Location &amp; Timezone</label>
-                  <div class="relative flex items-center">
-                    <span class="material-symbols-outlined absolute left-3.5 text-slate-400 text-[18px]">location_on</span>
-                    <input type="text" id="id_location" name="location_timezone" value="{{ profile.location_timezone|default:'San Francisco, CA · Pacific Daylight (UTC-7)' }}" placeholder="San Francisco, CA · UTC-7" class="w-full pl-10 pr-4 py-3 rounded-2xl bg-slate-50/70 border border-slate-200 text-sm font-semibold text-[#0f172a] shadow-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-violet-500/40 focus:border-violet-600 transition-all"/>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Row 4: Headline / Academic Role -->
-              <div>
-                <label class="block text-xs font-bold text-slate-700 mb-1.5" for="id_headline">Headline / Academic Role</label>
-                <input type="text" id="id_headline" name="headline" value="{{ profile.headline|default:'Lead Machine Learning Researcher & Full-Stack Systems Architect' }}" placeholder="Lead Machine Learning Researcher & Full-Stack Systems Architect" class="w-full px-4 py-3 rounded-2xl bg-slate-50/70 border border-slate-200 text-sm font-semibold text-[#0f172a] shadow-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-violet-500/40 focus:border-violet-600 transition-all"/>
-              </div>
-
-              <!-- Row 5: Bio / Research Summary with Character Counter -->
-              <div>
-                <div class="flex items-center justify-between mb-1.5">
-                  <label class="text-xs font-bold text-slate-700" for="id_bio">Bio / Research Summary</label>
-                  <span class="font-mono text-[11px] text-slate-400">
-                    <span id="bioCharCounter">132</span> / 500 characters
-                  </span>
-                </div>
-                <textarea id="id_bio" name="bio" rows="3" maxlength="500" oninput="updateBioCounter(this)" class="w-full px-4 py-3 rounded-2xl bg-slate-50/70 border border-slate-200 text-sm font-semibold text-[#0f172a] shadow-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-violet-500/40 focus:border-violet-600 transition-all leading-relaxed">{{ profile.bio|default:"Full-Stack Developer passionate about distributed multi-agent systems, reactive LLM pipelines, and high-concurrency web services." }}</textarea>
-              </div>
-
-            </div>
-          </div>
-
-          <!-- SECTION 3: Connected Integrations & OAuth 2.0 -->
-          <div class="space-y-6">
-            <div class="flex items-center justify-between pb-3 border-b border-slate-100">
-              <div>
-                <h2 class="text-lg font-extrabold text-[#0f172a] tracking-tight">Connected Integrations &amp; OAuth 2.0</h2>
-                <p class="text-xs text-slate-500 mt-0.5">Synchronize your project assignments, code repositories, and federated Google sign-ins.</p>
-              </div>
-              <span class="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold">All Secured</span>
-            </div>
-
-            <!-- Two Column Integrations Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              
-              <!-- Google Workspace Integration Card -->
-              <div class="p-5 rounded-2xl bg-slate-50/70 border border-slate-200/80 shadow-xs flex flex-col justify-between gap-4">
-                <div class="flex items-center justify-between">
-                  <div class="flex items-center gap-3">
-                    <div class="w-9 h-9 rounded-xl bg-white border border-slate-200 flex items-center justify-center shadow-xs">
-                      <svg class="w-5 h-5" viewBox="0 0 24 24">
-                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
-                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
-                      </svg>
-                    </div>
-                    <div>
-                      <span class="block text-xs font-bold text-[#0f172a]">Google Workspace</span>
-                      <span class="block text-[11px] text-slate-500 font-mono">{{ profile.google_email|default:user.email }}</span>
-                    </div>
-                  </div>
-                  <span class="px-2 py-0.5 rounded-full bg-cyan-100 text-cyan-800 font-mono text-[10px] font-bold">OAuth 2.0</span>
-                </div>
-
-                <div class="flex items-center justify-between pt-2 border-t border-slate-200/60 text-xs">
-                  <span class="flex items-center gap-1.5 text-slate-600 text-[11px]">
-                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                    <span>Calendar &amp; SSO Synchronized</span>
-                  </span>
-                  <button type="button" onclick="disconnectIntegration('Google Workspace')" class="text-xs font-bold text-slate-600 hover:text-rose-600 transition-colors">
-                    Disconnect
-                  </button>
-              </div>
-            </div>
-          </div>
-
-        </div>
-
-        <!-- ====================================================================
-             TAB CONTENT CONTAINER 2: SECURITY & AUTH
-             ==================================================================== -->
-        <div id="tabContent-security" class="settings-tab-content hidden space-y-8 rounded-3xl bg-white/90 backdrop-blur-2xl border border-white/90 p-6 md:p-10 shadow-[0_20px_50px_-15px_rgba(99,102,241,0.08)]">
-          <div class="pb-3 border-b border-slate-100">
-            <h2 class="text-xl font-extrabold text-[#0f172a] tracking-tight">Security &amp; Authentication</h2>
-            <p class="text-xs text-slate-500 mt-0.5">Manage two-phase OTP verification, active browser sessions, and password security.</p>
-          </div>
-
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <!-- 2FA Status Card -->
-            <div class="p-6 rounded-2xl bg-emerald-50/60 border border-emerald-200/80 shadow-xs space-y-3">
-              <div class="flex items-center justify-between">
-                <span class="material-symbols-outlined text-emerald-600 text-[28px]">verified_user</span>
-                <span class="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold">Active &amp; Enforced</span>
-              </div>
-              <div>
-                <h3 class="text-sm font-bold text-slate-900">Two-Phase Email OTP (secrets module)</h3>
-                <p class="text-xs text-slate-600 mt-1">
-                  Cryptographically secure 6-digit one-time codes generated with 10-minute expiry and 5-attempt brute-force protection.
-                </p>
+                <label for="lastNameInput" class="block text-xs font-bold text-slate-700 mb-2">Last Name</label>
+                <input type="text" id="lastNameInput" name="last_name" value="{{ user.last_name }}" class="w-full px-4 py-3 rounded-2xl bg-white border border-slate-200 text-sm font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-violet-500/30 focus:border-violet-600 transition-all"/>
               </div>
             </div>
 
-            <!-- Password Card -->
-            <div class="p-6 rounded-2xl bg-slate-50 border border-slate-200 shadow-xs space-y-3">
-              <div class="flex items-center justify-between">
-                <span class="material-symbols-outlined text-violet-600 text-[28px]">password</span>
-                <span class="px-2.5 py-0.5 rounded-full bg-slate-200 text-slate-700 text-xs font-bold">PBKDF2 SHA-256</span>
-              </div>
-              <div>
-                <h3 class="text-sm font-bold text-slate-900">Password Encryption</h3>
-                <p class="text-xs text-slate-600 mt-1">
-                  Hashed with PBKDF2 algorithm, 720,000 iterations, and cryptographic per-user salt.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Active Sessions Table -->
-          <div class="space-y-3">
-            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500">Active Authorized Sessions</h3>
-            <div class="rounded-2xl border border-slate-200 overflow-hidden shadow-xs">
-              <table class="w-full text-xs text-left">
-                <thead class="bg-slate-100/80 text-slate-600 font-bold border-b border-slate-200">
-                  <tr>
-                    <th class="px-4 py-3">Device / Browser</th>
-                    <th class="px-4 py-3">Location / IP</th>
-                    <th class="px-4 py-3">Status</th>
-                    <th class="px-4 py-3 text-right">Action</th>
-                  </tr>
-                </thead>
-                <tbody class="divide-y divide-slate-100">
-                  <tr class="bg-white">
-                    <td class="px-4 py-3 font-semibold text-slate-900 flex items-center gap-2">
-                      <span class="material-symbols-outlined text-[16px] text-violet-600">laptop_mac</span>
-                      <span>Chrome on macOS (Current)</span>
-                    </td>
-                    <td class="px-4 py-3 text-slate-600 font-mono text-[11px]">San Francisco, CA · 127.0.0.1</td>
-                    <td class="px-4 py-3">
-                      <span class="inline-flex items-center gap-1 text-emerald-600 font-bold text-[11px]">
-                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Active Now
-                      </span>
-                    </td>
-                    <td class="px-4 py-3 text-right text-slate-400 font-semibold">—</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-
-        <!-- ====================================================================
-             TAB CONTENT CONTAINER 3: BILLING & TIERS
-             ==================================================================== -->
-        <div id="tabContent-billing" class="settings-tab-content hidden space-y-8 rounded-3xl bg-white/90 backdrop-blur-2xl border border-white/90 p-6 md:p-10 shadow-[0_20px_50px_-15px_rgba(99,102,241,0.08)]">
-          <div class="flex items-center justify-between pb-3 border-b border-slate-100">
             <div>
-              <h2 class="text-xl font-extrabold text-[#0f172a] tracking-tight">Billing &amp; Subscription Tiers</h2>
-              <p class="text-xs text-slate-500 mt-0.5">Manage your active Pro tier, payment methods, and download official invoices.</p>
+              <label for="headlineInput" class="block text-xs font-bold text-slate-700 mb-2">Headline</label>
+              <input type="text" id="headlineInput" name="headline" value="{{ profile.headline }}" placeholder="e.g. Distributed Systems Engineer & AI Enthusiast" class="w-full px-4 py-3 rounded-2xl bg-white border border-slate-200 text-sm font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-violet-500/30 focus:border-violet-600 transition-all"/>
             </div>
-            <a href="{% url 'payments:billing_hub' %}" class="px-4 py-2 rounded-full bg-gradient-to-r from-violet-600 to-cyan-500 text-white text-xs font-bold shadow-md hover:shadow-lg transition-all flex items-center gap-1.5">
-              <span>Open Billing Hub</span>
-              <span class="material-symbols-outlined text-[15px]">arrow_forward</span>
-            </a>
-          </div>
 
-          <div class="p-6 rounded-2xl bg-gradient-to-r from-violet-600 via-indigo-600 to-cyan-500 text-white shadow-lg flex flex-col md:flex-row items-center justify-between gap-6">
             <div>
-              <span class="px-3 py-1 rounded-full bg-white/20 text-white text-xs font-bold uppercase tracking-wider backdrop-blur-md">Active Plan</span>
-              <h3 class="text-2xl font-black mt-2">Learnix Pro Membership</h3>
-              <p class="text-xs text-white/80 mt-1 max-w-md">Unlimited access to all courses, interactive coding exercises, and verified certificates.</p>
+              <div class="flex items-center justify-between mb-2">
+                <label for="bioInput" class="block text-xs font-bold text-slate-700">Bio</label>
+                <span class="text-[11px] font-mono text-slate-400"><span id="bioCharCount">0</span> / 500</span>
+              </div>
+              <textarea id="bioInput" name="bio" rows="4" maxlength="500" placeholder="Briefly describe your engineering background, learning goals, or architecture interests..." class="w-full px-4 py-3 rounded-2xl bg-white border border-slate-200 text-sm font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-violet-500/30 focus:border-violet-600 transition-all leading-relaxed">{{ profile.bio }}</textarea>
             </div>
-            <div class="text-right">
-              <span class="text-3xl font-black">$49</span>
-              <span class="text-xs text-white/80">/ month</span>
-              <span class="block text-[11px] text-white/70 mt-1">Renews Oct 15, 2026</span>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-2">Email Address</label>
+              <div class="relative">
+                <input type="email" value="{{ user.email }}" readonly class="w-full px-4 py-3 rounded-2xl bg-slate-100/70 border border-slate-200/80 text-sm font-medium text-slate-500 cursor-not-allowed select-none"/>
+                <span class="material-symbols-outlined text-[18px] text-slate-400 absolute right-4 top-1/2 -translate-y-1/2">lock</span>
+              </div>
+              <p class="text-[11px] text-slate-400 mt-1.5">Primary email address used for sign in and notifications.</p>
+            </div>
+
+            <div>
+              <label for="phoneInput" class="block text-xs font-bold text-slate-700 mb-2">
+                Phone Number <span class="text-slate-400 font-normal text-xs">(Optional)</span>
+              </label>
+              <div class="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                <input type="text" name="country_code" value="{{ profile.country_code|default:'+1' }}" class="col-span-1 px-4 py-3 rounded-2xl bg-white border border-slate-200 text-sm font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-violet-500/30 focus:border-violet-600 transition-all text-center"/>
+                <input type="tel" id="phoneInput" name="phone_number" value="{{ profile.phone_number }}" placeholder="(555) 000-0000" class="col-span-2 sm:col-span-3 px-4 py-3 rounded-2xl bg-white border border-slate-200 text-sm font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-violet-500/30 focus:border-violet-600 transition-all"/>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              <div>
+                <label for="locationInput" class="block text-xs font-bold text-slate-700 mb-2">Location</label>
+                <input type="text" id="locationInput" name="location_timezone" value="{{ profile.location_timezone }}" placeholder="e.g. San Francisco, CA" class="w-full px-4 py-3 rounded-2xl bg-white border border-slate-200 text-sm font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-violet-500/30 focus:border-violet-600 transition-all"/>
+              </div>
+
+              <div>
+                <label for="timezoneSelect" class="block text-xs font-bold text-slate-700 mb-2">Timezone</label>
+                <select id="timezoneSelect" name="timezone" class="w-full px-4 py-3 rounded-2xl bg-white border border-slate-200 text-sm font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-violet-500/30 focus:border-violet-600 transition-all">
+                  <option value="America/Los_Angeles" selected>Pacific Time (US &amp; Canada) UTC-8 / UTC-7</option>
+                  <option value="America/Denver">Mountain Time (US &amp; Canada) UTC-7 / UTC-6</option>
+                  <option value="America/Chicago">Central Time (US &amp; Canada) UTC-6 / UTC-5</option>
+                  <option value="America/New_York">Eastern Time (US &amp; Canada) UTC-5 / UTC-4</option>
+                  <option value="Europe/London">Greenwich Mean Time (UTC+00:00)</option>
+                  <option value="Europe/Berlin">Central European Time (UTC+01:00)</option>
+                  <option value="Asia/Kolkata">India Standard Time (UTC+05:30)</option>
+                  <option value="Asia/Singapore">Singapore Time (UTC+08:00)</option>
+                  <option value="Asia/Tokyo">Japan Standard Time (UTC+09:00)</option>
+                  <option value="Australia/Sydney">Australian Eastern Time (UTC+10:00)</option>
+                </select>
+              </div>
             </div>
           </div>
-        </div>
+        </section>
 
-        <!-- ====================================================================
-             TAB CONTENT CONTAINER 4: NOTIFICATIONS
-             ==================================================================== -->
-        <div id="tabContent-notifications" class="settings-tab-content hidden space-y-6 rounded-3xl bg-white/90 backdrop-blur-2xl border border-white/90 p-6 md:p-10 shadow-[0_20px_50px_-15px_rgba(99,102,241,0.08)]">
-          <div class="pb-3 border-b border-slate-100">
-            <h2 class="text-xl font-extrabold text-[#0f172a] tracking-tight">Notification Preferences</h2>
-            <p class="text-xs text-slate-500 mt-0.5">Control how and when Learnix delivers automated transactional and learning alerts.</p>
+        <section id="tab-security" class="settings-tab-pane hidden rounded-3xl bg-white/90 backdrop-blur-xl border border-slate-200/80 p-6 sm:p-8 md:p-10 shadow-[0_10px_30px_rgba(99,102,241,0.05)]">
+          <div class="border-b border-slate-100 pb-6 mb-8">
+            <h2 class="text-xl font-bold text-[#0f172a]">Security</h2>
+            <p class="text-xs text-slate-500 mt-1">Manage password credentials and authentication protection.</p>
+          </div>
+
+          <div class="space-y-8">
+            <div>
+              <h3 class="text-sm font-bold text-slate-900 mb-1">Change Password</h3>
+              <p class="text-xs text-slate-500 mb-5">Ensure your account uses a strong password with at least 8 characters.</p>
+
+              <div class="space-y-4 max-w-lg">
+                <div>
+                  <label for="currentPasswordInput" class="block text-xs font-bold text-slate-700 mb-2">Current Password</label>
+                  <input type="password" id="currentPasswordInput" name="current_password" placeholder="••••••••" autocomplete="current-password" class="w-full px-4 py-3 rounded-2xl bg-white border border-slate-200 text-sm font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-violet-500/30 focus:border-violet-600 transition-all"/>
+                </div>
+
+                <div>
+                  <label for="newPasswordInput" class="block text-xs font-bold text-slate-700 mb-2">New Password</label>
+                  <input type="password" id="newPasswordInput" name="new_password" placeholder="At least 8 characters" autocomplete="new-password" class="w-full px-4 py-3 rounded-2xl bg-white border border-slate-200 text-sm font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-violet-500/30 focus:border-violet-600 transition-all"/>
+                </div>
+
+                <div>
+                  <label for="confirmPasswordInput" class="block text-xs font-bold text-slate-700 mb-2">Confirm New Password</label>
+                  <input type="password" id="confirmPasswordInput" name="confirm_password" placeholder="Re-enter new password" autocomplete="new-password" class="w-full px-4 py-3 rounded-2xl bg-white border border-slate-200 text-sm font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-violet-500/30 focus:border-violet-600 transition-all"/>
+                </div>
+              </div>
+            </div>
+
+            <div class="pt-8 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h3 class="text-sm font-bold text-slate-900">Two-Factor Authentication</h3>
+                <p class="text-xs text-slate-500 mt-0.5">Require an extra verification check when signing into your account.</p>
+              </div>
+
+              <div class="flex items-center gap-3">
+                <label class="relative inline-flex items-center cursor-pointer">
+                  <input type="checkbox" name="two_factor_enabled" id="twoFactorToggle" class="sr-only peer" {% if profile.two_factor_enabled %}checked{% endif %} onchange="updateTwoFactorState(this)"/>
+                  <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-violet-600"></div>
+                </label>
+                <span id="twoFactorStatusLabel" class="text-xs font-bold {% if profile.two_factor_enabled %}text-violet-700{% else %}text-slate-400{% endif %}">
+                  {% if profile.two_factor_enabled %}ON{% else %}OFF{% endif %}
+                </span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="tab-notifications" class="settings-tab-pane hidden rounded-3xl bg-white/90 backdrop-blur-xl border border-slate-200/80 p-6 sm:p-8 md:p-10 shadow-[0_10px_30px_rgba(99,102,241,0.05)]">
+          <div class="border-b border-slate-100 pb-6 mb-8">
+            <h2 class="text-xl font-bold text-[#0f172a]">Notifications</h2>
+            <p class="text-xs text-slate-500 mt-1">Configure automated updates, curriculum alerts, and billing receipts.</p>
+          </div>
+
+          <div class="divide-y divide-slate-100 space-y-0">
+            <div class="py-5 flex items-center justify-between gap-4">
+              <div>
+                <h3 class="text-sm font-bold text-slate-900">Course updates</h3>
+                <p class="text-xs text-slate-500 mt-0.5">Notifications regarding syllabus updates and announcements in your enrolled tracks.</p>
+              </div>
+              <label class="relative inline-flex items-center cursor-pointer shrink-0">
+                <input type="checkbox" name="notif_course_updates" class="sr-only peer" checked/>
+                <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-violet-600"></div>
+              </label>
+            </div>
+
+            <div class="py-5 flex items-center justify-between gap-4">
+              <div>
+                <h3 class="text-sm font-bold text-slate-900">Lesson reminders</h3>
+                <p class="text-xs text-slate-500 mt-0.5">Weekly learning goals and reminders to continue where you left off.</p>
+              </div>
+              <label class="relative inline-flex items-center cursor-pointer shrink-0">
+                <input type="checkbox" name="notif_lesson_reminders" class="sr-only peer" checked/>
+                <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-violet-600"></div>
+              </label>
+            </div>
+
+            <div class="py-5 flex items-center justify-between gap-4">
+              <div>
+                <h3 class="text-sm font-bold text-slate-900">Payment receipts</h3>
+                <p class="text-xs text-slate-500 mt-0.5">Official invoices and payment transaction confirmations delivered to your inbox.</p>
+              </div>
+              <label class="relative inline-flex items-center cursor-pointer shrink-0">
+                <input type="checkbox" name="notif_payment_receipts" class="sr-only peer" checked/>
+                <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-violet-600"></div>
+              </label>
+            </div>
+
+            <div class="py-5 flex items-center justify-between gap-4">
+              <div>
+                <h3 class="text-sm font-bold text-slate-900">New course announcements</h3>
+                <p class="text-xs text-slate-500 mt-0.5">Early invitations and syllabus releases for newly launched engineering curricula.</p>
+              </div>
+              <label class="relative inline-flex items-center cursor-pointer shrink-0">
+                <input type="checkbox" name="notif_new_courses" class="sr-only peer"/>
+                <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-violet-600"></div>
+              </label>
+            </div>
+          </div>
+        </section>
+
+        <section id="tab-billing" class="settings-tab-pane hidden rounded-3xl bg-white/90 backdrop-blur-xl border border-slate-200/80 p-6 sm:p-8 md:p-10 shadow-[0_10px_30px_rgba(99,102,241,0.05)]">
+          <div class="border-b border-slate-100 pb-6 mb-8">
+            <h2 class="text-xl font-bold text-[#0f172a]">Billing</h2>
+            <p class="text-xs text-slate-500 mt-1">Review your recent purchases and download invoices for your enrolled courses.</p>
           </div>
 
           <div class="space-y-4">
-            <div class="flex items-center justify-between p-4 rounded-2xl bg-slate-50 border border-slate-200">
-              <div>
-                <span class="block text-xs font-bold text-slate-900">Curriculum &amp; Module Announcements</span>
-                <span class="block text-[11px] text-slate-500">Receive notifications when your instructor releases new code tasks or syllabus updates.</span>
+            <h3 class="text-sm font-bold text-slate-900">Payment History</h3>
+
+            {% if payments %}
+            <div class="rounded-2xl border border-slate-200 overflow-hidden bg-white">
+              <div class="divide-y divide-slate-100">
+                {% for payment in payments %}
+                <div class="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div class="space-y-1">
+                    <h4 class="text-sm font-bold text-[#0f172a]">{{ payment.course.title }}</h4>
+                    <div class="flex flex-wrap items-center gap-2 text-xs text-slate-400 font-mono">
+                      <span>#{{ payment.order_number }}</span>
+                      <span>·</span>
+                      <span>{{ payment.created_at|date:"M d, Y" }}</span>
+                      <span>·</span>
+                      <span class="font-bold text-slate-700">${{ payment.amount }} {{ payment.currency }}</span>
+                    </div>
+                  </div>
+
+                  <div class="flex items-center gap-3">
+                    <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold {% if payment.status == 'COMPLETED' %}bg-emerald-50 text-emerald-700 border border-emerald-200/60{% else %}bg-slate-100 text-slate-600{% endif %}">
+                      {{ payment.get_status_display }}
+                    </span>
+
+                    {% if payment.invoice %}
+                    <a href="{% url 'payments:download_invoice' payment.invoice.invoice_number %}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-50 hover:bg-violet-50 text-slate-700 hover:text-violet-700 text-xs font-semibold border border-slate-200 transition-colors">
+                      <span class="material-symbols-outlined text-[16px]">download</span>
+                      <span>Invoice</span>
+                    </a>
+                    {% else %}
+                    <a href="{% url 'payments:download_receipt' payment.order_number %}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-50 hover:bg-violet-50 text-slate-700 hover:text-violet-700 text-xs font-semibold border border-slate-200 transition-colors">
+                      <span class="material-symbols-outlined text-[16px]">receipt</span>
+                      <span>Receipt</span>
+                    </a>
+                    {% endif %}
+                  </div>
+                </div>
+                {% endfor %}
               </div>
-              <input type="checkbox" checked class="w-4 h-4 text-violet-600 rounded focus:ring-violet-500"/>
+            </div>
+            {% else %}
+            <div class="rounded-2xl border border-slate-200/80 p-8 text-center bg-slate-50/50">
+              <div class="w-12 h-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-3">
+                <span class="material-symbols-outlined text-[24px]">receipt_long</span>
+              </div>
+              <h4 class="text-sm font-bold text-slate-900 mb-1">No payment history yet</h4>
+              <p class="text-xs text-slate-500 max-w-sm mx-auto mb-4">When you enroll in a masterclass, your transaction records and official invoices will appear here.</p>
+              <a href="{% url 'courses:course_list' %}" class="inline-flex items-center gap-1.5 text-xs font-bold text-violet-700 hover:text-violet-800">
+                Explore Catalog
+                <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+              </a>
+            </div>
+            {% endif %}
+          </div>
+        </section>
+
+        <section id="tab-connected" class="settings-tab-pane hidden rounded-3xl bg-white/90 backdrop-blur-xl border border-slate-200/80 p-6 sm:p-8 md:p-10 shadow-[0_10px_30px_rgba(99,102,241,0.05)]">
+          <div class="border-b border-slate-100 pb-6 mb-8">
+            <h2 class="text-xl font-bold text-[#0f172a]">Connected Accounts</h2>
+            <p class="text-xs text-slate-500 mt-1">Manage external provider connections for sign in and code repositories.</p>
+          </div>
+
+          <div class="divide-y divide-slate-100 space-y-0">
+            <div class="py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div class="flex items-center gap-3.5">
+                <div class="w-10 h-10 rounded-2xl bg-slate-100 flex items-center justify-center shrink-0">
+                  <svg class="w-5 h-5" viewBox="0 0 24 24">
+                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+                  </svg>
+                </div>
+                <div>
+                  <h3 class="text-sm font-bold text-slate-900">Google</h3>
+                  <p class="text-xs text-slate-500">
+                    {% if profile.google_email %}
+                    Connected as <span class="font-medium text-slate-800">{{ profile.google_email }}</span>
+                    {% else %}
+                    Not connected
+                    {% endif %}
+                  </p>
+                </div>
+              </div>
+
+              <div>
+                {% if profile.google_email %}
+                <button type="submit" name="disconnect_google" value="1" class="px-4 py-2 rounded-full text-xs font-bold text-rose-600 hover:bg-rose-50 border border-rose-200 transition-colors">
+                  Disconnect
+                </button>
+                {% else %}
+                <a href="{% url 'accounts:google_login' %}" class="px-5 py-2 rounded-full text-xs font-bold text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 transition-colors inline-block">
+                  Connect
+                </a>
+                {% endif %}
+              </div>
             </div>
 
-            <div class="flex items-center justify-between p-4 rounded-2xl bg-slate-50 border border-slate-200">
-              <div>
-                <span class="block text-xs font-bold text-slate-900">Weekly Learning Progress Digest</span>
-                <span class="block text-[11px] text-slate-500">A personalized weekly breakdown of lesson hours, streak status, and completion benchmarks.</span>
+            <div class="py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div class="flex items-center gap-3.5">
+                <div class="w-10 h-10 rounded-2xl bg-slate-900 text-white flex items-center justify-center shrink-0">
+                  <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                    <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/>
+                  </svg>
+                </div>
+                <div>
+                  <h3 class="text-sm font-bold text-slate-900">GitHub</h3>
+                  <p class="text-xs text-slate-500">
+                    {% if profile.github_username %}
+                    Connected as <span class="font-medium text-slate-800">@{{ profile.github_username }}</span>
+                    {% else %}
+                    Not connected
+                    {% endif %}
+                  </p>
+                </div>
               </div>
-              <input type="checkbox" checked class="w-4 h-4 text-violet-600 rounded focus:ring-violet-500"/>
-            </div>
 
-            <div class="flex items-center justify-between p-4 rounded-2xl bg-slate-50 border border-slate-200">
               <div>
-                <span class="block text-xs font-bold text-slate-900">Billing &amp; Payment Receipts</span>
-                <span class="block text-[11px] text-slate-500">Instant PDF invoice notifications delivered from shahbazbutt22ee@gmail.com.</span>
+                {% if profile.github_username %}
+                <button type="submit" name="disconnect_github" value="1" class="px-4 py-2 rounded-full text-xs font-bold text-rose-600 hover:bg-rose-50 border border-rose-200 transition-colors">
+                  Disconnect
+                </button>
+                {% else %}
+                <div class="flex items-center gap-2">
+                  <input type="text" name="github_username" placeholder="GitHub username" class="px-3 py-1.5 text-xs rounded-xl bg-white border border-slate-200 text-slate-900 focus:outline-none focus:ring-1 focus:ring-violet-500"/>
+                  <button type="submit" class="px-4 py-1.5 rounded-full text-xs font-bold text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 transition-colors">
+                    Connect
+                  </button>
+                </div>
+                {% endif %}
               </div>
-              <input type="checkbox" checked disabled class="w-4 h-4 text-violet-600 rounded cursor-not-allowed"/>
             </div>
           </div>
-        </div>
+        </section>
 
-        <!-- ====================================================================
-             TAB CONTENT CONTAINER 5: INTEGRATIONS
-             ==================================================================== -->
-        <div id="tabContent-integrations" class="settings-tab-content hidden space-y-6 rounded-3xl bg-white/90 backdrop-blur-2xl border border-white/90 p-6 md:p-10 shadow-[0_20px_50px_-15px_rgba(99,102,241,0.08)]">
-          <div class="pb-3 border-b border-slate-100">
-            <h2 class="text-xl font-extrabold text-[#0f172a] tracking-tight">Connected Integrations</h2>
-            <p class="text-xs text-slate-500 mt-0.5">Manage federated identity, single sign-on tokens, and classroom Git synchronizations.</p>
-          </div>
-
-          <div class="p-6 rounded-2xl bg-slate-50 border border-slate-200 space-y-4">
-            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-600">Personal Access Tokens</h3>
-            <p class="text-xs text-slate-500 leading-relaxed">
-              Use tokens to authenticate with the Learnix CLI and programmatically stream module progress and terminal exercise results.
-            </p>
-            <div class="flex items-center gap-3">
-              <input type="password" readonly value="lrn_pat_99847291048201948201" class="font-mono text-xs px-4 py-2.5 rounded-xl bg-white border border-slate-300 w-full max-w-md text-slate-700"/>
-              <button type="button" onclick="navigator.clipboard.writeText('lrn_pat_99847291048201948201'); alert('Token copied!');" class="px-4 py-2.5 rounded-xl bg-white border border-slate-200 hover:bg-slate-100 text-xs font-bold text-slate-800 shadow-xs">
-                Copy
-              </button>
-            </div>
-          </div>
-        </div>
-
-      </form>
+      </main>
     </div>
 
-  </div>
+    <div class="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 w-full max-w-xl px-4 pointer-events-none">
+      <div class="pointer-events-auto rounded-full bg-white/95 backdrop-blur-2xl border border-slate-200/90 shadow-[0_20px_40px_-10px_rgba(99,102,241,0.18)] px-5 py-2.5 flex items-center justify-between gap-4">
+        <div class="flex items-center gap-2 pl-2">
+          <span id="saveStatusDot" class="w-2 h-2 rounded-full bg-emerald-500 transition-colors"></span>
+          <span id="saveStatusText" class="text-xs font-bold text-slate-700">All changes saved</span>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button type="button" onclick="handleDiscard()" class="px-4 py-2 text-xs font-bold text-slate-600 hover:text-slate-900 transition-colors">
+            Discard
+          </button>
+          <button type="submit" class="px-6 py-2 rounded-full bg-gradient-to-r from-violet-600 via-purple-600 to-cyan-500 hover:opacity-95 text-white font-bold text-xs shadow-md shadow-violet-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-[16px]">check</span>
+            <span>Save Changes</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </form>
+
 </div>
+{% endblock %}
 
-<!-- ========================================================================
-     FLOATING STICKY ACTION BAR (Matches design screenshot pill)
-     ======================================================================== -->
-<div id="floatingSaveBar" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 w-11/12 max-w-2xl bg-white/95 backdrop-blur-2xl border border-white/90 rounded-full px-6 py-3 shadow-[0_20px_50px_-10px_rgba(99,102,241,0.25)] flex items-center justify-between gap-4 transition-all duration-300">
-  <div class="flex items-center gap-2 text-xs font-semibold text-slate-700">
-    <span id="saveStatusDot" class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-    <span id="saveStatusText">All changes up to date</span>
-  </div>
-  
-  <div class="flex items-center gap-3">
-    <button type="button" onclick="discardChanges()" class="text-xs font-bold text-slate-500 hover:text-slate-800 transition-colors px-3 py-1.5">
-      Discard
-    </button>
-    <button type="submit" form="accountSettingsForm" id="saveChangesBtn" class="inline-flex items-center gap-2 px-6 py-2 rounded-full bg-gradient-to-r from-violet-600 via-indigo-600 to-cyan-500 text-white text-xs font-bold shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-95 transition-all">
-      <span class="material-symbols-outlined text-[16px]">check</span>
-      <span>Save Changes</span>
-    </button>
-  </div>
-</div>
-
-<style>
-  /* Settings Tab active state styling */
-  .settings-tab-btn.active {
-    background-color: rgba(238, 242, 255, 0.9);
-    border: 1px solid rgba(199, 210, 254, 0.8);
-    box-shadow: 0 4px 12px -2px rgba(99, 102, 241, 0.12);
-  }
-</style>
-
+{% block extra_js %}
 <script>
-  // Real-time character counter for Bio textarea
-  function updateBioCounter(textarea) {
-    const counter = document.getElementById('bioCharCounter');
-    if (counter) {
-      counter.textContent = textarea.value.length;
-    }
-    markUnsaved();
-  }
-
-  // Interactive Tab Switcher
-  function switchSettingsTab(tabId) {
-    // Hide all tab contents
-    document.querySelectorAll('.settings-tab-content').forEach(el => {
-      el.classList.add('hidden');
-      el.classList.remove('block');
+  function switchSettingsTab(tabName) {
+    var panes = document.querySelectorAll('.settings-tab-pane');
+    panes.forEach(function(pane) {
+      pane.classList.add('hidden');
     });
 
-    // Remove active style from all tab buttons
-    document.querySelectorAll('.settings-tab-btn').forEach(btn => {
-      btn.classList.remove('active');
+    var targetPane = document.getElementById('tab-' + tabName);
+    if (targetPane) {
+      targetPane.classList.remove('hidden');
+    }
+
+    var navButtons = document.querySelectorAll('.settings-nav-btn');
+    navButtons.forEach(function(btn) {
+      btn.classList.remove('active', 'text-violet-700', 'bg-violet-50', 'font-bold');
+      btn.classList.add('text-slate-600', 'font-semibold');
     });
 
-    // Show target content
-    const targetContent = document.getElementById(`tabContent-${tabId}`);
-    if (targetContent) {
-      targetContent.classList.remove('hidden');
-      targetContent.classList.add('block');
+    var activeBtn = document.getElementById('navBtn-' + tabName);
+    if (activeBtn) {
+      activeBtn.classList.add('active', 'text-violet-700', 'bg-violet-50', 'font-bold');
+      activeBtn.classList.remove('text-slate-600', 'font-semibold');
     }
 
-    // Mark target button active
-    const targetBtn = document.getElementById(`tabBtn-${tabId}`);
-    if (targetBtn) {
-      targetBtn.classList.add('active');
-    }
-
-    // Update floating status bar message
-    const tabNames = {
-      'profile': 'General Profile',
-      'security': 'Security & Auth',
-      'billing': 'Billing & Tiers',
-      'notifications': 'Notifications',
-      'integrations': 'Integrations'
-    };
-    const statusText = document.getElementById('saveStatusText');
-    if (statusText) {
-      statusText.textContent = `Viewing ${tabNames[tabId] || 'Settings'}`;
+    if (history.replaceState) {
+      history.replaceState(null, null, '#' + tabName);
     }
   }
 
-  // Avatar instant preview
   function previewAvatar(event) {
-    const file = event.target.files[0];
+    var file = event.target.files[0];
     if (file) {
-      const reader = new FileReader();
+      var reader = new FileReader();
       reader.onload = function(e) {
-        const preview = document.getElementById('avatarPreviewImg');
-        if (preview) {
-          preview.src = e.target.result;
+        var preview = document.getElementById('avatarPreviewImg');
+        var initials = document.getElementById('avatarInitials');
+        if (!preview) {
+          preview = document.createElement('img');
+          preview.id = 'avatarPreviewImg';
+          preview.className = 'w-full h-full object-cover';
+          initials.parentNode.appendChild(preview);
         }
+        preview.src = e.target.result;
+        preview.classList.remove('hidden');
+        if (initials) initials.classList.add('hidden');
+        document.getElementById('removeAvatarInput').value = 'false';
+        markUnsaved();
       };
       reader.readAsDataURL(file);
-      document.getElementById('removeAvatarInput').value = 'false';
-      markUnsaved();
     }
   }
 
-  // Remove Avatar Action
   function removeAvatarAction() {
-    const preview = document.getElementById('avatarPreviewImg');
+    var preview = document.getElementById('avatarPreviewImg');
+    var initials = document.getElementById('avatarInitials');
     if (preview) {
-      preview.src = "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=400&q=80";
+      preview.classList.add('hidden');
+      preview.src = '';
+    }
+    if (initials) {
+      initials.classList.remove('hidden');
     }
     document.getElementById('avatarFileInput').value = '';
     document.getElementById('removeAvatarInput').value = 'true';
     markUnsaved();
   }
 
-  // Unsaved changes state tracker
+  function updateTwoFactorState(checkbox) {
+    var label = document.getElementById('twoFactorStatusLabel');
+    if (checkbox.checked) {
+      label.textContent = 'ON';
+      label.classList.remove('text-slate-400');
+      label.classList.add('text-violet-700');
+    } else {
+      label.textContent = 'OFF';
+      label.classList.remove('text-violet-700');
+      label.classList.add('text-slate-400');
+    }
+    markUnsaved();
+  }
+
   function markUnsaved() {
-    const dot = document.getElementById('saveStatusDot');
-    const text = document.getElementById('saveStatusText');
+    var dot = document.getElementById('saveStatusDot');
+    var text = document.getElementById('saveStatusText');
     if (dot) {
-      dot.className = 'w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse';
+      dot.classList.remove('bg-emerald-500');
+      dot.classList.add('bg-amber-500');
     }
     if (text) {
-      text.textContent = 'Unsaved edits in General Profile';
+      text.textContent = 'Unsaved changes';
     }
   }
 
-  function discardChanges() {
-    if (confirm('Discard any unsaved changes and reload your saved profile?')) {
-      window.location.reload();
+  function markSaved() {
+    var dot = document.getElementById('saveStatusDot');
+    var text = document.getElementById('saveStatusText');
+    if (dot) {
+      dot.classList.remove('bg-amber-500');
+      dot.classList.add('bg-emerald-500');
+    }
+    if (text) {
+      text.textContent = 'All changes saved';
     }
   }
 
-  function disconnectIntegration(name) {
-    if (confirm(`Disconnect ${name} from your Learnix account?`)) {
-      alert(`${name} disconnected.`);
+  function handleDiscard() {
+    document.getElementById('settingsForm').reset();
+    var bioInput = document.getElementById('bioInput');
+    if (bioInput) {
+      document.getElementById('bioCharCount').textContent = bioInput.value.length;
     }
+    markSaved();
   }
 
-  // Track changes on form inputs
-  document.addEventListener('DOMContentLoaded', () => {
-    const form = document.getElementById('accountSettingsForm');
+  document.addEventListener('DOMContentLoaded', function() {
+    var bioInput = document.getElementById('bioInput');
+    var bioCount = document.getElementById('bioCharCount');
+    if (bioInput && bioCount) {
+      bioCount.textContent = bioInput.value.length;
+      bioInput.addEventListener('input', function() {
+        bioCount.textContent = this.value.length;
+        markUnsaved();
+      });
+    }
+
+    var form = document.getElementById('settingsForm');
     if (form) {
-      form.querySelectorAll('input, textarea, select').forEach(input => {
-        input.addEventListener('input', () => markUnsaved());
-        input.addEventListener('change', () => markUnsaved());
+      form.querySelectorAll('input, select, textarea').forEach(function(el) {
+        el.addEventListener('input', markUnsaved);
+        el.addEventListener('change', markUnsaved);
       });
+    }
 
-      // Handle AJAX submission
-      form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const saveBtn = document.getElementById('saveChangesBtn');
-        const originalText = saveBtn.innerHTML;
-        saveBtn.disabled = true;
-        saveBtn.innerHTML = `
-          <span class="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-          <span>Saving...</span>
-        `;
-
-        try {
-          const formData = new FormData(form);
-          const response = await fetch(form.action, {
-            method: 'POST',
-            body: formData,
-            headers: {
-              'X-Requested-With': 'XMLHttpRequest'
-            }
-          });
-
-          const data = await response.json();
-          if (data.success) {
-            const dot = document.getElementById('saveStatusDot');
-            const text = document.getElementById('saveStatusText');
-            if (dot) dot.className = 'w-2.5 h-2.5 rounded-full bg-emerald-500';
-            if (text) text.textContent = 'Changes saved';
-
-            saveBtn.innerHTML = `
-              <span class="material-symbols-outlined text-[16px]">check_circle</span>
-              <span>Saved!</span>
-            `;
-            setTimeout(() => {
-              saveBtn.disabled = false;
-              saveBtn.innerHTML = originalText;
-            }, 1800);
-          } else {
-            alert(data.message || 'Error updating settings.');
-            saveBtn.disabled = false;
-            saveBtn.innerHTML = originalText;
-          }
-        } catch (err) {
-          // If network or parsing error, fallback to traditional submit
-          form.submit();
-        }
-      });
+    var hash = window.location.hash.replace('#', '');
+    if (['profile', 'security', 'notifications', 'billing', 'connected'].indexOf(hash) !== -1) {
+      switchSettingsTab(hash);
     }
   });
 </script>

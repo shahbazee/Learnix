@@ -1,771 +1,469 @@
 {% extends 'base.html' %}
+{% load static %}
 {% load course_extras %}
 
-{% block title %}{{ course.title }} — Masterclass Syllabus | {{ SITE_NAME }}{% endblock %}
+{% block title %}{{ course.title }} — {{ SITE_NAME }}{% endblock %}
 
 {% block content %}
-<!-- Glowing Canvas Ambient Flares -->
-<div class="fixed inset-0 pointer-events-none overflow-hidden z-0">
-  <div class="absolute -top-28 left-1/4 w-[550px] h-[550px] rounded-full bg-purple-300/30 blur-[140px]"></div>
-  <div class="absolute top-1/3 -right-20 w-[480px] h-[480px] rounded-full bg-cyan-300/30 blur-[130px]"></div>
-  <div class="absolute bottom-10 left-1/3 w-[520px] h-[520px] rounded-full bg-pink-200/35 blur-[150px]"></div>
-</div>
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-28">
 
-<main class="relative z-10 w-full pt-6 pb-20">
-  <div class="max-w-[1440px] w-full mx-auto px-4 sm:px-6 lg:px-8">
-    
-    <!-- Breadcrumbs Navigation -->
-    <nav class="flex items-center gap-2 font-mono text-xs text-slate-500 mb-6" aria-label="Breadcrumb">
-      <a href="{% url 'courses:course_list' %}" class="hover:text-purple-600 transition-colors flex items-center gap-1">
-        <span class="material-symbols-outlined text-[16px]">school</span>
-        Catalog
-      </a>
-      <span>/</span>
-      {% if course.category %}
-      <a href="{% url 'courses:course_list' %}?category={{ course.category.slug }}" class="hover:text-purple-600 transition-colors">
-        {{ course.category.name }}
-      </a>
-      <span>/</span>
-      {% endif %}
-      <span class="text-slate-800 font-semibold truncate max-w-xs md:max-w-md">{{ course.title }}</span>
-    </nav>
+  <nav class="flex items-center gap-2 text-xs font-medium text-slate-400 mb-6" aria-label="Breadcrumb">
+    <a href="{% url 'courses:course_list' %}" class="hover:text-slate-700 transition-colors">Catalog</a>
+    <span class="text-slate-300">/</span>
+    {% if course.category %}
+    <a href="{% url 'courses:course_list' %}?category={{ course.category.slug }}" class="hover:text-slate-700 transition-colors">
+      {{ course.category.name }}
+    </a>
+    <span class="text-slate-300">/</span>
+    {% endif %}
+    <span class="text-slate-700 font-semibold truncate max-w-xs sm:max-w-md">{{ course.title }}</span>
+  </nav>
 
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-start">
-      
-      <!-- Main Left Column (8 Columns) -->
-      <div class="lg:col-span-8 flex flex-col gap-8">
-        
-        <!-- Hero Title & Instructor Area -->
-        <div class="flex flex-col gap-4">
-          <div class="flex flex-wrap items-center gap-2">
-            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-100 text-purple-700 text-xs uppercase font-extrabold tracking-wider border border-purple-200 shadow-sm">
-              <span class="w-2 h-2 rounded-full bg-purple-600 animate-pulse"></span>
-              Architect Masterclass
-            </span>
-            <span class="px-3 py-1 rounded-full bg-rose-50 text-rose-600 text-xs uppercase font-extrabold tracking-wider border border-rose-200 shadow-sm">
-              {{ cohort_name|default:"Cohort Alpha" }}
-            </span>
-            <span class="px-3 py-1 rounded-full bg-white text-slate-600 text-xs font-mono border border-slate-200 shadow-sm">
-              Level: {{ course.get_level_display }}
-            </span>
-            <span class="px-3 py-1 rounded-full bg-white text-slate-600 text-xs font-mono border border-slate-200 shadow-sm">
-              {{ course.created_at|date:"M Y" }} Release
-            </span>
-          </div>
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-start">
 
-          <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#0F172A] tracking-tight leading-tight">
-            {{ course.title }}
-          </h1>
+    <div class="lg:col-span-8 space-y-8">
 
-          <p class="text-base sm:text-lg text-slate-600 max-w-3xl leading-relaxed">
-            {{ course.short_description }}
-          </p>
-
-          <!-- Instructor Micro Card -->
-          <div class="flex flex-wrap items-center justify-between gap-4 p-4 rounded-2xl bg-white/90 backdrop-blur-xl border border-slate-200/80 shadow-[0_8px_24px_-4px_rgba(15,23,42,0.06)]">
-            <div class="flex items-center gap-3.5">
-              <div class="relative">
-                {% if course.instructor.profile.avatar %}
-                  <img src="{{ course.instructor.profile.avatar.url }}" alt="{{ course.instructor.get_full_name }}" class="w-14 h-14 rounded-full object-cover ring-2 ring-purple-100 shadow-md"/>
-                {% else %}
-                  <div class="w-14 h-14 rounded-full bg-gradient-to-tr from-purple-600 via-indigo-600 to-cyan-500 text-white flex items-center justify-center font-bold text-lg ring-2 ring-purple-100 shadow-md">
-                    {{ course.instructor.first_name|default:course.instructor.username|slice:":1"|upper }}{{ course.instructor.last_name|slice:":1"|upper }}
-                  </div>
-                {% endif %}
-                <span class="absolute -bottom-1 -right-1 bg-cyan-500 text-white rounded-full p-0.5 shadow-sm flex items-center justify-center ring-2 ring-white">
-                  <span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">verified</span>
-                </span>
-              </div>
-              <div class="flex flex-col">
-                <div class="flex items-center gap-2">
-                  <span class="text-base sm:text-lg font-bold text-slate-900 leading-none">
-                    {{ course.instructor.get_full_name|default:course.instructor.username }}
-                  </span>
-                  <span class="text-[11px] font-mono px-2 py-0.5 rounded-full bg-purple-50 text-purple-700 font-semibold border border-purple-200/70">
-                    Instructor
-                  </span>
-                </div>
-                <span class="text-xs sm:text-sm text-slate-500 mt-1">
-                  {{ course.instructor.profile.headline|default:"Staff AI Architect & Distributed Systems Engineer" }}
-                </span>
-              </div>
-            </div>
-
-            <div class="flex items-center gap-4 text-slate-500 text-xs font-mono">
-              <div class="flex items-center gap-1.5 text-slate-800">
-                <span class="material-symbols-outlined text-amber-500 text-[18px]" style="font-variation-settings: 'FILL' 1;">star</span>
-                <span class="font-bold text-sm text-slate-900">{{ course.rating }}</span>
-                <span class="text-slate-500 font-normal">({{ course.reviews_count }} ratings)</span>
-              </div>
-              <div class="hidden sm:flex items-center gap-1.5 text-slate-600">
-                <span class="material-symbols-outlined text-[16px] text-purple-500">translate</span>
-                <span>English · CC</span>
-              </div>
-            </div>
-          </div>
+      <div class="space-y-4">
+        <div class="flex flex-wrap items-center gap-2">
+          {% if course.category %}
+          <span class="px-3 py-1 rounded-full bg-violet-100 text-violet-700 text-xs font-bold">
+            {{ course.category.name }}
+          </span>
+          {% endif %}
+          <span class="px-3 py-1 rounded-full bg-slate-100 text-slate-700 text-xs font-semibold">
+            {{ course.get_level_display }}
+          </span>
         </div>
 
-        <!-- Cinematic 4K Interactive Stream Video Player -->
-        <div class="relative w-full aspect-video rounded-3xl overflow-hidden bg-slate-900 ring-1 ring-slate-900/10 shadow-[0_24px_50px_-12px_rgba(124,58,237,0.18)] flex flex-col justify-between group">
-          <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('{{ course.get_thumbnail_url }}');"></div>
-          
-          <div class="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-transparent to-slate-900/40"></div>
+        <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#0f172a] tracking-tight leading-tight">
+          {{ course.title }}
+        </h1>
 
-          <!-- Top Stream Bar Controls -->
-          <div class="relative z-10 p-4 flex items-center justify-between">
-            <div class="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/90 backdrop-blur-md text-slate-900 text-xs font-mono shadow-md font-semibold border border-white/80">
-              <span class="w-2 h-2 rounded-full bg-cyan-500 animate-pulse"></span>
-              Cinematic 4K Interactive Stream
+        <p class="text-base sm:text-lg text-slate-600 leading-relaxed">
+          {{ course.short_description }}
+        </p>
+
+        <div class="flex flex-wrap items-center gap-4 pt-2 text-xs text-slate-500">
+          <div class="flex items-center gap-2">
+            <div class="w-7 h-7 rounded-full bg-gradient-to-tr from-violet-600 via-purple-600 to-cyan-500 text-white font-bold text-xs flex items-center justify-center shrink-0 overflow-hidden ring-1 ring-slate-200">
+              {% if course.instructor.profile.avatar %}
+              <img src="{{ course.instructor.profile.avatar.url }}" alt="{{ course.instructor.get_full_name|default:course.instructor.username }}" class="w-full h-full object-cover"/>
+              {% else %}
+              {{ course.instructor.first_name|default:course.instructor.username|slice:":1"|upper }}
+              {% endif %}
             </div>
-            <div class="flex items-center gap-2">
-              <button type="button" onclick="toggleBookmark(this)" class="w-9 h-9 rounded-full bg-white/90 hover:bg-white text-slate-800 backdrop-blur-md flex items-center justify-center transition-all shadow-md group/btn" title="Bookmark Track">
-                <span class="material-symbols-outlined text-[18px] group-hover/btn:text-purple-600">bookmark</span>
-              </button>
-              <button type="button" onclick="shareCourse()" class="w-9 h-9 rounded-full bg-white/90 hover:bg-white text-slate-800 backdrop-blur-md flex items-center justify-center transition-all shadow-md group/btn" title="Share Masterclass">
-                <span class="material-symbols-outlined text-[18px] group-hover/btn:text-cyan-600">share</span>
-              </button>
-            </div>
+            <span class="font-bold text-slate-900">{{ course.instructor.get_full_name|default:course.instructor.username }}</span>
+            <span class="text-slate-400">Instructor</span>
           </div>
 
-          <!-- Center Glowing Play Button -->
-          <div class="relative z-10 flex items-center justify-center my-auto">
-            {% if first_preview_lesson %}
-              <button type="button" onclick="openLessonPreview('{{ course.slug }}', {{ first_preview_lesson.id }})" class="group/play relative w-20 h-20 rounded-full flex items-center justify-center bg-white/30 hover:bg-white/50 backdrop-blur-xl transition-all duration-300 hover:scale-110 shadow-[0_0_40px_rgba(255,255,255,0.7)]" title="Launch Preview Stream">
-                <div class="absolute inset-0 rounded-full bg-gradient-to-tr from-purple-500 via-pink-500 to-cyan-400 opacity-80 blur-[4px] group-hover/play:opacity-100 transition-opacity"></div>
-                <div class="relative w-[74px] h-[74px] rounded-full bg-white flex items-center justify-center shadow-lg">
-                  <span class="material-symbols-outlined text-purple-600 text-[38px] ml-1" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+          {% if course.rating %}
+          <div class="flex items-center gap-1 font-bold text-slate-900">
+            <span class="text-amber-500 text-[14px]">★</span>
+            <span>{{ course.rating }}</span>
+            {% if course.reviews_count %}
+            <span class="text-slate-400 font-normal">({{ course.reviews_count }})</span>
+            {% endif %}
+          </div>
+          {% endif %}
+
+          {% if course.updated_at %}
+          <div class="flex items-center gap-1">
+            <span class="material-symbols-outlined text-[16px] text-slate-400">calendar_today</span>
+            <span>Updated {{ course.updated_at|date:"F Y" }}</span>
+          </div>
+          {% endif %}
+
+          <div class="flex items-center gap-1">
+            <span class="material-symbols-outlined text-[16px] text-slate-400">language</span>
+            <span>English</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="relative w-full aspect-video rounded-3xl overflow-hidden bg-[#0c0d1c] shadow-lg flex items-center justify-center group">
+        <img src="{{ course.get_thumbnail_url }}" alt="{{ course.title }}" class="absolute inset-0 w-full h-full object-cover opacity-60" onerror="this.onerror=null; this.src='{% static 'images/courses/default-course.svg' %}';" loading="lazy"/>
+        <div class="absolute inset-0 bg-gradient-to-t from-[#0c0d1c] via-[#0c0d1c]/40 to-transparent"></div>
+
+        <div class="absolute top-4 left-4 z-10">
+          <span class="px-3 py-1 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-white text-xs font-semibold">
+            Preview this course
+          </span>
+        </div>
+
+        {% if first_preview_lesson %}
+        <button type="button" onclick="openLessonPreview('{{ course.slug }}', {{ first_preview_lesson.id }})" class="relative z-10 flex flex-col items-center gap-3 group/btn cursor-pointer">
+          <div class="w-16 h-16 rounded-full bg-white/90 group-hover/btn:bg-white text-violet-700 flex items-center justify-center shadow-xl group-hover/btn:scale-110 transition-all">
+            <span class="material-symbols-outlined text-[32px] ml-1">play_arrow</span>
+          </div>
+          <span class="text-white text-xs font-bold tracking-wide drop-shadow-sm">Watch Free Preview</span>
+        </button>
+        {% endif %}
+      </div>
+
+      <div class="space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <h2 class="text-xl sm:text-2xl font-bold text-[#0f172a]">Course Curriculum</h2>
+          <span class="px-3 py-1 rounded-full bg-slate-100 text-slate-600 text-xs font-mono font-medium self-start sm:self-auto">
+            {{ modules|length }} Module{{ modules|length|pluralize }} · {{ total_lessons_count }} Lesson{{ total_lessons_count|pluralize }} · {{ course.total_duration_seconds|format_duration }} Total
+          </span>
+        </div>
+
+        <div class="space-y-3" id="curriculumAccordion">
+          {% for module in modules %}
+          <div class="rounded-2xl border border-slate-200/80 bg-white/90 backdrop-blur-xl overflow-hidden transition-all shadow-xs">
+            <button type="button" class="curriculum-toggle w-full p-4 sm:p-5 flex items-center justify-between text-left hover:bg-slate-50 transition-colors" aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}" aria-controls="module-panel-{{ module.id }}">
+              <div class="flex items-center gap-3">
+                <span class="material-symbols-outlined text-[20px] text-slate-400 transition-transform duration-200 {% if forloop.first %}rotate-180{% endif %}">
+                  expand_more
+                </span>
+                <div>
+                  <h3 class="text-sm sm:text-base font-bold text-slate-900 leading-snug">
+                    Module {{ module.order_number }}: {{ module.title }}
+                  </h3>
+                  <p class="text-xs text-slate-500 font-mono mt-0.5">
+                    {{ module.lessons.count }} Lesson{{ module.lessons.count|pluralize }} · {{ module.total_duration_seconds|format_duration }}
+                  </p>
                 </div>
-              </button>
-            {% else %}
-              <div class="relative w-16 h-16 rounded-full bg-white/40 backdrop-blur-md flex items-center justify-center">
-                <span class="material-symbols-outlined text-white text-[32px]">lock</span>
               </div>
+              <span class="module-status text-xs font-mono text-slate-400 hidden sm:inline">
+                {% if forloop.first %}Expanded{% else %}Collapsed{% endif %}
+              </span>
+            </button>
+
+            <div id="module-panel-{{ module.id }}" class="{% if not forloop.first %}hidden{% endif %} divide-y divide-slate-100 border-t border-slate-100 bg-white">
+              {% for lesson in module.lessons.all %}
+              <div class="p-4 flex items-center justify-between gap-3 hover:bg-slate-50/50 transition-colors">
+                <div class="flex items-center gap-3 min-w-0">
+                  {% if lesson.is_preview or is_enrolled %}
+                  <span class="material-symbols-outlined text-[20px] text-violet-600 shrink-0">play_circle</span>
+                  {% else %}
+                  <span class="material-symbols-outlined text-[20px] text-slate-300 shrink-0">lock</span>
+                  {% endif %}
+                  <span class="text-xs sm:text-sm font-medium text-slate-800 truncate">
+                    {{ module.order_number }}.{{ lesson.order_number }} {{ lesson.title }}
+                  </span>
+                </div>
+
+                <div class="flex items-center gap-3 shrink-0">
+                  {% if lesson.is_preview %}
+                  <button type="button" onclick="openLessonPreview('{{ course.slug }}', {{ lesson.id }})" class="px-2.5 py-0.5 rounded-full bg-violet-100 hover:bg-violet-200 text-violet-700 text-xs font-bold transition-colors">
+                    Preview
+                  </button>
+                  {% elif is_enrolled %}
+                  <a href="{% url 'courses:lesson_view' course.slug lesson.id %}" class="px-2.5 py-0.5 rounded-full bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold transition-colors">
+                    Play
+                  </a>
+                  {% endif %}
+                  <span class="text-xs font-mono text-slate-400">
+                    {{ lesson.duration_seconds|format_duration }}
+                  </span>
+                </div>
+              </div>
+              {% empty %}
+              <div class="p-4 text-center text-xs text-slate-400 font-mono">
+                No lessons added to this module yet.
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+          {% empty %}
+          <div class="rounded-2xl border border-slate-200/80 bg-white p-8 text-center text-xs text-slate-500">
+            Curriculum is being prepared by the instructor.
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="space-y-4">
+        <h2 class="text-xl sm:text-2xl font-bold text-[#0f172a]">Instructor</h2>
+        <div class="rounded-3xl border border-slate-200/80 bg-white/90 backdrop-blur-xl p-6 sm:p-8 shadow-xs flex flex-col sm:flex-row items-start gap-5">
+          <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-violet-600 via-purple-600 to-cyan-500 text-white font-extrabold text-xl flex items-center justify-center shrink-0 shadow-sm overflow-hidden ring-1 ring-slate-200">
+            {% if course.instructor.profile.avatar %}
+            <img src="{{ course.instructor.profile.avatar.url }}" alt="{{ course.instructor.get_full_name|default:course.instructor.username }}" class="w-full h-full object-cover"/>
+            {% else %}
+            {{ course.instructor.first_name|default:course.instructor.username|slice:":1"|upper }}{{ course.instructor.last_name|slice:":1"|upper }}
             {% endif %}
           </div>
 
-          <!-- Bottom Stream Controls Bar -->
-          <div class="relative z-10 p-3 sm:p-4 flex flex-col gap-2 bg-white/90 backdrop-blur-xl border-t border-white/60">
-            <!-- Scrubber Bar -->
-            <div class="relative w-full h-1.5 bg-slate-200 rounded-full overflow-hidden cursor-pointer group/scrub" onclick="handleScrub(event)">
-              <div id="streamScrubProgress" class="h-full bg-gradient-to-r from-purple-600 via-pink-500 to-cyan-500 rounded-full" style="width: 28%;"></div>
+          <div class="space-y-2">
+            <div>
+              <h3 class="text-base sm:text-lg font-bold text-slate-900">
+                {{ course.instructor.get_full_name|default:course.instructor.username }}
+              </h3>
+              {% if course.instructor.profile.headline %}
+              <p class="text-xs font-medium text-slate-500 mt-0.5">
+                {{ course.instructor.profile.headline }}
+              </p>
+              {% endif %}
             </div>
-            
-            <div class="flex items-center justify-between pt-1">
-              <div class="flex items-center gap-3">
-                <button type="button" onclick="{% if first_preview_lesson %}openLessonPreview('{{ course.slug }}', {{ first_preview_lesson.id }}){% endif %}" class="text-slate-800 hover:text-purple-600 transition-colors flex items-center">
-                  <span class="material-symbols-outlined text-[22px]" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
-                </button>
-                <button type="button" class="text-slate-600 hover:text-slate-900 transition-colors flex items-center">
-                  <span class="material-symbols-outlined text-[20px]">volume_up</span>
-                </button>
-                <span class="font-mono text-xs text-slate-600 font-medium">04:12 / {{ first_preview_lesson.formatted_duration|default:"18:45" }}</span>
-              </div>
-              <div class="flex items-center gap-3 font-mono text-xs text-slate-600">
-                <span class="px-2.5 py-0.5 rounded-full bg-cyan-100 text-cyan-800 font-bold border border-cyan-200">4K UHD</span>
-                <button type="button" class="hover:text-slate-900 transition-colors flex items-center" title="Stream settings">
-                  <span class="material-symbols-outlined text-[18px]">settings</span>
-                </button>
-                <button type="button" onclick="{% if first_preview_lesson %}openLessonPreview('{{ course.slug }}', {{ first_preview_lesson.id }}){% endif %}" class="hover:text-slate-900 transition-colors flex items-center" title="Fullscreen">
-                  <span class="material-symbols-outlined text-[18px]">fullscreen</span>
-                </button>
-              </div>
-            </div>
+
+            {% if course.instructor.profile.bio %}
+            <p class="text-xs sm:text-sm text-slate-600 leading-relaxed pt-1">
+              {{ course.instructor.profile.bio }}
+            </p>
+            {% endif %}
           </div>
         </div>
+      </div>
 
-        <!-- Stats Bar (4 Metric Capsules) -->
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <div class="p-4 rounded-2xl bg-white/80 backdrop-blur-md border border-slate-200/80 shadow-sm flex flex-col gap-1">
-            <span class="font-mono text-xs text-slate-500">Total Duration</span>
-            <span class="text-xl sm:text-2xl font-bold text-slate-900">{{ course.total_duration_hours_display }}</span>
+      <div class="space-y-4">
+        <h2 class="text-xl sm:text-2xl font-bold text-[#0f172a]">Course Description</h2>
+        <div class="rounded-3xl border border-slate-200/80 bg-white/90 backdrop-blur-xl p-6 sm:p-8 shadow-xs">
+          <div id="descriptionContent" class="text-xs sm:text-sm text-slate-600 leading-relaxed space-y-4 max-h-48 overflow-hidden transition-all duration-300">
+            {{ course.full_description|default:course.short_description|linebreaks }}
           </div>
-          <div class="p-4 rounded-2xl bg-white/80 backdrop-blur-md border border-slate-200/80 shadow-sm flex flex-col gap-1">
-            <span class="font-mono text-xs text-slate-500">Curriculum Modules</span>
-            <span class="text-xl sm:text-2xl font-bold text-slate-900">{{ modules.count }} Units</span>
-          </div>
-          <div class="p-4 rounded-2xl bg-white/80 backdrop-blur-md border border-slate-200/80 shadow-sm flex flex-col gap-1">
-            <span class="font-mono text-xs text-slate-500">Lessons & Labs</span>
-            <span class="text-xl sm:text-2xl font-bold text-slate-900">{{ total_lessons_count }} Lessons</span>
-          </div>
-          <div class="p-4 rounded-2xl bg-white/80 backdrop-blur-md border border-slate-200/80 shadow-sm flex flex-col gap-1">
-            <span class="font-mono text-xs text-slate-500">Accreditation</span>
-            <span class="text-xl sm:text-2xl font-bold text-cyan-600 flex items-center gap-1">
-              Verified
-              <span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">verified</span>
-            </span>
-          </div>
-        </div>
-
-        <!-- Interactive Syllabus Section -->
-        <div class="flex flex-col gap-4">
-          <div class="flex items-center justify-between">
-            <div class="flex flex-col">
-              <h2 class="text-xl sm:text-2xl font-bold text-slate-900">Interactive Syllabus</h2>
-              <span class="text-xs sm:text-sm text-slate-500">Expand units to stream architectural blueprints, ASGI notebooks, and benchmark source files.</span>
-            </div>
-            <button type="button" id="toggle-all-btn" class="font-mono text-xs text-purple-600 hover:text-purple-800 font-semibold transition-colors shrink-0">
-              Collapse All
-            </button>
-          </div>
-
-          <!-- Accordion List of Modules -->
-          <div class="flex flex-col gap-3" id="syllabus-container">
-            {% for module in modules %}
-              <div class="rounded-2xl bg-white/90 backdrop-blur-xl border border-purple-100/80 shadow-[0_4px_20px_-4px_rgba(15,23,42,0.05)] overflow-hidden transition-all duration-300">
-                <button type="button" class="w-full p-4 sm:p-5 flex items-center justify-between text-left hover:bg-purple-50/40 transition-colors syllabus-header" data-target="mod-{{ module.id }}">
-                  <div class="flex items-center gap-3">
-                    <div class="w-8 h-8 rounded-full {% if forloop.first %}bg-purple-100 text-purple-700 border-purple-200{% else %}bg-slate-100 text-slate-600 border-slate-200{% endif %} flex items-center justify-center font-mono text-xs font-bold border">
-                      {{ forloop.counter|two_digits }}
-                    </div>
-                    <div class="flex flex-col">
-                      <span class="text-base sm:text-lg font-bold text-slate-900">{{ module.title }}</span>
-                      <span class="font-mono text-xs text-slate-500">
-                        {{ module.lessons.count }} lessons · {{ module.total_duration_seconds|format_duration }} total
-                      </span>
-                    </div>
-                  </div>
-                  <div class="flex items-center gap-3">
-                    {% with preview_total=module|preview_count %}
-                      {% if preview_total > 0 %}
-                        <span class="hidden sm:inline-flex px-3 py-1 rounded-full bg-cyan-100 text-cyan-700 font-mono text-xs font-bold border border-cyan-200/80 shadow-sm">
-                          {{ preview_total }} Preview{{ preview_total|pluralize }} Free
-                        </span>
-                      {% else %}
-                        <span class="hidden sm:inline-flex px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-500 border border-slate-200 font-mono text-xs items-center gap-1">
-                          <span class="material-symbols-outlined text-[13px]">lock</span>
-                          Enrolled Only
-                        </span>
-                      {% endif %}
-                    {% endwith %}
-                    <span class="material-symbols-outlined text-slate-400 transition-transform duration-300 {% if not forloop.first %}rotate-0{% else %}rotate-180{% endif %}" id="icon-mod-{{ module.id }}">expand_more</span>
-                  </div>
-                </button>
-
-                <!-- Lessons inside Module -->
-                <div class="{% if not forloop.first %}hidden{% endif %} px-4 pb-4 sm:px-5 sm:pb-5 flex flex-col gap-2 border-t border-purple-50 pt-3" id="mod-{{ module.id }}">
-                  {% for lesson in module.lessons.all %}
-                    {% if lesson.is_preview or is_enrolled %}
-                      <!-- Previewable / Unlocked Lesson -->
-                      <div class="flex items-center justify-between p-3.5 rounded-xl bg-slate-50/80 hover:bg-purple-50/60 border border-slate-100 hover:border-purple-200 transition-all">
-                        <div class="flex items-center gap-3">
-                          <span class="material-symbols-outlined text-cyan-600 text-[24px]" style="font-variation-settings: 'FILL' 1;">play_circle</span>
-                          <div class="flex flex-col">
-                            <span class="text-sm font-semibold text-slate-900">{{ forloop.parentloop.counter }}.{{ forloop.counter }} {{ lesson.title }}</span>
-                            <span class="font-mono text-xs text-slate-500">
-                              {{ lesson.content|default:"Streamable architectural lesson with interactive notebook and source files."|truncatechars:65 }}
-                            </span>
-                          </div>
-                        </div>
-                        <div class="flex items-center gap-3">
-                          <span class="font-mono text-xs text-slate-500 font-medium">{{ lesson.formatted_duration }}</span>
-                          {% if is_enrolled %}
-                            <a href="{% url 'courses:lesson_view' course.slug lesson.id %}" class="px-3 py-1.5 rounded-full bg-violet-600 hover:bg-violet-700 text-white font-mono text-xs font-bold flex items-center gap-1 shadow-sm transition-all hover:scale-105">
-                              <span class="material-symbols-outlined text-[14px]">play_arrow</span>
-                              Study Lesson
-                            </a>
-                          {% else %}
-                            <button type="button" onclick="openLessonPreview('{{ course.slug }}', {{ lesson.id }})" class="px-3 py-1.5 rounded-full bg-cyan-500 hover:bg-cyan-600 text-white font-mono text-xs font-bold flex items-center gap-1 shadow-sm transition-all hover:scale-105">
-                              <span class="material-symbols-outlined text-[14px]">visibility</span>
-                              Stream Free
-                            </button>
-                          {% endif %}
-                        </div>
-                      </div>
-                    {% else %}
-                      <!-- Locked Lesson -->
-                      <div class="flex items-center justify-between p-3.5 rounded-xl bg-slate-50/50 border border-slate-100 text-slate-500">
-                        <div class="flex items-center gap-3">
-                          <span class="material-symbols-outlined text-slate-400 text-[20px]">lock</span>
-                          <div class="flex flex-col">
-                            <span class="text-sm font-medium text-slate-700">{{ forloop.parentloop.counter }}.{{ forloop.counter }} {{ lesson.title }}</span>
-                            <span class="font-mono text-xs text-slate-400">Complete curriculum access unlocks with masterclass enrollment</span>
-                          </div>
-                        </div>
-                        <div class="flex items-center gap-3">
-                          <span class="font-mono text-xs text-slate-400">{{ lesson.formatted_duration }}</span>
-                          <span class="px-2.5 py-0.5 rounded-full bg-slate-200/70 text-slate-600 font-mono text-xs font-medium">Enrolled Only</span>
-                        </div>
-                      </div>
-                    {% endif %}
-                  {% empty %}
-                    <div class="p-4 text-center text-xs font-mono text-slate-400">
-                      Lessons for this module are being finalized by the instructor.
-                    </div>
-                  {% endfor %}
-                </div>
-              </div>
-            {% empty %}
-              <div class="p-8 text-center text-slate-500 bg-white/80 rounded-2xl border border-slate-200">
-                Curriculum modules will be released shortly.
-              </div>
-            {% endfor %}
-          </div>
-        </div>
-
-        <!-- Interactive Sandbox Card -->
-        <div class="p-6 rounded-3xl bg-gradient-to-r from-cyan-50 via-white to-purple-50 border border-cyan-200/80 shadow-[0_8px_24px_-4px_rgba(6,182,212,0.12)] flex flex-col sm:flex-row items-center gap-4 justify-between">
-          <div class="flex items-center gap-4">
-            <div class="w-12 h-12 rounded-2xl bg-cyan-500/15 text-cyan-600 flex items-center justify-center shrink-0 border border-cyan-200">
-              <span class="material-symbols-outlined text-[28px]">terminal</span>
-            </div>
-            <div class="flex flex-col">
-              <span class="text-base sm:text-lg font-bold text-slate-900">Interactive Sandbox Included</span>
-              <span class="text-xs sm:text-sm text-slate-600">Preconfigured dev container with Python 3.14, Redis, and LangGraph instances.</span>
-            </div>
-          </div>
-          <button type="button" onclick="openSandboxModal()" class="px-5 py-2.5 rounded-full bg-cyan-600 hover:bg-cyan-700 text-white text-xs font-semibold shadow-md transition-all shrink-0 hover:scale-105 flex items-center gap-1.5">
-            <span class="material-symbols-outlined text-[16px]">play_circle</span>
-            Launch Sandbox Preview
+          <button type="button" id="toggleDescriptionBtn" onclick="toggleDescription()" class="mt-4 text-xs font-bold text-violet-700 hover:text-violet-900 transition-colors">
+            Show more
           </button>
         </div>
-
       </div>
 
-      <!-- Sticky Purchase Panel (Right Column - 4 Columns) -->
-      <div class="lg:col-span-4 sticky top-28 flex flex-col gap-4">
-        <div class="relative rounded-[28px] p-6 sm:p-7 bg-white/85 backdrop-blur-2xl border border-white/90 shadow-[0_20px_50px_rgba(124,58,237,0.12)] flex flex-col gap-6 overflow-hidden">
-          
-          <!-- Liquid Glow Accents -->
-          <div class="absolute -top-20 -right-20 w-44 h-44 rounded-full bg-purple-400/20 blur-3xl pointer-events-none"></div>
-          <div class="absolute -bottom-20 -left-20 w-44 h-44 rounded-full bg-pink-400/20 blur-3xl pointer-events-none"></div>
+    </div>
 
-          <!-- Header with Discount Badge -->
-          <div class="relative z-10 flex flex-col gap-2">
-            <div class="flex items-center justify-between">
-              <span class="px-3.5 py-1 rounded-full bg-gradient-to-r from-pink-500 to-purple-600 text-white text-[11px] font-extrabold tracking-wider uppercase shadow-sm">
-                50% OFF · COHORT ALPHA
-              </span>
-              <span class="font-mono text-xs text-cyan-700 font-bold flex items-center gap-1.5">
-                <span class="w-2 h-2 rounded-full bg-cyan-500 animate-ping"></span>
-                Seats remaining: {{ seats_remaining|default:"14" }}
-              </span>
-            </div>
+    <aside class="lg:col-span-4 sticky top-28 hidden lg:block">
+      <div class="rounded-3xl bg-white/95 backdrop-blur-xl border border-slate-200/80 shadow-[0_16px_40px_rgba(99,102,241,0.08)] p-6 space-y-6">
 
-            <!-- Price Section -->
-            <div class="flex items-baseline gap-3 mt-2">
-              <span class="text-4xl sm:text-5xl font-extrabold text-[#0F172A] tracking-tight">
-                {% if course.is_free %}Free{% else %}${{ course.price }}{% endif %}
-              </span>
-              {% if not course.is_free %}
-                <span class="text-lg text-slate-400 line-through font-semibold">{{ course.price|original_price }}</span>
-                <span class="font-mono text-xs text-slate-500 font-medium">USD / lifetime</span>
-              {% else %}
-                <span class="font-mono text-xs text-slate-500 font-medium">Full Access</span>
-              {% endif %}
-            </div>
-            <span class="text-xs text-slate-500">One-time tuition payment. No hidden subscriptions or seat taxes.</span>
+        <div class="relative w-full h-44 rounded-2xl bg-[#0e1026] overflow-hidden flex items-center justify-center">
+          <img src="{{ course.get_thumbnail_url }}" alt="{{ course.title }}" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='{% static 'images/courses/default-course.svg' %}';" loading="lazy"/>
+          <span class="absolute bottom-3 right-3 px-2 py-0.5 rounded bg-black/60 text-white text-[10px] font-mono">
+            Course Access
+          </span>
+        </div>
+
+        <div>
+          {% if course.is_free %}
+          <div class="text-4xl font-extrabold text-slate-900">Free</div>
+          <p class="text-xs text-slate-500 mt-1">Free lifetime access</p>
+          {% else %}
+          <div class="flex items-baseline gap-2">
+            <span class="text-4xl font-extrabold text-slate-900">${{ course.price|floatformat:"-2" }}</span>
+            <span class="text-xs font-mono text-slate-400 font-bold">USD</span>
           </div>
+          <p class="text-xs text-slate-500 mt-1">One-time payment · Full lifetime access</p>
+          {% endif %}
+        </div>
 
-          <!-- Feature Checklist -->
-          <div class="relative z-10 flex flex-col gap-3">
-            <div class="flex items-start gap-3">
-              <div class="mt-0.5 w-5 h-5 rounded-full bg-cyan-50 border border-cyan-200 text-[#06B6D4] flex items-center justify-center shrink-0 shadow-sm">
-                <span class="material-symbols-outlined text-[14px] font-bold" style="font-variation-settings: 'FILL' 1;">check</span>
-              </div>
-              <span class="text-xs sm:text-sm text-slate-700 font-medium">Full lifetime access &amp; complete GitHub repository</span>
-            </div>
-            <div class="flex items-start gap-3">
-              <div class="mt-0.5 w-5 h-5 rounded-full bg-cyan-50 border border-cyan-200 text-[#06B6D4] flex items-center justify-center shrink-0 shadow-sm">
-                <span class="material-symbols-outlined text-[14px] font-bold" style="font-variation-settings: 'FILL' 1;">check</span>
-              </div>
-              <span class="text-xs sm:text-sm text-slate-700 font-medium">Stripe secure instant 1-click checkout</span>
-            </div>
-            <div class="flex items-start gap-3">
-              <div class="mt-0.5 w-5 h-5 rounded-full bg-cyan-50 border border-cyan-200 text-[#06B6D4] flex items-center justify-center shrink-0 shadow-sm">
-                <span class="material-symbols-outlined text-[14px] font-bold" style="font-variation-settings: 'FILL' 1;">check</span>
-              </div>
-              <span class="text-xs sm:text-sm text-slate-700 font-medium">Private 1-on-1 Discord channel with {{ course.instructor.first_name|default:"the instructor" }}</span>
-            </div>
-            <div class="flex items-start gap-3">
-              <div class="mt-0.5 w-5 h-5 rounded-full bg-cyan-50 border border-cyan-200 text-[#06B6D4] flex items-center justify-center shrink-0 shadow-sm">
-                <span class="material-symbols-outlined text-[14px] font-bold" style="font-variation-settings: 'FILL' 1;">check</span>
-              </div>
-              <span class="text-xs sm:text-sm text-slate-700 font-medium">Cryptographically signed Certificate of Completion</span>
-            </div>
-            <div class="flex items-start gap-3">
-              <div class="mt-0.5 w-5 h-5 rounded-full bg-cyan-50 border border-cyan-200 text-[#06B6D4] flex items-center justify-center shrink-0 shadow-sm">
-                <span class="material-symbols-outlined text-[14px] font-bold" style="font-variation-settings: 'FILL' 1;">check</span>
-              </div>
-              <span class="text-xs sm:text-sm text-slate-700 font-medium">30-Day unconditional money-back guarantee</span>
-            </div>
-          </div>
-
-          <!-- Primary CTA Action -->
-          <div class="relative z-10 flex flex-col gap-2">
-            {% if is_enrolled %}
-              {% if first_preview_lesson %}
-                <a href="{% url 'courses:lesson_view' course.slug first_preview_lesson.id %}" class="relative w-full p-[1px] rounded-full overflow-hidden shadow-[0_12px_28px_-4px_rgba(124,58,237,0.4)] hover:shadow-[0_16px_36px_-4px_rgba(124,58,237,0.55)] transition-all transform hover:-translate-y-0.5 group">
-                  <span class="absolute inset-0 bg-gradient-to-r from-purple-600 via-pink-600 to-cyan-500"></span>
-                  <span class="relative w-full py-3.5 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 flex items-center justify-center gap-2 text-white text-sm font-bold transition-all">
-                    <span>View Course</span>
-                    <span class="material-symbols-outlined text-[18px] transition-transform group-hover:translate-x-1">play_arrow</span>
-                  </span>
-                </a>
-              {% else %}
-                <a href="{% url 'courses:dashboard' %}" class="relative w-full p-[1px] rounded-full overflow-hidden shadow-[0_12px_28px_-4px_rgba(124,58,237,0.4)] hover:shadow-[0_16px_36px_-4px_rgba(124,58,237,0.55)] transition-all transform hover:-translate-y-0.5 group">
-                  <span class="absolute inset-0 bg-gradient-to-r from-purple-600 via-pink-600 to-cyan-500"></span>
-                  <span class="relative w-full py-3.5 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 flex items-center justify-center gap-2 text-white text-sm font-bold transition-all">
-                    <span>View Course</span>
-                    <span class="material-symbols-outlined text-[18px] transition-transform group-hover:translate-x-1">arrow_forward</span>
-                  </span>
-                </a>
-              {% endif %}
-            {% elif user.is_authenticated %}
-              {% if course.is_free %}
-                <!-- Free Course: Direct Instant Enrollment -->
-                <form method="post" action="{% url 'courses:enroll' course.slug %}" class="w-full">
-                  {% csrf_token %}
-                  <button type="submit" class="relative w-full p-[1px] rounded-full overflow-hidden shadow-[0_12px_28px_-4px_rgba(124,58,237,0.4)] hover:shadow-[0_16px_36px_-4px_rgba(124,58,237,0.55)] transition-all transform hover:-translate-y-0.5 group cursor-pointer">
-                    <span class="absolute inset-0 bg-gradient-to-r from-purple-600 via-pink-600 to-cyan-500"></span>
-                    <span class="relative w-full py-3.5 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 flex items-center justify-center gap-2 text-white text-sm font-bold transition-all">
-                      <span>Enroll</span>
-                      <span class="material-symbols-outlined text-[18px] transition-transform group-hover:translate-x-1">arrow_forward</span>
-                    </span>
-                  </button>
-                </form>
-              {% else %}
-                <!-- Paid Course: Stripe Hosted Checkout -->
-                <form method="post" action="{% url 'payments:create_checkout_session' course.slug %}" class="w-full">
-                  {% csrf_token %}
-                  <button type="submit" class="relative w-full p-[1px] rounded-full overflow-hidden shadow-[0_12px_28px_-4px_rgba(124,58,237,0.4)] hover:shadow-[0_16px_36px_-4px_rgba(124,58,237,0.55)] transition-all transform hover:-translate-y-0.5 group cursor-pointer">
-                    <span class="absolute inset-0 bg-gradient-to-r from-purple-600 via-pink-600 to-cyan-500"></span>
-                    <span class="relative w-full py-3.5 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 flex items-center justify-center gap-2 text-white text-sm font-bold transition-all">
-                      <span>Buy Now</span>
-                      <span class="material-symbols-outlined text-[18px] transition-transform group-hover:translate-x-1">credit_card</span>
-                    </span>
-                  </button>
-                </form>
-              {% endif %}
+        <div>
+          {% if is_owner or is_staff %}
+          <a href="{% url 'courses:instructor_course_edit' course.slug %}" class="w-full py-3.5 rounded-full bg-slate-900 hover:bg-slate-800 text-white font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2">
+            <span>Manage Course</span>
+            <span class="material-symbols-outlined text-[18px]">tune</span>
+          </a>
+          {% elif is_enrolled %}
+          <a href="{% if next_lesson %}{% url 'courses:lesson_view' course.slug next_lesson.id %}{% elif first_lesson %}{% url 'courses:lesson_view' course.slug first_lesson.id %}{% else %}{% url 'courses:dashboard' %}{% endif %}" class="w-full py-3.5 rounded-full bg-gradient-to-r from-violet-600 to-cyan-500 hover:opacity-95 text-white font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2">
+            <span>Continue Learning</span>
+            <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+          </a>
+          {% elif user.is_authenticated %}
+            {% if course.is_free %}
+            <form method="post" action="{% url 'courses:enroll' course.slug %}">
+              {% csrf_token %}
+              <button type="submit" class="w-full py-3.5 rounded-full bg-gradient-to-r from-violet-600 to-cyan-500 hover:opacity-95 text-white font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2">
+                <span>Enroll Now</span>
+                <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+              </button>
+            </form>
             {% else %}
-              <a href="{% url 'accounts:login' %}?next={% url 'courses:course_detail' course.slug %}" class="relative w-full p-[1px] rounded-full overflow-hidden shadow-[0_12px_28px_-4px_rgba(124,58,237,0.4)] hover:shadow-[0_16px_36px_-4px_rgba(124,58,237,0.55)] transition-all transform hover:-translate-y-0.5 group">
-                <span class="absolute inset-0 bg-gradient-to-r from-purple-600 via-pink-600 to-cyan-500"></span>
-                <span class="relative w-full py-3.5 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 flex items-center justify-center gap-2 text-white text-sm font-bold transition-all">
-                  <span>{% if course.is_free %}Sign In to Enroll{% else %}Sign In to Buy Now{% endif %}</span>
-                  <span class="material-symbols-outlined text-[18px] transition-transform group-hover:translate-x-1">login</span>
-                </span>
-              </a>
+            <form method="post" action="{% url 'payments:create_checkout_session' course.slug %}">
+              {% csrf_token %}
+              <button type="submit" class="w-full py-3.5 rounded-full bg-gradient-to-r from-violet-600 via-purple-600 to-pink-500 hover:opacity-95 text-white font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2">
+                <span>Buy Now</span>
+                <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+              </button>
+            </form>
             {% endif %}
-
-            <div class="flex items-center justify-center gap-1.5 pt-1 text-slate-500 font-mono text-xs">
-              <span class="material-symbols-outlined text-[15px] text-cyan-600">lock</span>
-              <span>Encrypted via Stripe 256-bit protocol</span>
-            </div>
-          </div>
-
-          <!-- Team Discount Footer -->
-          <div class="relative z-10 pt-3 border-t border-slate-200/80 flex items-center justify-between text-slate-600 text-xs">
-            <span>Buying for your engineering team?</span>
-            <a href="mailto:enterprise@learnix.com?subject=Team%20Masterclass%20Inquiry%20{{ course.slug }}" class="text-purple-600 hover:text-purple-800 font-bold transition-colors">Get 40% Off</a>
-          </div>
-
+          {% else %}
+          <a href="{% url 'accounts:login' %}?next={{ request.path|urlencode }}" class="w-full py-3.5 rounded-full bg-gradient-to-r from-violet-600 via-purple-600 to-pink-500 hover:opacity-95 text-white font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2">
+            <span>{% if course.is_free %}Sign In to Enroll{% else %}Buy Now{% endif %}</span>
+            <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+          </a>
+          {% endif %}
         </div>
 
-        <!-- Trust Badge Below Panel -->
-        <div class="p-4 rounded-2xl bg-white/90 backdrop-blur-xl border border-purple-100 shadow-[0_4px_16px_rgba(15,23,42,0.04)] flex items-center gap-3">
-          <div class="w-10 h-10 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center shrink-0 border border-purple-200">
-            <span class="material-symbols-outlined text-[20px]">workspace_premium</span>
-          </div>
-          <div class="flex flex-col">
-            <span class="text-xs font-bold text-slate-900">Industry Certified Syllabus</span>
-            <span class="font-mono text-[11px] text-slate-500">Aligned with current Staff AI Engineer benchmarks.</span>
-          </div>
+        <div class="flex items-center justify-center gap-1.5 text-xs text-slate-400">
+          <span class="material-symbols-outlined text-[15px]">lock</span>
+          <span>Secure checkout powered by Stripe</span>
+        </div>
+
+        <div class="space-y-3 pt-4 border-t border-slate-100">
+          <h4 class="text-[11px] font-mono uppercase tracking-wider text-slate-400 font-bold">
+            This Course Includes:
+          </h4>
+          <ul class="space-y-2.5 text-xs text-slate-600">
+            <li class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-emerald-500 text-[18px]">check</span>
+              <span>Full course access &amp; curriculum</span>
+            </li>
+            <li class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-emerald-500 text-[18px]">check</span>
+              <span>Learn at your own pace</span>
+            </li>
+            <li class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-emerald-500 text-[18px]">check</span>
+              <span>Verified Certificate of completion</span>
+            </li>
+            {% if not course.is_free %}
+            <li class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-emerald-500 text-[18px]">check</span>
+              <span>Direct invoice and receipt after purchase</span>
+            </li>
+            {% endif %}
+          </ul>
         </div>
 
       </div>
+    </aside>
 
-    </div>
   </div>
-</main>
 
-<!-- Interactive Lesson Stream Preview Modal -->
-<div id="lessonPreviewModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-950/70 backdrop-blur-md" role="dialog" aria-modal="true">
-  <div class="relative w-full max-w-4xl rounded-3xl bg-slate-900 text-white border border-slate-800 shadow-[0_25px_70px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col">
-    
-    <!-- Modal Header -->
-    <div class="p-4 px-6 flex items-center justify-between border-b border-slate-800 bg-slate-950/60">
-      <div class="flex items-center gap-3">
-        <span class="px-2.5 py-0.5 rounded-full bg-cyan-500/20 text-cyan-400 font-mono text-xs font-bold border border-cyan-500/30">Free Preview</span>
-        <div class="flex flex-col">
-          <h3 id="modalLessonTitle" class="text-sm sm:text-base font-bold text-slate-100 truncate max-w-lg">Preview Lesson</h3>
-          <span id="modalModuleTitle" class="font-mono text-xs text-slate-400"></span>
-        </div>
+  <div class="fixed bottom-0 left-0 right-0 z-30 lg:hidden bg-white/95 backdrop-blur-xl border-t border-slate-200/80 px-4 py-3 shadow-[0_-10px_20px_rgba(0,0,0,0.05)] flex items-center justify-between gap-4">
+    <div>
+      <div class="text-lg font-extrabold text-slate-900 leading-tight">
+        {% if course.is_free %}Free{% else %}${{ course.price|floatformat:"-2" }} <span class="text-xs font-mono text-slate-400">USD</span>{% endif %}
       </div>
-      <button type="button" onclick="closeLessonPreview()" class="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center transition-colors">
-        <span class="material-symbols-outlined text-[18px]">close</span>
-      </button>
+      <p class="text-[11px] text-slate-400">One-time payment</p>
     </div>
 
-    <!-- Video Stage -->
-    <div class="relative w-full aspect-video bg-black flex items-center justify-center">
-      <div id="videoContainer" class="w-full h-full flex flex-col items-center justify-center p-8 text-center bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950">
-        <div class="w-20 h-20 rounded-full bg-purple-500/20 text-purple-400 flex items-center justify-center mb-4 border border-purple-500/30 animate-pulse">
-          <span class="material-symbols-outlined text-[40px]" style="font-variation-settings: 'FILL' 1;">play_circle</span>
-        </div>
-        <p id="modalLessonHeading" class="text-xl font-bold text-white mb-2">Simulated 4K Masterclass Stream</p>
-        <p id="modalLessonDesc" class="text-xs sm:text-sm text-slate-400 max-w-lg mb-6">High-throughput ASGI event routing with WebSockets and PGVector memory persistence.</p>
-        <div class="flex items-center gap-3 font-mono text-xs">
-          <span class="px-3 py-1 rounded-full bg-white/10 text-slate-300 border border-white/10">1080p / 60fps</span>
-          <span id="modalLessonDuration" class="px-3 py-1 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">14:20</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Modal Footer -->
-    <div class="p-4 px-6 flex items-center justify-between border-t border-slate-800 bg-slate-950/80">
-      <span class="text-xs text-slate-400 font-mono">Unlock all remaining lessons and full repository with enrollment.</span>
-      {% if is_enrolled %}
-        {% if first_preview_lesson %}
-          <a href="{% url 'courses:lesson_view' course.slug first_preview_lesson.id %}" class="px-5 py-2 rounded-full bg-gradient-to-r from-purple-600 to-cyan-500 text-white font-bold text-xs hover:scale-105 transition-all shadow-md">
-            View Course
-          </a>
-        {% else %}
-          <a href="{% url 'courses:dashboard' %}" class="px-5 py-2 rounded-full bg-gradient-to-r from-purple-600 to-cyan-500 text-white font-bold text-xs hover:scale-105 transition-all shadow-md">
-            View Course
-          </a>
-        {% endif %}
+    <div>
+      {% if is_owner or is_staff %}
+      <a href="{% url 'courses:instructor_course_edit' course.slug %}" class="px-5 py-2.5 rounded-full bg-slate-900 text-white font-bold text-xs shadow-md inline-flex items-center gap-1.5">
+        <span>Manage</span>
+        <span class="material-symbols-outlined text-[16px]">tune</span>
+      </a>
+      {% elif is_enrolled %}
+      <a href="{% if next_lesson %}{% url 'courses:lesson_view' course.slug next_lesson.id %}{% elif first_lesson %}{% url 'courses:lesson_view' course.slug first_lesson.id %}{% else %}{% url 'courses:dashboard' %}{% endif %}" class="px-5 py-2.5 rounded-full bg-gradient-to-r from-violet-600 to-cyan-500 text-white font-bold text-xs shadow-md inline-flex items-center gap-1.5">
+        <span>Continue</span>
+        <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+      </a>
       {% elif user.is_authenticated %}
         {% if course.is_free %}
-          <form method="post" action="{% url 'courses:enroll' course.slug %}" class="inline">
-            {% csrf_token %}
-            <button type="submit" class="px-5 py-2 rounded-full bg-gradient-to-r from-purple-600 to-cyan-500 text-white font-bold text-xs hover:scale-105 transition-all shadow-md cursor-pointer">
-              Enroll Free
-            </button>
-          </form>
+        <form method="post" action="{% url 'courses:enroll' course.slug %}">
+          {% csrf_token %}
+          <button type="submit" class="px-5 py-2.5 rounded-full bg-gradient-to-r from-violet-600 to-cyan-500 text-white font-bold text-xs shadow-md inline-flex items-center gap-1.5">
+            <span>Enroll Now</span>
+            <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+          </button>
+        </form>
         {% else %}
-          <form method="post" action="{% url 'payments:create_checkout_session' course.slug %}" class="inline">
-            {% csrf_token %}
-            <button type="submit" class="px-5 py-2 rounded-full bg-gradient-to-r from-purple-600 to-cyan-500 text-white font-bold text-xs hover:scale-105 transition-all shadow-md cursor-pointer">
-              Buy Now (${{ course.price }})
-            </button>
-          </form>
+        <form method="post" action="{% url 'payments:create_checkout_session' course.slug %}">
+          {% csrf_token %}
+          <button type="submit" class="px-5 py-2.5 rounded-full bg-gradient-to-r from-violet-600 via-purple-600 to-pink-500 text-white font-bold text-xs shadow-md inline-flex items-center gap-1.5">
+            <span>Buy Now</span>
+            <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+          </button>
+        </form>
         {% endif %}
       {% else %}
-        <a href="{% url 'accounts:login' %}?next={% url 'courses:course_detail' course.slug %}" class="px-5 py-2 rounded-full bg-gradient-to-r from-purple-600 to-cyan-500 text-white font-bold text-xs hover:scale-105 transition-all shadow-md">
-          {% if course.is_free %}Sign In to Enroll{% else %}Sign In to Buy Now{% endif %}
-        </a>
+      <a href="{% url 'accounts:login' %}?next={{ request.path|urlencode }}" class="px-5 py-2.5 rounded-full bg-gradient-to-r from-violet-600 via-purple-600 to-pink-500 text-white font-bold text-xs shadow-md inline-flex items-center gap-1.5">
+        <span>{% if course.is_free %}Enroll{% else %}Buy Now{% endif %}</span>
+        <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+      </a>
       {% endif %}
     </div>
-
   </div>
-</div>
 
-<!-- Interactive Sandbox Terminal Modal -->
-<div id="sandboxModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-950/70 backdrop-blur-md" role="dialog" aria-modal="true">
-  <div class="relative w-full max-w-3xl rounded-3xl bg-[#0f172a] text-slate-100 border border-slate-700 shadow-2xl overflow-hidden font-mono flex flex-col">
-    <!-- Terminal Titlebar -->
-    <div class="px-4 py-3 bg-slate-900 border-b border-slate-800 flex items-center justify-between">
-      <div class="flex items-center gap-2">
-        <span class="w-3 h-3 rounded-full bg-rose-500 inline-block"></span>
-        <span class="w-3 h-3 rounded-full bg-amber-500 inline-block"></span>
-        <span class="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span>
-        <span class="ml-2 text-xs text-slate-400 font-semibold">Learnix Cloud Dev Container · Python 3.14 · PostgreSQL 18</span>
+  <div id="lessonPreviewModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md" role="dialog" aria-modal="true">
+    <div class="relative w-full max-w-2xl rounded-3xl bg-white shadow-2xl border border-slate-200 overflow-hidden">
+      <div class="flex items-center justify-between p-5 border-b border-slate-100">
+        <div>
+          <span class="text-[11px] font-mono text-violet-600 font-bold uppercase tracking-wider block" id="previewModalModule">Unit Preview</span>
+          <h3 class="text-base font-bold text-slate-900" id="previewModalTitle">Lesson Preview</h3>
+        </div>
+        <button type="button" onclick="closeLessonPreview()" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center transition-colors">
+          <span class="material-symbols-outlined text-[20px]">close</span>
+        </button>
       </div>
-      <button type="button" onclick="closeSandboxModal()" class="text-slate-400 hover:text-white">
-        <span class="material-symbols-outlined text-[18px]">close</span>
-      </button>
-    </div>
-    <!-- Terminal Body -->
-    <div id="terminalBody" data-lenis-prevent class="p-5 text-xs sm:text-sm space-y-2 max-h-[380px] overflow-y-auto text-slate-300 bg-slate-950/90 leading-relaxed">
-      <p class="text-purple-400">=== Learnix Interactive Architectural Sandbox Environment ===</p>
-      <p class="text-slate-400">Connecting to isolated Docker cluster [node-cluster-us-east-1]...</p>
-      <p class="text-emerald-400">✓ ASGI Event Loop active (Daphne 4.1 / Python 3.14)</p>
-      <p class="text-cyan-400">✓ PostgreSQL 18 + pgvector socket connected on port 5432</p>
-      <p class="text-slate-500">Type 'help', 'status', 'test', or 'run' below and press Enter:</p>
-      <div id="terminalHistory"></div>
-      <div class="flex items-center gap-2 pt-2">
-        <span class="text-emerald-400 font-bold">root@learnix-sandbox:~#</span>
-        <input id="terminalInput" type="text" class="flex-1 bg-transparent border-none text-white focus:outline-none focus:ring-0 p-0 text-xs sm:text-sm" autofocus autocomplete="off"/>
+
+      <div class="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
+        <div id="previewVideoContainer" class="hidden aspect-video rounded-2xl bg-black overflow-hidden relative">
+          <video id="previewVideoElement" controls class="w-full h-full object-contain"></video>
+        </div>
+
+        <div class="space-y-2">
+          <div class="flex items-center gap-2 text-xs font-mono text-slate-400">
+            <span class="material-symbols-outlined text-[16px]">timer</span>
+            <span id="previewModalDuration">10m</span>
+          </div>
+          <div class="text-sm text-slate-600 leading-relaxed space-y-3" id="previewModalContent"></div>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
-<!-- Floating Toast Notification -->
-<div id="toastNotification" class="fixed bottom-6 right-6 z-50 hidden items-center gap-2 px-4 py-2.5 rounded-2xl bg-slate-900 text-white text-xs font-mono shadow-2xl border border-slate-700 transition-all">
-  <span id="toastIcon" class="material-symbols-outlined text-cyan-400 text-[18px]">check_circle</span>
-  <span id="toastMessage">Action completed successfully.</span>
 </div>
+{% endblock %}
 
-<!-- Interactive Scripts for Syllabus, Modals, and Media -->
+{% block extra_js %}
 <script>
-  document.addEventListener('DOMContentLoaded', () => {
-    // Accordion Expand/Collapse logic
-    const headers = document.querySelectorAll('.syllabus-header');
-    const toggleAllBtn = document.getElementById('toggle-all-btn');
-    let allExpanded = false;
+  document.querySelectorAll('.curriculum-toggle').forEach(function(button) {
+    button.addEventListener('click', function() {
+      var isExpanded = button.getAttribute('aria-expanded') === 'true';
+      var panelId = button.getAttribute('aria-controls');
+      var panel = document.getElementById(panelId);
+      var chevron = button.querySelector('.material-symbols-outlined');
+      var status = button.querySelector('.module-status');
 
-    headers.forEach(header => {
-      header.addEventListener('click', () => {
-        const targetId = header.getAttribute('data-target');
-        const content = document.getElementById(targetId);
-        const icon = document.getElementById(`icon-${targetId}`);
-
-        if (content.classList.contains('hidden')) {
-          content.classList.remove('hidden');
-          if (icon) icon.classList.add('rotate-180');
-        } else {
-          content.classList.add('hidden');
-          if (icon) icon.classList.remove('rotate-180');
-        }
-      });
-    });
-
-    if (toggleAllBtn) {
-      toggleAllBtn.addEventListener('click', () => {
-        allExpanded = !allExpanded;
-        toggleAllBtn.textContent = allExpanded ? 'Expand All' : 'Collapse All';
-        
-        headers.forEach(header => {
-          const targetId = header.getAttribute('data-target');
-          const content = document.getElementById(targetId);
-          const icon = document.getElementById(`icon-${targetId}`);
-          if (content) {
-            if (allExpanded) {
-              content.classList.add('hidden');
-              if (icon) icon.classList.remove('rotate-180');
-            } else {
-              content.classList.remove('hidden');
-              if (icon) icon.classList.add('rotate-180');
-            }
-          }
-        });
-      });
-    }
-
-    // Terminal Input Event Listener
-    const terminalInput = document.getElementById('terminalInput');
-    const terminalHistory = document.getElementById('terminalHistory');
-    terminalInput?.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
-        const cmd = terminalInput.value.trim().toLowerCase();
-        terminalInput.value = '';
-        if (!cmd) return;
-
-        const cmdLine = document.createElement('p');
-        cmdLine.className = 'text-slate-200';
-        cmdLine.innerHTML = `<span class="text-emerald-400">root@learnix-sandbox:~#</span> ${cmd}`;
-        terminalHistory.appendChild(cmdLine);
-
-        const outLine = document.createElement('p');
-        if (cmd === 'help') {
-          outLine.className = 'text-slate-400';
-          outLine.innerHTML = "Available commands: <strong>status</strong>, <strong>test</strong>, <strong>run</strong>, <strong>clear</strong>, <strong>exit</strong>";
-        } else if (cmd === 'status') {
-          outLine.className = 'text-cyan-300';
-          outLine.innerText = "[HEALTH] All 4 worker nodes responsive. Memory usage: 142MB / 4096MB.";
-        } else if (cmd === 'test') {
-          outLine.className = 'text-emerald-400';
-          outLine.innerText = "Running pytest... 18 passed in 0.42s (100% test coverage).";
-        } else if (cmd === 'run') {
-          outLine.className = 'text-purple-300';
-          outLine.innerText = "Starting ASGI server on ws://0.0.0.0:8000 (LangGraph Multi-Agent Worker #1 ready)";
-        } else if (cmd === 'clear') {
-          terminalHistory.innerHTML = '';
-          return;
-        } else if (cmd === 'exit') {
-          closeSandboxModal();
-          return;
-        } else {
-          outLine.className = 'text-rose-400';
-          outLine.innerText = `Command not recognized: '${cmd}'. Type 'help' for available commands.`;
-        }
-        terminalHistory.appendChild(outLine);
-        const body = document.getElementById('terminalBody');
-        body.scrollTop = body.scrollHeight;
+      if (isExpanded) {
+        button.setAttribute('aria-expanded', 'false');
+        if (panel) panel.classList.add('hidden');
+        if (chevron) chevron.classList.remove('rotate-180');
+        if (status) status.textContent = 'Collapsed';
+      } else {
+        button.setAttribute('aria-expanded', 'true');
+        if (panel) panel.classList.remove('hidden');
+        if (chevron) chevron.classList.add('rotate-180');
+        if (status) status.textContent = 'Expanded';
       }
     });
   });
 
-  // Modal Handlers
-  async function openLessonPreview(courseSlug, lessonId) {
-    try {
-      const res = await fetch(`/courses/${courseSlug}/preview/${lessonId}/`);
-      const data = await res.json();
-      if (data.success) {
-        document.getElementById('modalLessonTitle').textContent = data.lesson.title;
-        document.getElementById('modalModuleTitle').textContent = `Unit: ${data.lesson.module_title}`;
-        document.getElementById('modalLessonHeading').textContent = data.lesson.title;
-        document.getElementById('modalLessonDesc').textContent = data.lesson.content || "Interactive architectural stream preview lesson.";
-        document.getElementById('modalLessonDuration').textContent = data.lesson.duration;
-
-        const modal = document.getElementById('lessonPreviewModal');
-        if (window.lenis) window.lenis.stop();
-        modal.classList.remove('hidden');
-        modal.classList.add('flex');
-      } else {
-        showToast(data.error || 'Access restricted to enrolled students.', 'lock');
-      }
-    } catch (e) {
-      showToast('Could not load stream preview.', 'error');
+  function toggleDescription() {
+    var content = document.getElementById('descriptionContent');
+    var btn = document.getElementById('toggleDescriptionBtn');
+    if (content.classList.contains('max-h-48')) {
+      content.classList.remove('max-h-48');
+      btn.textContent = 'Show less';
+    } else {
+      content.classList.add('max-h-48');
+      btn.textContent = 'Show more';
     }
+  }
+
+  function openLessonPreview(courseSlug, lessonId) {
+    fetch('/courses/' + courseSlug + '/preview/' + lessonId + '/')
+      .then(function(res) { return res.json(); })
+      .then(function(data) {
+        if (data.success && data.lesson) {
+          document.getElementById('previewModalModule').textContent = 'Module ' + data.lesson.module_number + ' Preview';
+          document.getElementById('previewModalTitle').textContent = data.lesson.title;
+          document.getElementById('previewModalDuration').textContent = data.lesson.duration;
+          document.getElementById('previewModalContent').textContent = data.lesson.content || 'Free architectural preview lesson.';
+
+          var videoContainer = document.getElementById('previewVideoContainer');
+          var videoElement = document.getElementById('previewVideoElement');
+          if (data.lesson.video_url) {
+            videoElement.src = data.lesson.video_url;
+            videoContainer.classList.remove('hidden');
+          } else {
+            videoContainer.classList.add('hidden');
+          }
+
+          var modal = document.getElementById('lessonPreviewModal');
+          modal.classList.remove('hidden');
+          modal.classList.add('flex');
+        }
+      });
   }
 
   function closeLessonPreview() {
-    const modal = document.getElementById('lessonPreviewModal');
-    if (window.lenis) window.lenis.start();
+    var modal = document.getElementById('lessonPreviewModal');
+    var videoElement = document.getElementById('previewVideoElement');
+    if (videoElement) {
+      videoElement.pause();
+      videoElement.src = '';
+    }
     modal.classList.add('hidden');
     modal.classList.remove('flex');
-  }
-
-  function openSandboxModal() {
-    const modal = document.getElementById('sandboxModal');
-    if (window.lenis) window.lenis.stop();
-    modal.classList.remove('hidden');
-    modal.classList.add('flex');
-    setTimeout(() => {
-      document.getElementById('terminalInput')?.focus();
-    }, 100);
-  }
-
-  function closeSandboxModal() {
-    const modal = document.getElementById('sandboxModal');
-    if (window.lenis) window.lenis.start();
-    modal.classList.add('hidden');
-    modal.classList.remove('flex');
-  }
-
-  // Toast System
-  function showToast(message, icon = 'check_circle') {
-    const toast = document.getElementById('toastNotification');
-    const toastMsg = document.getElementById('toastMessage');
-    const toastIco = document.getElementById('toastIcon');
-    if (toast && toastMsg && toastIco) {
-      toastMsg.textContent = message;
-      toastIco.textContent = icon;
-      toast.classList.remove('hidden');
-      toast.classList.add('flex');
-      setTimeout(() => {
-        toast.classList.add('hidden');
-        toast.classList.remove('flex');
-      }, 3500);
-    }
-  }
-
-  function toggleBookmark(btn) {
-    const icon = btn.querySelector('.material-symbols-outlined');
-    if (icon.classList.contains('text-purple-600')) {
-      icon.classList.remove('text-purple-600');
-      showToast('Removed from your bookmarked tracks.', 'bookmark_remove');
-    } else {
-      icon.classList.add('text-purple-600');
-      showToast('Track bookmarked in your personal library!', 'bookmark_added');
-    }
-  }
-
-  function shareCourse() {
-    if (navigator.clipboard) {
-      navigator.clipboard.writeText(window.location.href);
-      showToast('Masterclass link copied to clipboard!', 'share');
-    } else {
-      showToast('Masterclass link copied!', 'share');
-    }
-  }
-
-  function handleScrub(e) {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const pct = Math.max(0, Math.min(100, (x / rect.width) * 100));
-    document.getElementById('streamScrubProgress').style.width = `${pct}%`;
   }
 </script>
 {% endblock %}

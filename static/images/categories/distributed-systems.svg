@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" width="100%" height="100%">
+  <defs>
+    <linearGradient id="raft-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#050814"/>
+      <stop offset="50%" stop-color="#0E1228"/>
+      <stop offset="100%" stop-color="#1B1238"/>
+    </linearGradient>
+
+    <linearGradient id="raft-leader" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FBBF24"/>
+      <stop offset="50%" stop-color="#F97316"/>
+      <stop offset="100%" stop-color="#EF4444"/>
+    </linearGradient>
+
+    <linearGradient id="raft-node1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38BDF8"/>
+      <stop offset="100%" stop-color="#0284C7"/>
+    </linearGradient>
+
+    <linearGradient id="raft-node2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#A855F7"/>
+      <stop offset="100%" stop-color="#7C3AED"/>
+    </linearGradient>
+
+    <filter id="raft-shadow" x="-10%" y="-10%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="16" stdDeviation="20" flood-color="#000000" flood-opacity="0.6"/>
+    </filter>
+
+    <filter id="raft-glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="16" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <rect width="1200" height="675" fill="url(#raft-bg)"/>
+
+  <circle cx="600" cy="235" r="150" fill="#F59E0B" opacity="0.15" filter="url(#raft-glow)"/>
+  <circle cx="300" cy="495" r="150" fill="#0284C7" opacity="0.15" filter="url(#raft-glow)"/>
+  <circle cx="900" cy="495" r="150" fill="#7C3AED" opacity="0.15" filter="url(#raft-glow)"/>
+
+  <g filter="url(#raft-shadow)">
+    <path d="M 750 235 C 880 280 930 350 900 425" fill="none" stroke="#F59E0B" stroke-width="12" stroke-linecap="round"/>
+    <polygon points="900,425 875,395 915,385" fill="#F59E0B"/>
+
+    <path d="M 740 565 C 640 600 560 600 460 565" fill="none" stroke="#A855F7" stroke-width="12" stroke-linecap="round"/>
+    <polygon points="460,565 480,595 495,560" fill="#A855F7"/>
+
+    <path d="M 300 425 C 270 350 320 280 450 235" fill="none" stroke="#38BDF8" stroke-width="12" stroke-linecap="round"/>
+    <polygon points="450,235 425,260 410,225" fill="#38BDF8"/>
+
+    <g transform="translate(460, 165)">
+      <rect width="280" height="145" rx="20" fill="url(#raft-leader)" stroke="#FEF3C7" stroke-width="5"/>
+      <rect x="25" y="28" width="140" height="22" rx="7" fill="#FEF3C7"/>
+      <rect x="25" y="68" width="140" height="22" rx="7" fill="#FDE68A"/>
+      <circle cx="225" cy="39" r="11" fill="#10B981"/>
+      <circle cx="225" cy="79" r="11" fill="#FFFFFF"/>
+      <line x1="25" y1="112" x2="255" y2="112" stroke="#B45309" stroke-width="5" stroke-linecap="round"/>
+    </g>
+
+    <g transform="translate(160, 425)">
+      <rect width="280" height="145" rx="20" fill="url(#raft-node1)" stroke="#E0F2FE" stroke-width="4"/>
+      <rect x="25" y="28" width="140" height="22" rx="7" fill="#E0F2FE"/>
+      <rect x="25" y="68" width="140" height="22" rx="7" fill="#BAE6FD"/>
+      <circle cx="225" cy="39" r="11" fill="#10B981"/>
+      <circle cx="225" cy="79" r="11" fill="#38BDF8"/>
+      <line x1="25" y1="112" x2="255" y2="112" stroke="#0369A1" stroke-width="5" stroke-linecap="round"/>
+    </g>
+
+    <g transform="translate(760, 425)">
+      <rect width="280" height="145" rx="20" fill="url(#raft-node2)" stroke="#F3E8FF" stroke-width="4"/>
+      <rect x="25" y="28" width="140" height="22" rx="7" fill="#F3E8FF"/>
+      <rect x="25" y="68" width="140" height="22" rx="7" fill="#DDD6FE"/>
+      <circle cx="225" cy="39" r="11" fill="#10B981"/>
+      <circle cx="225" cy="79" r="11" fill="#C084FC"/>
+      <line x1="25" y1="112" x2="255" y2="112" stroke="#6D28D9" stroke-width="5" stroke-linecap="round"/>
+    </g>
+  </g>
+</svg>
