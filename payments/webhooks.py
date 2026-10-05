@@ -68,6 +68,8 @@ def stripe_webhook(request):
             else getattr(session, "metadata", {})
         )
 
+        if hasattr(metadata, "to_dict"):
+            metadata = metadata.to_dict()
         user_id = metadata.get("user_id")
         course_id = metadata.get("course_id")
         order_number = metadata.get("order_number")
@@ -138,6 +140,8 @@ def stripe_webhook(request):
             if isinstance(session, dict)
             else getattr(session, "metadata", {})
         )
+        if hasattr(metadata, "to_dict"):
+            metadata = metadata.to_dict()
         user_id = metadata.get("user_id")
         course_id = metadata.get("course_id")
         last_error = (
