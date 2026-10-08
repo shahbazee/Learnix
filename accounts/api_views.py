@@ -52,6 +52,7 @@ class RegisterView(generics.CreateAPIView):
 
 class LoginView(APIView):
     permission_classes = [permissions.AllowAny]
+    serializer_class = LoginSerializer
 
     def post(self, request):
         serializer = LoginSerializer(data=request.data)
@@ -80,6 +81,7 @@ class MeView(generics.RetrieveUpdateAPIView):
 
 class VerifyOTPView(APIView):
     permission_classes = [permissions.AllowAny]
+    serializer_class = VerifyOTPSerializer
 
     def post(self, request):
         serializer = VerifyOTPSerializer(data=request.data)
@@ -113,6 +115,7 @@ class PasswordResetRequestView(APIView):
 
     def post(self, request):
         serializer = PasswordResetRequestSerializer(data=request.data)
+        serializer_class = PasswordResetRequestSerializer
         serializer.is_valid(raise_exception=True)
         email = serializer.validated_data['email']
         user = User.objects.filter(
@@ -132,6 +135,7 @@ class PasswordResetRequestView(APIView):
 
 class PasswordResetVerifyView(APIView):
     permission_classes = [permissions.AllowAny]
+    serializer_class = PasswordResetVerifySerializer
 
     def post(self, request):
         serializer = PasswordResetVerifySerializer(data=request.data)
@@ -141,7 +145,8 @@ class PasswordResetVerifyView(APIView):
 
 class PasswordResetConfirmView(APIView):
     permission_classes = [permissions.AllowAny]
-
+    serializer_class = SetNewPasswordSerializer
+    
     def post(self, request):
         serializer = SetNewPasswordSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)

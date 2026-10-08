@@ -16,6 +16,7 @@ from .serializers import (
 
 class CheckoutView(APIView):
     permission_classes = [permissions.IsAuthenticated]
+    serializer_class = CheckoutSerializer
 
     def post(self, request):
         serializer = CheckoutSerializer(
@@ -79,6 +80,8 @@ class CheckoutView(APIView):
 
 class PaymentSuccessView(APIView):
     permission_classes = [permissions.AllowAny]
+    serializer_class = PaymentTransactionSerializer
+    
 
     def get(self, request):
         session_id = request.query_params.get('session_id')

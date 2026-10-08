@@ -81,6 +81,7 @@ class CourseViewSet(viewsets.ModelViewSet):
 
 class EnrollView(APIView):
     permission_classes = [permissions.IsAuthenticated]
+    serializer_class = EnrollSerializer
 
     def post(self, request):
         serializer = EnrollSerializer(
@@ -108,6 +109,7 @@ class MyEnrollmentsView(generics.ListAPIView):
 
 class MarkLessonCompleteView(APIView):
     permission_classes = [permissions.IsAuthenticated]
+    serializer_class = MarkLessonCompleteSerializer
 
     def post(self, request):
         serializer = MarkLessonCompleteSerializer(
