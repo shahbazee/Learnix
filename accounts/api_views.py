@@ -97,6 +97,7 @@ class VerifyOTPView(APIView):
 
 class ChangePasswordView(APIView):
     permission_classes = [permissions.IsAuthenticated]
+    serializer_class = ChangePasswordSerializer
 
     def post(self, request):
         serializer = ChangePasswordSerializer(

@@ -126,3 +126,4 @@ class EmailOTP(models.Model):
     @property
     def is_locked(self) -> bool:
         return self.attempts_count >= self.MAX_ATTEMPTS
+    

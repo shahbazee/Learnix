@@ -2,6 +2,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
+from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
 from core.views import health_check_view
 from courses.views import StudentDashboardView
@@ -18,6 +19,13 @@ urlpatterns = [
     path('api/accounts/', include('accounts.api_urls')),
     path('api/courses/', include('courses.api_urls')),
     path('api/payments/', include('payments.api_urls')),
+
+    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
+    path(
+        'api/docs/',
+        SpectacularSwaggerView.as_view(url_name='schema'),
+        name='swagger-ui',
+    ),
 ]
 
 if settings.DEBUG:
