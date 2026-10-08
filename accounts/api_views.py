@@ -112,10 +112,10 @@ class ChangePasswordView(APIView):
 
 class PasswordResetRequestView(APIView):
     permission_classes = [permissions.AllowAny]
+    serializer_class = PasswordResetRequestSerializer
 
     def post(self, request):
         serializer = PasswordResetRequestSerializer(data=request.data)
-        serializer_class = PasswordResetRequestSerializer
         serializer.is_valid(raise_exception=True)
         email = serializer.validated_data['email']
         user = User.objects.filter(
