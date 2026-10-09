@@ -14,6 +14,7 @@ services:
     region: oregon
     buildCommand: "./build.sh"
     startCommand: "gunicorn learnix_project.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --threads 4 --timeout 120 --keep-alive 5 --preload --worker-tmp-dir /dev/shm"
+    healthCheckPath: /healthz
     envVars:
       - key: PYTHON_VERSION
         value: 3.12.3
@@ -24,6 +25,11 @@ services:
       - key: DATABASE_URL
         fromDatabase:
           name: learnix-postgres
+          property: connectionString
+      - key: CELERY_BROKER_URL
+        fromService:
+          name: learnix-redis
+          type: keyvalue
           property: connectionString
       - key: RENDER_EXTERNAL_HOSTNAME
         value: "learnix-ofqe.onrender.com"
@@ -61,3 +67,144 @@ services:
         sync: false
       - key: GOOGLE_CLIENT_SECRET
         sync: false
+
+  - type: worker
+    name: learnix-worker-emails
+    runtime: python
+    plan: starter
+    region: oregon
+    buildCommand: "./build.sh"
+    startCommand: "celery -A learnix_project worker -Q emails -c 4 --loglevel=info"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.3
+      - key: DEBUG
+        value: "False"
+      - key: RENDER
+        value: "true"
+      - key: SECRET_KEY
+        fromService:
+          name: learnix-app
+          type: web
+          envVarKey: SECRET_KEY
+      - key: DATABASE_URL
+        fromDatabase:
+          name: learnix-postgres
+          property: connectionString
+      - key: CELERY_BROKER_URL
+        fromService:
+          name: learnix-redis
+          type: keyvalue
+          property: connectionString
+
+  - type: worker
+    name: learnix-worker-docs
+    runtime: python
+    plan: starter
+    region: oregon
+    buildCommand: "./build.sh"
+    startCommand: "celery -A learnix_project worker -Q documents -c 2 --loglevel=info"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.3
+      - key: DEBUG
+        value: "False"
+      - key: RENDER
+        value: "true"
+      - key: SECRET_KEY
+        fromService:
+          name: learnix-app
+          type: web
+          envVarKey: SECRET_KEY
+      - key: DATABASE_URL
+        fromDatabase:
+          name: learnix-postgres
+          property: connectionString
+      - key: CELERY_BROKER_URL
+        fromService:
+          name: learnix-redis
+          type: keyvalue
+          property: connectionString
+
+  - type: worker
+    name: learnix-worker-general
+    runtime: python
+    plan: starter
+    region: oregon
+    buildCommand: "./build.sh"
+    startCommand: "celery -A learnix_project worker -Q default,scheduled -c 2 --loglevel=info"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.3
+      - key: DEBUG
+        value: "False"
+      - key: RENDER
+        value: "true"
+      - key: SECRET_KEY
+        fromService:
+          name: learnix-app
+          type: web
+          envVarKey: SECRET_KEY
+      - key: DATABASE_URL
+        fromDatabase:
+          name: learnix-postgres
+          property: connectionString
+      - key: CELERY_BROKER_URL
+        fromService:
+          name: learnix-redis
+          type: keyvalue
+          property: connectionString
+
+  - type: worker
+    name: learnix-beat
+    runtime: python
+    plan: starter
+    region: oregon
+    buildCommand: "./build.sh"
+    startCommand: "celery -A learnix_project beat --loglevel=info --scheduler django_celery_beat.schedulers:DatabaseScheduler"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.3
+      - key: DEBUG
+        value: "False"
+      - key: RENDER
+        value: "true"
+      - key: SECRET_KEY
+        fromService:
+          name: learnix-app
+          type: web
+          envVarKey: SECRET_KEY
+      - key: DATABASE_URL
+        fromDatabase:
+          name: learnix-postgres
+          property: connectionString
+      - key: CELERY_BROKER_URL
+        fromService:
+          name: learnix-redis
+          type: keyvalue
+          property: connectionString
+
+  - type: web
+    name: learnix-flower
+    runtime: python
+    plan: starter
+    region: oregon
+    buildCommand: "./build.sh"
+    startCommand: "celery -A learnix_project flower --basic_auth=$FLOWER_USER:$FLOWER_PASSWORD --address=0.0.0.0 --port=$PORT"
+    envVars:
+      - key: CELERY_BROKER_URL
+        fromService:
+          name: learnix-redis
+          type: keyvalue
+          property: connectionString
+      - key: FLOWER_USER
+        sync: false
+      - key: FLOWER_PASSWORD
+        sync: false
+
+  - type: keyvalue
+    name: learnix-redis
+    plan: starter
+    region: oregon
+    maxmemoryPolicy: noeviction
+    ipAllowList: []
