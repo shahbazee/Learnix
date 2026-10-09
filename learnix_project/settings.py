@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     'drf_spectacular',
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
+    'django_celery_beat',
 ]
 
 REST_FRAMEWORK = {
@@ -306,3 +307,24 @@ LOGGING = {
         },
     },
 }
+
+CELERY_BROKER_URL = config(
+    'CELERY_BROKER_URL', default='redis://localhost:6379/0'
+)
+CELERY_RESULT_BACKEND = config(
+    'CELERY_BROKER_URL', default='redis://localhost:6379/0'
+)
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TASK_ACKS_LATE = True
+CELERY_WORKER_PREFETCH_MULTIPLIER = 1
+CELERY_TIMEZONE = 'UTC'
+CELERY_TASK_ROUTES = {
+    'accounts.tasks.*': {'queue': 'emails'},
+    'payments.tasks.*': {'queue': 'emails'},
+    'courses.tasks.*': {'queue': 'documents'},
+}
+CELERY_BEAT_SCHEDULER = (
+    'django_celery_beat.schedulers:DatabaseScheduler'
+)
