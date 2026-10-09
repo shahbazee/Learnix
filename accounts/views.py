@@ -77,7 +77,7 @@ class SignUpView(FormView):
         return super().post(request, *args, **kwargs)
 
     def _dispatch_unverified_otp_and_redirect(self, user):
-        otp_record = EmailOTP.create_for_user(user, purpose='registration')
+        otp_record, code = EmailOTP.create_for_user(user, purpose='registration')
         token = _generate_otp_token(user.id)
 
         self.request.session['otp_user_id'] = user.id
@@ -87,7 +87,7 @@ class SignUpView(FormView):
         email_sent = False
         try:
             email_sent = send_otp_verification_email(
-                user, otp_record.otp_code, async_send=True
+                user, code, async_send=True
             )
             if email_sent:
                 self.request.session['otp_last_sent'] = (
@@ -142,7 +142,7 @@ class SignUpView(FormView):
 
         try:
             send_otp_verification_email(
-                user, otp_record.otp_code, async_send=True
+                user, code, async_send=True
             )
             self.request.session['otp_last_sent'] = (
                 timezone.now().timestamp()
@@ -328,11 +328,11 @@ class ResendOTPView(View):
                 )
                 return redirect(target_url)
 
-        otp_record = EmailOTP.create_for_user(user, purpose='registration')
+        otp_record, code = EmailOTP.create_for_user(user, purpose='registration')
 
         try:
             send_otp_verification_email(
-                user, otp_record.otp_code, async_send=True
+                user, code, async_send=True
             )
             request.session['otp_last_sent'] = timezone.now().timestamp()
             messages.info(
@@ -435,7 +435,7 @@ class ForgotPasswordView(FormView):
             )
 
             send_forgot_password_otp_email(
-                user, otp_record.otp_code, async_send=True
+                user, code, async_send=True
             )
         else:
             self.request.session.pop('reset_user_id', None)
@@ -528,7 +528,7 @@ class ResendResetOTPView(View):
         request.session['reset_otp_last_sent'] = timezone.now().timestamp()
 
         send_forgot_password_otp_email(
-            user, otp_record.otp_code, async_send=True
+            user, code, async_send=True
         )
 
         messages.info(

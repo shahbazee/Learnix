@@ -1,3 +1,5 @@
+import hashlib
+import hmac
 import secrets
 
 from django.db import models
@@ -63,6 +65,11 @@ class UserProfile(models.Model):
         return self.role == self.ROLE_STUDENT
 
 
+def hash_otp(code):
+    secret = settings.SECRET_KEY.encode()
+    return hmac.new(secret, code.encode(), hashlib.sha256).hexdigest()
+
+
 class EmailOTP(models.Model):
     MAX_ATTEMPTS = 5
     EXPIRY_MINUTES = 10
@@ -72,7 +79,7 @@ class EmailOTP(models.Model):
         on_delete=models.CASCADE,
         related_name='email_otps'
     )
-    otp_code = models.CharField(max_length=6, db_index=True)
+    code_hash = models.CharField(max_length=64, db_index=True)
     purpose = models.CharField(
         max_length=30,
         default='registration',
@@ -89,7 +96,7 @@ class EmailOTP(models.Model):
     class Meta:
         ordering = ['-created_at']
         indexes = [
-            models.Index(fields=['user', 'otp_code']),
+            models.Index(fields=['user', 'code_hash']),
             models.Index(fields=['expires_at']),
             models.Index(fields=['user', 'purpose', 'is_verified']),
         ]
@@ -110,14 +117,15 @@ class EmailOTP(models.Model):
         code = "".join(secrets.choice(digits) for _ in range(6))
         expires_at = timezone.now() + timedelta(minutes=cls.EXPIRY_MINUTES)
 
-        return cls.objects.create(
-            user=user,
-            otp_code=code,
-            purpose=purpose,
-            expires_at=expires_at,
-            is_verified=False,
-            attempts_count=0
+        otp_record = cls.objects.create(
+        user=user,
+        code_hash=hash_otp(code),
+        purpose=purpose,
+        expires_at=expires_at,
+        is_verified=False,
+        attempts_count=0
         )
+        return otp_record, code
 
     @property
     def is_expired(self) -> bool:

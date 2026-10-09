@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model, login, logout
 
 from rest_framework import generics, permissions, status
+from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -35,7 +36,7 @@ class RegisterView(generics.CreateAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
-        otp_record = EmailOTP.create_for_user(
+        otp_record, code = EmailOTP.create_for_user(
             user, purpose='registration'
         )
         send_otp_verification_email(
@@ -59,11 +60,22 @@ class LoginView(APIView):
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data['user']
         login(request, user)
-        return Response(UserSerializer(user).data)
+        refresh = RefreshToken.for_user(user)
+        data = UserSerializer(user).data
+        data['refresh'] = str(refresh)
+        data['access'] = str(refresh.access_token)
+        return Response(data)
 
 
 class LogoutView(APIView):
     def post(self, request):
+        refresh_token = request.data.get('refresh')
+        if refresh_token:
+            try:
+                token = RefreshToken(refresh_token)
+                token.blacklist()
+            except Exception:
+                pass
         logout(request)
         return Response({'detail': 'Logged out.'})
 
@@ -122,7 +134,7 @@ class PasswordResetRequestView(APIView):
             email__iexact=email, is_active=True
         ).first()
         if user:
-            otp_record = EmailOTP.create_for_user(
+            otp_record, code = EmailOTP.create_for_user(
                 user, purpose='password_reset'
             )
             send_forgot_password_otp_email(

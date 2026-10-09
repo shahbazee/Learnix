@@ -1,4 +1,7 @@
-from .models import EmailOTP 
+import hmac
+
+from .models import EmailOTP, hash_otp
+
 
 def verify_otp(user, code, purpose):
     """Returns (success: bool, error_message: str | None, otp_record)"""
@@ -10,7 +13,7 @@ def verify_otp(user, code, purpose):
         return False, "This code has expired. Please request a new one.", otp_record
     if otp_record.is_locked:
         return False, "Security threshold exceeded (5 failed attempts).", otp_record
-    if otp_record.otp_code != code:
+    if not hmac.compare_digest(otp_record.code_hash, hash_otp(code)):
         otp_record.attempts_count += 1
         otp_record.save(update_fields=['attempts_count'])
         remaining = EmailOTP.MAX_ATTEMPTS - otp_record.attempts_count
