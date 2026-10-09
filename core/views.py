@@ -1,3 +1,4 @@
+from django.db import connection
 from django.db.models import Count, Q
 from django.http import JsonResponse
 from django.shortcuts import render
@@ -7,44 +8,15 @@ from courses.models import Course, CourseCategory
 
 
 def health_check_view(request):
-    import os
-    from django.contrib.auth import get_user_model
-    from accounts.models import UserProfile
-
-    admin_ensured = False
-    admin_error = None
-    username = os.environ.get("ADMIN_USERNAME", "shahbaz")
-
     try:
-        User = get_user_model()
-        email = os.environ.get("ADMIN_EMAIL", "shahbazbutt22ee@gmail.com")
-        password = os.environ.get("ADMIN_PASSWORD", "12345678")
-
-        user, created = User.objects.get_or_create(
-            username=username, defaults={'email': email}
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT 1")
+            cursor.fetchone()
+    except Exception:
+        return JsonResponse(
+            {"status": "error", "database": "unreachable"}, status=503
         )
-        user.email = email
-        user.is_staff = True
-        user.is_superuser = True
-        user.is_active = True
-        user.set_password(password)
-        user.save()
-
-        profile, _ = UserProfile.objects.get_or_create(user=user)
-        profile.role = UserProfile.ROLE_INSTRUCTOR
-        profile.save()
-
-        admin_ensured = True
-    except Exception as exc:
-        admin_error = str(exc)
-
-    return JsonResponse({
-        "status": "ok",
-        "release": "2026.09.29-admin-sync-v1",
-        "admin_username": username,
-        "admin_ensured": admin_ensured,
-        "error": admin_error,
-    })
+    return JsonResponse({"status": "ok", "database": "ok"})
 
 
 class HomeView(TemplateView):
