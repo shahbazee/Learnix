@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model, login, logout
+from django.db import transaction
 
 from rest_framework import generics, permissions, status
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -24,6 +25,10 @@ from .serializers import (
     UserSerializer,
     VerifyOTPSerializer,
 )
+from .tasks import (send_otp_email,
+                    send_password_reset_email,
+                    send_welcome_email,
+    )
 
 User = get_user_model()
 
@@ -39,8 +44,8 @@ class RegisterView(generics.CreateAPIView):
         otp_record, code = EmailOTP.create_for_user(
             user, purpose='registration'
         )
-        send_otp_verification_email(
-            user, otp_record.otp_code, async_send=True
+        transaction.on_commit(
+            lambda: send_otp_email.delay(user.id, code)
         )
         return Response(
             {
@@ -105,7 +110,9 @@ class VerifyOTPView(APIView):
             request, user,
             backend='django.contrib.auth.backends.ModelBackend',
         )
-        send_registration_success_email(user, async_send=True)
+        transaction.on_commit(
+            lambda: send_welcome_email.delay(user.id)
+        )
         return Response(UserSerializer(user).data)
 
 
@@ -137,8 +144,8 @@ class PasswordResetRequestView(APIView):
             otp_record, code = EmailOTP.create_for_user(
                 user, purpose='password_reset'
             )
-            send_forgot_password_otp_email(
-                user, otp_record.otp_code, async_send=True
+            transaction.on_commit(
+                lambda: send_password_reset_email.delay(user.id, code)
             )
         return Response({
             'detail': 'If an account exists, a reset code has been sent.'

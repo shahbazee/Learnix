@@ -17,6 +17,7 @@ from django.conf import settings
 from django.http import JsonResponse
 from django.utils.http import url_has_allowed_host_and_scheme
 
+from .tasks import send_password_reset_email, send_welcome_email
 from django.contrib.auth import update_session_auth_hash
 from .otp_utils import verify_otp
 from .models import UserProfile, EmailOTP
@@ -131,7 +132,7 @@ class SignUpView(FormView):
             profile.role = role
             profile.save(update_fields=['role'])
 
-            otp_record = EmailOTP.create_for_user(
+            otp_record, code = EmailOTP.create_for_user(
                 user, purpose='registration'
             )
 
@@ -266,12 +267,9 @@ class VerifyOTPView(FormView):
         self.request.session.pop('otp_user_id', None)
         self.request.session.pop('otp_last_sent', None)
 
-        try:
-            send_registration_success_email(user, async_send=True)
-        except Exception as e:
-            logger.error(
-                f"Failed to dispatch registration success email: {e}"
-            )
+        transaction.on_commit(
+            lambda: send_welcome_email.delay(user.id)
+        )
 
         messages.success(
             self.request,
@@ -426,7 +424,7 @@ class ForgotPasswordView(FormView):
         self.request.session['reset_email'] = email
 
         if user:
-            otp_record = EmailOTP.create_for_user(
+            otp_record, code = EmailOTP.create_for_user(
                 user, purpose='password_reset'
             )
             self.request.session['reset_user_id'] = user.id
@@ -434,8 +432,8 @@ class ForgotPasswordView(FormView):
                 timezone.now().timestamp()
             )
 
-            send_forgot_password_otp_email(
-                user, code, async_send=True
+            transaction.on_commit(
+                lambda: send_password_reset_email.delay(user.id, code)
             )
         else:
             self.request.session.pop('reset_user_id', None)
@@ -522,7 +520,7 @@ class ResendResetOTPView(View):
                 )
                 return redirect('accounts:verify_reset_otp')
 
-        otp_record = EmailOTP.create_for_user(
+        otp_record, code = EmailOTP.create_for_user(
             user, purpose='password_reset'
         )
         request.session['reset_otp_last_sent'] = timezone.now().timestamp()

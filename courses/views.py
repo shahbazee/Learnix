@@ -368,9 +368,6 @@ class StudentDashboardView(LoginRequiredMixin, TemplateView):
                     if latest_purchase
                     else None
                 ),
-                'streak_days': 0,
-                'xp_points': 0,
-                'upcoming_session': None,
             }
         )
         return context
@@ -856,7 +853,7 @@ class ExportFinancialsCSVView(InstructorRequiredMixin, View):
                 'Order Reference',
                 'Date',
                 'Course Title',
-                'Student Email',
+                'Student Username',
                 'Amount',
                 'Currency',
                 'Status',
@@ -885,9 +882,9 @@ class ExportFinancialsCSVView(InstructorRequiredMixin, View):
                         else 'General Masterclass'
                     ),
                     (
-                        tx.user.email
+                        tx.user.username
                         if tx.user
-                        else 'guest@learnix.internal'
+                        else 'guest'
                     ),
                     str(tx.amount),
                     tx.currency.upper(),

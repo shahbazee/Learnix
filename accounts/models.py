@@ -135,3 +135,37 @@ class EmailOTP(models.Model):
     def is_locked(self) -> bool:
         return self.attempts_count >= self.MAX_ATTEMPTS
     
+
+class EmailLog(models.Model):
+    STATUS_PENDING = "pending"
+    STATUS_SENT = "sent"
+    STATUS_FAILED = "failed"
+    STATUS_CHOICES = [
+        (STATUS_PENDING, "Pending"),
+        (STATUS_SENT, "Sent"),
+        (STATUS_FAILED, "Failed"),
+    ]
+
+    idempotency_key = models.CharField(max_length=255, unique=True)
+    recipient = models.EmailField()
+    kind = models.CharField(max_length=50)
+    status = models.CharField(
+        max_length=20, choices=STATUS_CHOICES, default=STATUS_PENDING
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    sent_at = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.kind} -> {self.recipient} [{self.status}]"
+
+
+class FailedTask(models.Model):
+    task_name = models.CharField(max_length=255)
+    args = models.JSONField(default=list)
+    kwargs = models.JSONField(default=dict)
+    exception = models.TextField()
+    failed_at = models.DateTimeField(auto_now_add=True)
+    resolved = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.task_name} failed at {self.failed_at:%Y-%m-%d %H:%M}"
