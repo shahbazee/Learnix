@@ -329,7 +329,9 @@ CELERY_TASK_ROUTES = {
 CELERY_BEAT_SCHEDULER = (
     'django_celery_beat.schedulers:DatabaseScheduler'
 )
-
+CELERY_TASK_ALWAYS_EAGER = config(
+    "CELERY_TASK_ALWAYS_EAGER", default=False, cast=bool
+)
 
 def _redis_cache_url():
     explicit = config("REDIS_CACHE_URL", default="")
@@ -341,12 +343,16 @@ def _redis_cache_url():
     return broker.rsplit("/", 1)[0] + "/1"
 
 
-CACHES = {
-    "default": {
-        "BACKEND": "django.core.cache.backends.redis.RedisCache",
-        "LOCATION": config(
-            "REDIS_CACHE_URL", default="redis://localhost:6379/1"
-        ),
+if CELERY_TASK_ALWAYS_EAGER:
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        }
     }
-}
-
+else:
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.redis.RedisCache",
+            "LOCATION": _redis_cache_url(),
+        }
+    }
