@@ -19,7 +19,12 @@ from django.conf import settings
 from django.http import JsonResponse
 from django.utils.http import url_has_allowed_host_and_scheme
 
-from .tasks import send_password_reset_email, send_welcome_email
+from .tasks import (
+        send_otp_email,
+        send_password_changed_email_task,
+        send_password_reset_email, 
+        send_welcome_email,
+        )
 from django.contrib.auth import update_session_auth_hash
 from .otp_utils import verify_otp
 from .models import UserProfile, EmailOTP
@@ -99,36 +104,16 @@ class SignUpView(FormView):
         self.request.session['otp_token'] = token
         self.request.session.modified = True
 
-        email_sent = False
-        try:
-            email_sent = send_otp_verification_email(
-                user, code, async_send=True
-            )
-            if email_sent:
-                self.request.session['otp_last_sent'] = (
-                    timezone.now().timestamp()
-                )
-        except Exception as e:
-            logger.error(
-                f"Error invoking send_otp_verification_email for "
-                f"{user.email}: {e}"
+        transaction.on_commit(
+            lambda: send_otp_email.delay(user.id, code)
+        )
+        self.request.session['otp_last_sent'] = timezone.now().timestamp()
+        messages.success(
+            self.request,
+            f"Your account is pending verification. A fresh verification "
+            f"code has been dispatched to {user.email}.",
             )
 
-        if email_sent:
-            messages.success(
-                self.request,
-                f"Your account is pending verification. A fresh verification "
-                f"code has been dispatched to {user.email}."
-            )
-        else:
-            messages.warning(
-                self.request,
-                f"Account pending verification. If you do not receive the "
-                f"email at {user.email} shortly, please click "
-                f"'Resend Verification Code' below."
-            )
-        verify_url = f"{reverse('accounts:verify_otp')}?token={token}"
-        return redirect(verify_url)
 
     def form_valid(self, form):
         is_re_registration = bool(form.instance and form.instance.pk)
@@ -156,8 +141,8 @@ class SignUpView(FormView):
         self.request.session.modified = True
 
         try:
-            send_otp_verification_email(
-                user, code, async_send=True
+            transaction.on_commit(
+                lambda: send_otp_email.delay(user.id, code)
             )
             self.request.session['otp_last_sent'] = (
                 timezone.now().timestamp()
@@ -354,8 +339,8 @@ class ResendOTPView(View):
         otp_record, code = EmailOTP.create_for_user(user, purpose='registration')
 
         try:
-            send_otp_verification_email(
-                user, code, async_send=True
+            transaction.on_commit(
+                lambda: send_otp_email.delay(user.id, code)
             )
             request.session['otp_last_sent'] = timezone.now().timestamp()
             messages.info(
@@ -557,8 +542,8 @@ class ResendResetOTPView(View):
         )
         request.session['reset_otp_last_sent'] = timezone.now().timestamp()
 
-        send_forgot_password_otp_email(
-            user, code, async_send=True
+        transaction.on_commit(
+            lambda: send_password_reset_email.delay(user.id, code)
         )
 
         messages.info(
@@ -608,7 +593,9 @@ class ResetPasswordView(FormView):
             user=user, purpose='password_reset'
         ).delete()
 
-        send_password_changed_email(user, async_send=True)
+        transaction.on_commit(
+            lambda: send_password_changed_email_task.delay(user.id)
+        )
 
         self.request.session.pop('reset_user_id', None)
         self.request.session.pop('reset_email', None)

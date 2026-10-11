@@ -26,9 +26,10 @@ from .serializers import (
     VerifyOTPSerializer,
 )
 from .tasks import (send_otp_email,
+                    send_password_changed_email_task,
                     send_password_reset_email,
                     send_welcome_email,
-    )
+                )
 
 User = get_user_model()
 
@@ -170,5 +171,7 @@ class PasswordResetConfirmView(APIView):
         serializer = SetNewPasswordSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
-        send_password_changed_email(user, async_send=True)
+        transaction.on_commit(
+            lambda: send_password_changed_email_task.delay(user.id)
+        )
         return Response({'detail': 'Password reset successfully.'})

@@ -331,6 +331,16 @@ CELERY_BEAT_SCHEDULER = (
 )
 
 
+def _redis_cache_url():
+    explicit = config("REDIS_CACHE_URL", default="")
+    if explicit:
+        return explicit
+    broker = config(
+        "CELERY_BROKER_URL", default="redis://localhost:6379/0"
+    )
+    return broker.rsplit("/", 1)[0] + "/1"
+
+
 CACHES = {
     "default": {
         "BACKEND": "django.core.cache.backends.redis.RedisCache",
