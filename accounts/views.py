@@ -7,9 +7,11 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse, reverse_lazy
 from django.db import transaction
 from django.core import signing
+
 from django.views.generic import FormView, View
 from django.contrib.auth import login, logout, get_user_model
 from django.contrib.auth.views import LoginView
+from django.core.cache import cache
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
 from django.utils import timezone
@@ -34,6 +36,18 @@ from core.emails import (
     send_forgot_password_otp_email,
     send_password_changed_email,
 )
+
+OTP_RESEND_LIMIT = 10
+OTP_RESEND_WINDOW = 3600
+
+
+def otp_resend_allowed(user_id, purpose):
+    key = f"otp_resend:{purpose}:{user_id}"
+    count = cache.get(key, 0)
+    if count >= OTP_RESEND_LIMIT:
+        return False
+    cache.set(key, count + 1, OTP_RESEND_WINDOW)
+    return True
 
 User = get_user_model()
 logger = logging.getLogger(__name__)
@@ -325,6 +339,17 @@ class ResendOTPView(View):
                     else reverse('accounts:verify_otp')
                 )
                 return redirect(target_url)
+        if not otp_resend_allowed(user.id, "registration"):
+            messages.error(
+                request,
+                "Too many code requests. Please try again in an hour.",
+            )
+            target_url = (
+                f"{reverse('accounts:verify_otp')}?token={token}"
+                if token
+                else reverse('accounts:verify_otp')
+            )
+            return redirect(target_url)
 
         otp_record, code = EmailOTP.create_for_user(user, purpose='registration')
 
@@ -519,6 +544,13 @@ class ResendResetOTPView(View):
                     f"requesting a new code."
                 )
                 return redirect('accounts:verify_reset_otp')
+
+        if not otp_resend_allowed(user.id, "password_reset"):
+            messages.error(
+                request,
+                "Too many code requests. Please try again in an hour.",
+            )
+            return redirect('accounts:verify_reset_otp')
 
         otp_record, code = EmailOTP.create_for_user(
             user, purpose='password_reset'

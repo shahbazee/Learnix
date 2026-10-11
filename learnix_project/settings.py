@@ -329,3 +329,14 @@ CELERY_TASK_ROUTES = {
 CELERY_BEAT_SCHEDULER = (
     'django_celery_beat.schedulers:DatabaseScheduler'
 )
+
+
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": config(
+            "REDIS_CACHE_URL", default="redis://localhost:6379/1"
+        ),
+    }
+}
+

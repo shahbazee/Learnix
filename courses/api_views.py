@@ -1,3 +1,4 @@
+from django.core.cache import cache
 from django.db.models import Count
 from django.utils import timezone
 from rest_framework import generics, permissions, viewsets
@@ -42,6 +43,18 @@ class CourseCategoryViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [permissions.AllowAny]
 
 
+def _course_cache_version():
+    return cache.get_or_set("course_cache_version", 1, None)
+
+
+def _bump_course_cache_version():
+    try:
+        return cache.incr("course_cache_version")
+    except ValueError:
+        cache.set("course_cache_version", 1, None)
+        return 1
+
+
 class CourseViewSet(viewsets.ModelViewSet):
     lookup_field = 'slug'
 
@@ -75,9 +88,37 @@ class CourseViewSet(viewsets.ModelViewSet):
             return qs.filter(instructor=self.request.user)
         return qs.filter(is_published=True)
 
+    def list(self, request, *args, **kwargs):
+        version = _course_cache_version()
+        key = f"course_list:v{version}:{request.GET.urlencode()}"
+        data = cache.get(key)
+        if data is None:
+            response = super().list(request, *args, **kwargs)
+            cache.set(key, response.data, 300)
+            return response
+        return Response(data)
+
+    def retrieve(self, request, *args, **kwargs):
+        version = _course_cache_version()
+        key = f"course_detail:v{version}:{kwargs['slug']}"
+        data = cache.get(key)
+        if data is None:
+            response = super().retrieve(request, *args, **kwargs)
+            cache.set(key, response.data, 300)
+            return response
+        return Response(data)
+
     def perform_create(self, serializer):
         serializer.save(instructor=self.request.user)
+        _bump_course_cache_version()
+    
+    def perform_update(self, serializer):
+        serializer.save()
+    _bump_course_cache_version()
 
+    def perform_destroy(self, instance):
+        instance.delete()
+        _bump_course_cache_version()
 
 class EnrollView(APIView):
     permission_classes = [permissions.IsAuthenticated]
