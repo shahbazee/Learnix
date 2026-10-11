@@ -6,13 +6,17 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('payments', '0001_initial'),
+        ("payments", "0001_initial"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='paymenttransaction',
-            name='confirmation_emails_sent',
-            field=models.BooleanField(db_index=True, default=False, help_text='Ensures purchase confirmation and invoice emails are dispatched exactly once.'),
+            model_name="paymenttransaction",
+            name="confirmation_emails_sent",
+            field=models.BooleanField(
+                db_index=True,
+                default=False,
+                help_text="Ensures purchase confirmation and invoice emails are dispatched exactly once.",
+            ),
         ),
     ]

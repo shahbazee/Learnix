@@ -17,6 +17,7 @@ from core.emails import (
     send_registration_success_email,
 )
 from courses.models import Course, Enrollment
+
 from .models import Invoice, PaymentTransaction
 
 logger = logging.getLogger(__name__)
@@ -56,15 +57,13 @@ def send_password_reset_otp_email(user, reset_code):
 
 def generate_invoice_pdf(invoice) -> bytes:
     context = {
-        'invoice': invoice,
-        'support_email': settings.DEFAULT_FROM_EMAIL,
+        "invoice": invoice,
+        "support_email": settings.DEFAULT_FROM_EMAIL,
     }
-    html_string = render_to_string('payments/invoice_pdf.html', context)
+    html_string = render_to_string("payments/invoice_pdf.html", context)
     result_buffer = BytesIO()
     pdf = pisa.pisaDocument(
-        BytesIO(html_string.encode('utf-8')),
-        result_buffer,
-        encoding='utf-8'
+        BytesIO(html_string.encode("utf-8")), result_buffer, encoding="utf-8"
     )
     if pdf.err:
         logger.error(
@@ -76,15 +75,15 @@ def generate_invoice_pdf(invoice) -> bytes:
     pdf_bytes = result_buffer.getvalue()
 
     if (
-        getattr(invoice, 'pdf_file', None) is not None and
-        hasattr(invoice.pdf_file, 'save') and
-        not invoice.pdf_file
+        getattr(invoice, "pdf_file", None) is not None
+        and hasattr(invoice.pdf_file, "save")
+        and not invoice.pdf_file
     ):
         try:
             invoice.pdf_file.save(
                 f"invoice_{invoice.invoice_number}.pdf",
                 ContentFile(pdf_bytes),
-                save=True
+                save=True,
             )
         except Exception as e:
             logger.warning(
@@ -97,15 +96,13 @@ def generate_invoice_pdf(invoice) -> bytes:
 
 def generate_receipt_pdf(transaction) -> bytes:
     context = {
-        'transaction': transaction,
-        'support_email': settings.DEFAULT_FROM_EMAIL,
+        "transaction": transaction,
+        "support_email": settings.DEFAULT_FROM_EMAIL,
     }
-    html_string = render_to_string('payments/receipt_pdf.html', context)
+    html_string = render_to_string("payments/receipt_pdf.html", context)
     result_buffer = BytesIO()
     pdf = pisa.pisaDocument(
-        BytesIO(html_string.encode('utf-8')),
-        result_buffer,
-        encoding='utf-8'
+        BytesIO(html_string.encode("utf-8")), result_buffer, encoding="utf-8"
     )
     if pdf.err:
         logger.error(
@@ -137,17 +134,23 @@ def fulfill_order_and_dispatch_emails(
     with db_transaction.atomic():
         tx = None
         if transaction:
-            tx = PaymentTransaction.objects.select_for_update().filter(
-                pk=transaction.pk
-            ).first()
+            tx = (
+                PaymentTransaction.objects.select_for_update()
+                .filter(pk=transaction.pk)
+                .first()
+            )
         elif order_number:
-            tx = PaymentTransaction.objects.select_for_update().filter(
-                order_number=order_number
-            ).first()
+            tx = (
+                PaymentTransaction.objects.select_for_update()
+                .filter(order_number=order_number)
+                .first()
+            )
         elif session_id:
-            tx = PaymentTransaction.objects.select_for_update().filter(
-                stripe_checkout_session_id=session_id
-            ).first()
+            tx = (
+                PaymentTransaction.objects.select_for_update()
+                .filter(stripe_checkout_session_id=session_id)
+                .first()
+            )
 
         user = None
         course = None
@@ -171,8 +174,7 @@ def fulfill_order_and_dispatch_emails(
                 user=user,
                 course=course,
                 order_number=(
-                    order_number or
-                    PaymentTransaction.generate_order_number()
+                    order_number or PaymentTransaction.generate_order_number()
                 ),
                 amount=course.price,
                 currency=settings.STRIPE_CURRENCY.upper(),
@@ -191,16 +193,14 @@ def fulfill_order_and_dispatch_emails(
         enrollment, _ = Enrollment.objects.get_or_create(
             user=user,
             course=course,
-            defaults={"is_active": True, "progress_percent": 0.00}
+            defaults={"is_active": True, "progress_percent": 0.00},
         )
         if not enrollment.is_active:
             enrollment.is_active = True
             enrollment.save(update_fields=["is_active"])
 
         b_name = billing_name or user.get_full_name() or user.username
-        b_email = (
-            billing_email or user.email or f"{user.username}@learnix.edu"
-        )
+        b_email = billing_email or user.email or f"{user.username}@learnix.edu"
         invoice, created = Invoice.objects.get_or_create(
             transaction=tx,
             defaults={
@@ -210,7 +210,7 @@ def fulfill_order_and_dispatch_emails(
                 "subtotal": tx.amount,
                 "tax_amount": Decimal("0.00"),
                 "total_amount": tx.amount,
-            }
+            },
         )
         if not created and (billing_name or billing_email):
             updated_fields = []
@@ -239,43 +239,43 @@ def fulfill_order_and_dispatch_emails(
         delivery = {}
 
         try:
-            delivery['purchase_confirmation'] = bool(
+            delivery["purchase_confirmation"] = bool(
                 send_course_purchase_success_email(
                     user, course, tx, invoice=invoice
                 )
             )
         except Exception as e:
-            delivery['purchase_confirmation'] = False
+            delivery["purchase_confirmation"] = False
             logger.exception(
                 f"Unexpected error dispatching purchase confirmation "
                 f"email for order #{tx.order_number}: {e}"
             )
 
         try:
-            delivery['invoice_receipt'] = bool(
+            delivery["invoice_receipt"] = bool(
                 send_payment_receipt_invoice_email(
                     user, course, tx, invoice, pdf_bytes=pdf_bytes
                 )
             )
         except Exception as e:
-            delivery['invoice_receipt'] = False
+            delivery["invoice_receipt"] = False
             logger.exception(
                 f"Unexpected error dispatching invoice/receipt email "
                 f"for order #{tx.order_number}: {e}"
             )
 
         try:
-            delivery['enrollment'] = bool(
+            delivery["enrollment"] = bool(
                 send_course_enrollment_email(user, course, enrollment)
             )
         except Exception as e:
-            delivery['enrollment'] = False
+            delivery["enrollment"] = False
             logger.exception(
                 f"Unexpected error dispatching course enrollment email "
                 f"for order #{tx.order_number}: {e}"
             )
 
-        if delivery.get('invoice_receipt'):
+        if delivery.get("invoice_receipt"):
             PaymentTransaction.objects.filter(pk=tx.pk).update(
                 confirmation_emails_sent=True
             )
@@ -303,10 +303,10 @@ def fulfill_order_and_dispatch_emails(
         )
 
     return {
-        'transaction': tx,
-        'enrollment': enrollment,
-        'invoice': invoice,
-        'emails_sent': emails_sent
+        "transaction": tx,
+        "enrollment": enrollment,
+        "invoice": invoice,
+        "emails_sent": emails_sent,
     }
 
 
@@ -314,26 +314,24 @@ def reconcile_pending_purchase_emails(user=None, limit=25):
     import stripe
 
     queryset = (
-        PaymentTransaction.objects
-        .filter(confirmation_emails_sent=False)
-        .select_related('user', 'course')
-        .order_by('created_at')
+        PaymentTransaction.objects.filter(confirmation_emails_sent=False)
+        .select_related("user", "course")
+        .order_by("created_at")
     )
     if user is not None:
         queryset = queryset.filter(user=user)
     if limit:
         queryset = queryset[:limit]
 
-    summary = {'checked': 0, 'redeemed': [], 'skipped': []}
-    stripe_ready = (
-        bool(settings.STRIPE_SECRET_KEY) and
-        not str(settings.STRIPE_SECRET_KEY).endswith('_placeholder')
-    )
+    summary = {"checked": 0, "redeemed": [], "skipped": []}
+    stripe_ready = bool(settings.STRIPE_SECRET_KEY) and not str(
+        settings.STRIPE_SECRET_KEY
+    ).endswith("_placeholder")
     if stripe_ready:
         stripe.api_key = settings.STRIPE_SECRET_KEY
 
     for tx in queryset:
-        summary['checked'] += 1
+        summary["checked"] += 1
         billing_name = None
         billing_email = None
         payment_intent = None
@@ -344,16 +342,14 @@ def reconcile_pending_purchase_emails(user=None, limit=25):
                 session = stripe.checkout.Session.retrieve(
                     tx.stripe_checkout_session_id
                 )
-                is_paid = (
-                    getattr(session, 'payment_status', None) == 'paid'
-                )
-                payment_intent = getattr(session, 'payment_intent', None)
-                details = getattr(session, 'customer_details', None)
-                if details is not None and hasattr(details, 'to_dict'):
+                is_paid = getattr(session, "payment_status", None) == "paid"
+                payment_intent = getattr(session, "payment_intent", None)
+                details = getattr(session, "customer_details", None)
+                if details is not None and hasattr(details, "to_dict"):
                     details = details.to_dict()
                 if isinstance(details, dict):
-                    name = details.get('name')
-                    email = details.get('email')
+                    name = details.get("name")
+                    email = details.get("email")
                     billing_name = (
                         name.strip()
                         if isinstance(name, str) and name.strip()
@@ -370,13 +366,13 @@ def reconcile_pending_purchase_emails(user=None, limit=25):
                     f"{tx.stripe_checkout_session_id} for order "
                     f"#{tx.order_number}: {type(e).__name__} - {e}"
                 )
-                summary['skipped'].append(tx.order_number)
+                summary["skipped"].append(tx.order_number)
                 continue
-        elif tx.status == 'COMPLETED' and not tx.stripe_checkout_session_id:
+        elif tx.status == "COMPLETED" and not tx.stripe_checkout_session_id:
             is_paid = True
 
         if not is_paid:
-            summary['skipped'].append(tx.order_number)
+            summary["skipped"].append(tx.order_number)
             continue
 
         result = fulfill_order_and_dispatch_emails(
@@ -387,12 +383,12 @@ def reconcile_pending_purchase_emails(user=None, limit=25):
             billing_name=billing_name,
             billing_email=billing_email,
         )
-        if result and result.get('emails_sent'):
-            summary['redeemed'].append(tx.order_number)
+        if result and result.get("emails_sent"):
+            summary["redeemed"].append(tx.order_number)
         else:
-            summary['skipped'].append(tx.order_number)
+            summary["skipped"].append(tx.order_number)
 
-    if summary['redeemed']:
+    if summary["redeemed"]:
         logger.info(
             f"Reconciliation dispatched previously missing "
             f"confirmation/invoice emails for: {summary['redeemed']}"

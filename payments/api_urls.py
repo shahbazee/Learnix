@@ -9,27 +9,25 @@ from .api_views import (
 )
 
 urlpatterns = [
+    path("checkout/", CheckoutView.as_view(), name="checkout"),
     path(
-        'checkout/', CheckoutView.as_view(), name='checkout'
-    ),
-    path(
-        'success/',
+        "success/",
         PaymentSuccessView.as_view(),
-        name='payment-success',
+        name="payment-success",
     ),
     path(
-        'cancel/',
+        "cancel/",
         PaymentCancelView.as_view(),
-        name='payment-cancel',
+        name="payment-cancel",
     ),
     path(
-        'my-transactions/',
+        "my-transactions/",
         MyTransactionsView.as_view(),
-        name='my-transactions',
+        name="my-transactions",
     ),
     path(
-        'my-invoices/',
+        "my-invoices/",
         MyInvoicesView.as_view(),
-        name='my-invoices',
+        name="my-invoices",
     ),
 ]

@@ -11,27 +11,25 @@ from .api_views import (
 )
 
 router = DefaultRouter()
-router.register('categories', CourseCategoryViewSet)
-router.register('', CourseViewSet, basename='course')
+router.register("categories", CourseCategoryViewSet)
+router.register("", CourseViewSet, basename="course")
 
 urlpatterns = [
+    path("enroll/", EnrollView.as_view(), name="course-enroll"),
     path(
-        'enroll/', EnrollView.as_view(), name='course-enroll'
-    ),
-    path(
-        'my-enrollments/',
+        "my-enrollments/",
         MyEnrollmentsView.as_view(),
-        name='my-enrollments',
+        name="my-enrollments",
     ),
     path(
-        'lessons/complete/',
+        "lessons/complete/",
         MarkLessonCompleteView.as_view(),
-        name='lesson-complete',
+        name="lesson-complete",
     ),
     path(
-        'my-certificates/',
+        "my-certificates/",
         MyCertificatesView.as_view(),
-        name='my-certificates',
+        name="my-certificates",
     ),
-    path('', include(router.urls)),
+    path("", include(router.urls)),
 ]

@@ -6,13 +6,19 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('accounts', '0003_emailotp_purpose_and_more'),
+        ("accounts", "0003_emailotp_purpose_and_more"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='userprofile',
-            name='role',
-            field=models.CharField(choices=[('student', 'Student'), ('instructor', 'Instructor')], db_index=True, default='student', help_text='Role distinguishing students from course instructors', max_length=20),
+            model_name="userprofile",
+            name="role",
+            field=models.CharField(
+                choices=[("student", "Student"), ("instructor", "Instructor")],
+                db_index=True,
+                default="student",
+                help_text="Role distinguishing students from course instructors",
+                max_length=20,
+            ),
         ),
     ]

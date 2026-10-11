@@ -20,59 +20,50 @@ class CheckoutView(APIView):
 
     def post(self, request):
         serializer = CheckoutSerializer(
-            data=request.data, context={'request': request}
+            data=request.data, context={"request": request}
         )
         serializer.is_valid(raise_exception=True)
-        course = serializer.validated_data['course']
+        course = serializer.validated_data["course"]
         transaction = PaymentTransaction.objects.create(
             user=request.user,
             course=course,
-            order_number=(
-                PaymentTransaction.generate_order_number()
-            ),
+            order_number=(PaymentTransaction.generate_order_number()),
             amount=course.price,
-            currency='USD',
-            status='PENDING',
+            currency="USD",
+            status="PENDING",
         )
         stripe.api_key = settings.STRIPE_SECRET_KEY
-        success_url = request.build_absolute_uri(
-            reverse('payment-success')
-        ) + '?session_id={CHECKOUT_SESSION_ID}'
-        cancel_url = request.build_absolute_uri(
-            reverse('payment-cancel')
+        success_url = (
+            request.build_absolute_uri(reverse("payment-success"))
+            + "?session_id={CHECKOUT_SESSION_ID}"
         )
+        cancel_url = request.build_absolute_uri(reverse("payment-cancel"))
         session = stripe.checkout.Session.create(
-            mode='payment',
+            mode="payment",
             line_items=[
                 {
-                    'price_data': {
-                        'currency':
-                            transaction.currency.lower(),
-                        'unit_amount':
-                            int(transaction.amount * 100),
-                        'product_data': {
-                            'name': course.title
-                        },
+                    "price_data": {
+                        "currency": transaction.currency.lower(),
+                        "unit_amount": int(transaction.amount * 100),
+                        "product_data": {"name": course.title},
                     },
-                    'quantity': 1,
+                    "quantity": 1,
                 }
             ],
             metadata={
-                'order_number': transaction.order_number,
-                'user_id': str(request.user.id),
-                'course_id': str(course.id),
+                "order_number": transaction.order_number,
+                "user_id": str(request.user.id),
+                "course_id": str(course.id),
             },
             success_url=success_url,
             cancel_url=cancel_url,
         )
         transaction.stripe_checkout_session_id = session.id
-        transaction.save(
-            update_fields=['stripe_checkout_session_id']
-        )
+        transaction.save(update_fields=["stripe_checkout_session_id"])
         return Response(
             {
-                'checkout_url': session.url,
-                'order_number': transaction.order_number,
+                "checkout_url": session.url,
+                "order_number": transaction.order_number,
             },
             status=201,
         )
@@ -81,20 +72,17 @@ class CheckoutView(APIView):
 class PaymentSuccessView(APIView):
     permission_classes = [permissions.AllowAny]
     serializer_class = PaymentTransactionSerializer
-    
 
     def get(self, request):
-        session_id = request.query_params.get('session_id')
+        session_id = request.query_params.get("session_id")
         if not session_id:
-            return Response(
-                {'detail': 'Missing session_id.'}, status=400
-            )
+            return Response({"detail": "Missing session_id."}, status=400)
         transaction = get_object_or_404(
             PaymentTransaction,
             stripe_checkout_session_id=session_id,
         )
         data = PaymentTransactionSerializer(transaction).data
-        data['detail'] = 'Payment successful.'
+        data["detail"] = "Payment successful."
         return Response(data)
 
 
@@ -102,9 +90,7 @@ class PaymentCancelView(APIView):
     permission_classes = [permissions.AllowAny]
 
     def get(self, request):
-        return Response(
-            {'detail': 'Payment cancelled. No charge was made.'}
-        )
+        return Response({"detail": "Payment cancelled. No charge was made."})
 
 
 class MyTransactionsView(generics.ListAPIView):
@@ -114,9 +100,7 @@ class MyTransactionsView(generics.ListAPIView):
     def get_queryset(self):
         return PaymentTransaction.objects.filter(
             user=self.request.user
-        ).select_related(
-            'course__category', 'course__instructor'
-        )
+        ).select_related("course__category", "course__instructor")
 
 
 class MyInvoicesView(generics.ListAPIView):
@@ -126,4 +110,4 @@ class MyInvoicesView(generics.ListAPIView):
     def get_queryset(self):
         return Invoice.objects.filter(
             transaction__user=self.request.user
-        ).select_related('transaction__course')
+        ).select_related("transaction__course")

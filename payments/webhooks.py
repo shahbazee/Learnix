@@ -1,15 +1,16 @@
 import json
 import logging
 
+import stripe
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
-import stripe
 
 from core.emails import send_payment_failed_email
 from courses.models import Course
+
 from .services import fulfill_order_and_dispatch_emails
 
 User = get_user_model()
@@ -22,18 +23,15 @@ def stripe_webhook(request):
     payload = request.body
     sig_header = request.META.get("HTTP_STRIPE_SIGNATURE")
 
-    is_mock_mode = (
-        not sig_header and
-        (
-            settings.DEBUG or
-            not settings.STRIPE_WEBHOOK_SECRET or
-            settings.STRIPE_WEBHOOK_SECRET.endswith('_placeholder')
-        )
+    is_mock_mode = not sig_header and (
+        settings.DEBUG
+        or not settings.STRIPE_WEBHOOK_SECRET
+        or settings.STRIPE_WEBHOOK_SECRET.endswith("_placeholder")
     )
 
     if is_mock_mode:
         try:
-            event = json.loads(payload.decode('utf-8'))
+            event = json.loads(payload.decode("utf-8"))
         except Exception:
             return HttpResponse(status=400)
     else:
@@ -128,7 +126,7 @@ def stripe_webhook(request):
 
     elif event_type in [
         "payment_intent.payment_failed",
-        "checkout.session.expired"
+        "checkout.session.expired",
     ]:
         session = (
             event.get("data", {}).get("object", {})
@@ -162,9 +160,7 @@ def stripe_webhook(request):
             try:
                 user = User.objects.get(id=int(user_id))
                 course = Course.objects.get(id=int(course_id))
-                send_payment_failed_email(
-                    user, course, error_reason=error_msg
-                )
+                send_payment_failed_email(user, course, error_reason=error_msg)
                 logger.info(
                     f"Dispatched payment failed email for user "
                     f"{user.username}, course {course.title}"

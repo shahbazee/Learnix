@@ -1,11 +1,12 @@
 import os
-from django.db import migrations
+
 from django.contrib.auth.hashers import make_password
+from django.db import migrations
 
 
 def ensure_superuser(apps, schema_editor):
-    User = apps.get_model('auth', 'User')
-    UserProfile = apps.get_model('accounts', 'UserProfile')
+    User = apps.get_model("auth", "User")
+    UserProfile = apps.get_model("accounts", "UserProfile")
 
     username = os.environ.get("ADMIN_USERNAME", "shahbaz")
     email = os.environ.get("ADMIN_EMAIL", "shahbazbutt22ee@gmail.com")
@@ -21,7 +22,7 @@ def ensure_superuser(apps, schema_editor):
             password=hashed,
             is_staff=True,
             is_superuser=True,
-            is_active=True
+            is_active=True,
         )
     else:
         user.email = email
@@ -32,16 +33,18 @@ def ensure_superuser(apps, schema_editor):
         user.save()
 
     profile, _ = UserProfile.objects.get_or_create(user_id=user.id)
-    profile.role = 'instructor'
+    profile.role = "instructor"
     profile.save()
 
 
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('accounts', '0004_userprofile_role'),
+        ("accounts", "0004_userprofile_role"),
     ]
 
     operations = [
-        migrations.RunPython(ensure_superuser, reverse_code=migrations.RunPython.noop),
+        migrations.RunPython(
+            ensure_superuser, reverse_code=migrations.RunPython.noop
+        ),
     ]

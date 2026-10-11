@@ -15,33 +15,89 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='UserProfile',
+            name="UserProfile",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('avatar', models.ImageField(blank=True, null=True, upload_to='avatars/')),
-                ('bio', models.TextField(blank=True, default='')),
-                ('headline', models.CharField(blank=True, default='', max_length=255)),
-                ('phone_number', models.CharField(blank=True, default='', max_length=30)),
-                ('preferred_currency', models.CharField(default='USD', max_length=10)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('user', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='profile', to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "avatar",
+                    models.ImageField(
+                        blank=True, null=True, upload_to="avatars/"
+                    ),
+                ),
+                ("bio", models.TextField(blank=True, default="")),
+                (
+                    "headline",
+                    models.CharField(blank=True, default="", max_length=255),
+                ),
+                (
+                    "phone_number",
+                    models.CharField(blank=True, default="", max_length=30),
+                ),
+                (
+                    "preferred_currency",
+                    models.CharField(default="USD", max_length=10),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "user",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="profile",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='EmailOTP',
+            name="EmailOTP",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('otp_code', models.CharField(db_index=True, max_length=6)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('expires_at', models.DateTimeField()),
-                ('is_verified', models.BooleanField(default=False)),
-                ('attempts_count', models.PositiveSmallIntegerField(default=0)),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='email_otps', to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("otp_code", models.CharField(db_index=True, max_length=6)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("expires_at", models.DateTimeField()),
+                ("is_verified", models.BooleanField(default=False)),
+                (
+                    "attempts_count",
+                    models.PositiveSmallIntegerField(default=0),
+                ),
+                (
+                    "user",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="email_otps",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'ordering': ['-created_at'],
-                'indexes': [models.Index(fields=['user', 'otp_code'], name='accounts_em_user_id_5d6258_idx'), models.Index(fields=['expires_at'], name='accounts_em_expires_2be763_idx')],
+                "ordering": ["-created_at"],
+                "indexes": [
+                    models.Index(
+                        fields=["user", "otp_code"],
+                        name="accounts_em_user_id_5d6258_idx",
+                    ),
+                    models.Index(
+                        fields=["expires_at"],
+                        name="accounts_em_expires_2be763_idx",
+                    ),
+                ],
             },
         ),
     ]

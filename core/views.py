@@ -20,32 +20,30 @@ def health_check_view(request):
 
 
 class HomeView(TemplateView):
-    template_name = 'core/home.html'
+    template_name = "core/home.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         featured_courses = (
             Course.objects.filter(is_published=True)
             .select_related(
-                'instructor',
-                'instructor__profile',
-                'category',
+                "instructor",
+                "instructor__profile",
+                "category",
             )
-            .annotate(
-                lessons_count=Count('modules__lessons', distinct=True)
-            )
-            .order_by('-rating', '-reviews_count', '-created_at')[:6]
+            .annotate(lessons_count=Count("modules__lessons", distinct=True))
+            .order_by("-rating", "-reviews_count", "-created_at")[:6]
         )
         categories = (
             CourseCategory.objects.annotate(
                 published_courses_count=Count(
-                    'courses',
+                    "courses",
                     filter=Q(courses__is_published=True),
                     distinct=True,
                 )
             )
             .filter(published_courses_count__gt=0)
-            .order_by('-published_courses_count', 'name')
+            .order_by("-published_courses_count", "name")
         )
         preview_course = (
             Course.objects.filter(
@@ -55,40 +53,38 @@ class HomeView(TemplateView):
             .distinct()
             .first()
         )
-        context['featured_courses'] = featured_courses
-        context['categories'] = categories
-        context['preview_course'] = preview_course
+        context["featured_courses"] = featured_courses
+        context["categories"] = categories
+        context["preview_course"] = preview_course
         return context
 
 
 class AboutView(TemplateView):
-    template_name = 'core/about.html'
+    template_name = "core/about.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         target_slugs = [
-            'ai-systems',
-            'distributed-systems',
-            'cloud-infrastructure',
-            'system-design',
+            "ai-systems",
+            "distributed-systems",
+            "cloud-infrastructure",
+            "system-design",
         ]
         cats = {
             c.slug: c
             for c in CourseCategory.objects.filter(slug__in=target_slugs)
         }
-        context['categories'] = [
-            cats[s] for s in target_slugs if s in cats
-        ]
+        context["categories"] = [cats[s] for s in target_slugs if s in cats]
         return context
 
 
 def custom_page_not_found_view(request, exception=None):
-    return render(request, '404.html', status=404)
+    return render(request, "404.html", status=404)
 
 
 def custom_server_error_view(request):
-    return render(request, '500.html', status=500)
+    return render(request, "500.html", status=500)
 
 
 def custom_permission_denied_view(request, exception=None):
-    return render(request, '403.html', status=403)
+    return render(request, "403.html", status=403)

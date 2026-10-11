@@ -30,29 +30,33 @@ OTP_CLASSES = (
 class StudentRegistrationForm(forms.ModelForm):
     password = forms.CharField(
         label="Password",
-        widget=forms.PasswordInput(attrs={
-            "class": INPUT_CLASSES,
-            "placeholder": "Minimum 8 characters with digits & symbols",
-            "autocomplete": "new-password",
-        })
+        widget=forms.PasswordInput(
+            attrs={
+                "class": INPUT_CLASSES,
+                "placeholder": "Minimum 8 characters with digits & symbols",
+                "autocomplete": "new-password",
+            }
+        ),
     )
     confirm_password = forms.CharField(
         label="Confirm Password",
-        widget=forms.PasswordInput(attrs={
-            "class": INPUT_CLASSES,
-            "placeholder": "Repeat password",
-            "autocomplete": "new-password",
-        })
+        widget=forms.PasswordInput(
+            attrs={
+                "class": INPUT_CLASSES,
+                "placeholder": "Repeat password",
+                "autocomplete": "new-password",
+            }
+        ),
     )
 
     ROLE_CHOICES = (
-        ('student', 'Student'),
-        ('instructor', 'Instructor'),
+        ("student", "Student"),
+        ("instructor", "Instructor"),
     )
     role = forms.ChoiceField(
         choices=ROLE_CHOICES,
-        initial='student',
-        widget=forms.HiddenInput(attrs={'id': 'id_role'}),
+        initial="student",
+        widget=forms.HiddenInput(attrs={"id": "id_role"}),
         required=False,
     )
 
@@ -60,39 +64,45 @@ class StudentRegistrationForm(forms.ModelForm):
         model = User
         fields = ("first_name", "last_name", "username", "email")
         widgets = {
-            "first_name": forms.TextInput(attrs={
-                "class": INPUT_CLASSES,
-                "placeholder": "First name",
-            }),
-            "last_name": forms.TextInput(attrs={
-                "class": INPUT_CLASSES,
-                "placeholder": "Last name",
-            }),
-            "username": forms.TextInput(attrs={
-                "class": INPUT_CLASSES,
-                "placeholder": "Unique handle (e.g. alex_vance)",
-            }),
-            "email": forms.EmailInput(attrs={
-                "class": INPUT_CLASSES,
-                "placeholder": "engineering@domain.com",
-            }),
+            "first_name": forms.TextInput(
+                attrs={
+                    "class": INPUT_CLASSES,
+                    "placeholder": "First name",
+                }
+            ),
+            "last_name": forms.TextInput(
+                attrs={
+                    "class": INPUT_CLASSES,
+                    "placeholder": "Last name",
+                }
+            ),
+            "username": forms.TextInput(
+                attrs={
+                    "class": INPUT_CLASSES,
+                    "placeholder": "Unique handle (e.g. alex_vance)",
+                }
+            ),
+            "email": forms.EmailInput(
+                attrs={
+                    "class": INPUT_CLASSES,
+                    "placeholder": "engineering@domain.com",
+                }
+            ),
         }
 
     def __init__(self, *args, **kwargs):
-        if 'instance' not in kwargs:
-            data = kwargs.get('data')
-            if data is None and len(args) > 0 and hasattr(args[0], 'get'):
+        if "instance" not in kwargs:
+            data = kwargs.get("data")
+            if data is None and len(args) > 0 and hasattr(args[0], "get"):
                 data = args[0]
-            if data and 'email' in data:
-                submitted_email = str(
-                    data.get('email', '')
-                ).strip().lower()
+            if data and "email" in data:
+                submitted_email = str(data.get("email", "")).strip().lower()
                 if submitted_email:
                     unverified_user = User.objects.filter(
                         email__iexact=submitted_email, is_active=False
                     ).first()
                     if unverified_user:
-                        kwargs['instance'] = unverified_user
+                        kwargs["instance"] = unverified_user
         super().__init__(*args, **kwargs)
 
     def clean_username(self):
@@ -135,13 +145,12 @@ class StudentRegistrationForm(forms.ModelForm):
 
         if p1 and len(p1) < 8:
             self.add_error(
-                "password",
-                "Password must be at least 8 characters long."
+                "password", "Password must be at least 8 characters long."
             )
 
-        role = cleaned_data.get('role')
-        if not role or role not in ['student', 'instructor']:
-            cleaned_data['role'] = 'student'
+        role = cleaned_data.get("role")
+        if not role or role not in ["student", "instructor"]:
+            cleaned_data["role"] = "student"
 
         return cleaned_data
 
@@ -150,15 +159,17 @@ class OTPVerificationForm(forms.Form):
     otp_code = forms.CharField(
         max_length=6,
         min_length=6,
-        widget=forms.TextInput(attrs={
-            "class": OTP_CLASSES,
-            "placeholder": "••••••",
-            "maxlength": "6",
-            "pattern": "[0-9]{6}",
-            "inputmode": "numeric",
-            "autocomplete": "one-time-code",
-            "autofocus": "autofocus",
-        })
+        widget=forms.TextInput(
+            attrs={
+                "class": OTP_CLASSES,
+                "placeholder": "••••••",
+                "maxlength": "6",
+                "pattern": "[0-9]{6}",
+                "inputmode": "numeric",
+                "autocomplete": "one-time-code",
+                "autofocus": "autofocus",
+            }
+        ),
     )
 
     def clean_otp_code(self):
@@ -172,29 +183,33 @@ class OTPVerificationForm(forms.Form):
 
 class UserLoginForm(AuthenticationForm):
     ROLE_CHOICES = (
-        ('student', 'Student'),
-        ('instructor', 'Instructor'),
+        ("student", "Student"),
+        ("instructor", "Instructor"),
     )
 
     role = forms.ChoiceField(
         choices=ROLE_CHOICES,
-        initial='student',
-        widget=forms.HiddenInput(attrs={'id': 'id_role'}),
+        initial="student",
+        widget=forms.HiddenInput(attrs={"id": "id_role"}),
         required=False,
     )
     username = forms.CharField(
-        widget=forms.TextInput(attrs={
-            "class": INPUT_CLASSES,
-            "placeholder": "Username or Email",
-            "autocomplete": "username",
-        })
+        widget=forms.TextInput(
+            attrs={
+                "class": INPUT_CLASSES,
+                "placeholder": "Username or Email",
+                "autocomplete": "username",
+            }
+        )
     )
     password = forms.CharField(
-        widget=forms.PasswordInput(attrs={
-            "class": INPUT_CLASSES,
-            "placeholder": "Your password",
-            "autocomplete": "current-password",
-        })
+        widget=forms.PasswordInput(
+            attrs={
+                "class": INPUT_CLASSES,
+                "placeholder": "Your password",
+                "autocomplete": "current-password",
+            }
+        )
     )
 
     def confirm_login_allowed(self, user):
@@ -207,8 +222,8 @@ class UserLoginForm(AuthenticationForm):
             )
 
     def clean(self):
-        username = self.cleaned_data.get('username')
-        password = self.cleaned_data.get('password')
+        username = self.cleaned_data.get("username")
+        password = self.cleaned_data.get("password")
 
         if username and password:
             clean_input = str(username).strip()
@@ -217,7 +232,7 @@ class UserLoginForm(AuthenticationForm):
                 self.request, username=clean_input, password=password
             )
 
-            if self.user_cache is None and '@' in clean_input:
+            if self.user_cache is None and "@" in clean_input:
                 user_by_email = User.objects.filter(
                     email__iexact=clean_input
                 ).first()
@@ -225,15 +240,15 @@ class UserLoginForm(AuthenticationForm):
                     self.user_cache = authenticate(
                         self.request,
                         username=user_by_email.get_username(),
-                        password=password
+                        password=password,
                     )
 
             if self.user_cache is None:
                 inactive_user = (
                     User.objects.filter(
                         username__iexact=clean_input, is_active=False
-                    ).first() or
-                    User.objects.filter(
+                    ).first()
+                    or User.objects.filter(
                         email__iexact=clean_input, is_active=False
                     ).first()
                 )
@@ -248,24 +263,23 @@ class UserLoginForm(AuthenticationForm):
 
             self.confirm_login_allowed(self.user_cache)
 
-        user = getattr(self, 'user_cache', None)
-        submitted_role = self.cleaned_data.get('role')
+        user = getattr(self, "user_cache", None)
+        submitted_role = self.cleaned_data.get("role")
         if user and submitted_role:
             submitted_role = submitted_role.lower().strip()
-            profile = getattr(user, 'profile', None)
+            profile = getattr(user, "profile", None)
             actual_role = (
-                getattr(profile, 'role', 'student')
-                if profile else 'student'
+                getattr(profile, "role", "student") if profile else "student"
             )
 
-            if (
-                not user.is_superuser and
-                submitted_role in ['student', 'instructor']
-            ):
+            if not user.is_superuser and submitted_role in [
+                "student",
+                "instructor",
+            ]:
                 if actual_role != submitted_role:
                     role_display = (
                         "Instructor"
-                        if actual_role == 'instructor'
+                        if actual_role == "instructor"
                         else "Student"
                     )
                     raise ValidationError(
@@ -280,12 +294,14 @@ class UserLoginForm(AuthenticationForm):
 class ForgotPasswordRequestForm(forms.Form):
     email = forms.EmailField(
         label="Registered Email Address",
-        widget=forms.EmailInput(attrs={
-            "class": EMAIL_CLASSES,
-            "placeholder": "engineering@domain.com",
-            "autocomplete": "email",
-            "autofocus": "autofocus",
-        })
+        widget=forms.EmailInput(
+            attrs={
+                "class": EMAIL_CLASSES,
+                "placeholder": "engineering@domain.com",
+                "autocomplete": "email",
+                "autofocus": "autofocus",
+            }
+        ),
     )
 
     def clean_email(self):
@@ -295,20 +311,24 @@ class ForgotPasswordRequestForm(forms.Form):
 class SetNewPasswordForm(forms.Form):
     password = forms.CharField(
         label="New Password",
-        widget=forms.PasswordInput(attrs={
-            "class": INPUT_CLASSES,
-            "placeholder": "Minimum 8 characters with digits & symbols",
-            "autocomplete": "new-password",
-            "autofocus": "autofocus",
-        })
+        widget=forms.PasswordInput(
+            attrs={
+                "class": INPUT_CLASSES,
+                "placeholder": "Minimum 8 characters with digits & symbols",
+                "autocomplete": "new-password",
+                "autofocus": "autofocus",
+            }
+        ),
     )
     confirm_password = forms.CharField(
         label="Confirm New Password",
-        widget=forms.PasswordInput(attrs={
-            "class": INPUT_CLASSES,
-            "placeholder": "Repeat new password",
-            "autocomplete": "new-password",
-        })
+        widget=forms.PasswordInput(
+            attrs={
+                "class": INPUT_CLASSES,
+                "placeholder": "Repeat new password",
+                "autocomplete": "new-password",
+            }
+        ),
     )
 
     def __init__(self, user=None, *args, **kwargs):
@@ -325,13 +345,13 @@ class SetNewPasswordForm(forms.Form):
 
         if p1 and len(p1) < 8:
             self.add_error(
-                "password",
-                "Password must be at least 8 characters long."
+                "password", "Password must be at least 8 characters long."
             )
 
         if p1 and self.user:
             try:
                 from django.contrib.auth import password_validation
+
                 password_validation.validate_password(p1, self.user)
             except ValidationError as error:
                 self.add_error("password", error)

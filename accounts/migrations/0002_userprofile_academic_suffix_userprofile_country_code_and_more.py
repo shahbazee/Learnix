@@ -6,53 +6,57 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('accounts', '0001_initial'),
+        ("accounts", "0001_initial"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='userprofile',
-            name='academic_suffix',
-            field=models.CharField(blank=True, default='', max_length=50),
+            model_name="userprofile",
+            name="academic_suffix",
+            field=models.CharField(blank=True, default="", max_length=50),
         ),
         migrations.AddField(
-            model_name='userprofile',
-            name='country_code',
-            field=models.CharField(blank=True, default='+1', max_length=10),
+            model_name="userprofile",
+            name="country_code",
+            field=models.CharField(blank=True, default="+1", max_length=10),
         ),
         migrations.AddField(
-            model_name='userprofile',
-            name='github_username',
-            field=models.CharField(blank=True, default='', max_length=100),
+            model_name="userprofile",
+            name="github_username",
+            field=models.CharField(blank=True, default="", max_length=100),
         ),
         migrations.AddField(
-            model_name='userprofile',
-            name='google_email',
-            field=models.CharField(blank=True, default='', max_length=255),
+            model_name="userprofile",
+            name="google_email",
+            field=models.CharField(blank=True, default="", max_length=255),
         ),
         migrations.AddField(
-            model_name='userprofile',
-            name='location_timezone',
-            field=models.CharField(blank=True, default='San Francisco, CA · Pacific Daylight (UTC-7)', max_length=150),
+            model_name="userprofile",
+            name="location_timezone",
+            field=models.CharField(
+                blank=True,
+                default="San Francisco, CA · Pacific Daylight (UTC-7)",
+                max_length=150,
+            ),
         ),
         migrations.AddField(
-            model_name='userprofile',
-            name='public_directory',
+            model_name="userprofile",
+            name="public_directory",
             field=models.BooleanField(default=True),
         ),
         migrations.AddField(
-            model_name='userprofile',
-            name='storage_total_gb',
+            model_name="userprofile",
+            name="storage_total_gb",
             field=models.FloatField(default=50.0),
         ),
         migrations.AddField(
-            model_name='userprofile',
-            name='storage_used_gb',
+            model_name="userprofile",
+            name="storage_used_gb",
             field=models.FloatField(default=12.4),
         ),
         migrations.AddField(
-            model_name='userprofile',
-            name='two_factor_enabled',
+            model_name="userprofile",
+            name="two_factor_enabled",
             field=models.BooleanField(default=True),
         ),
     ]

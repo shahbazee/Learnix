@@ -4,6 +4,7 @@ from core.emails import (
     send_course_purchase_success_email,
     send_payment_receipt_invoice_email,
 )
+
 from .models import Invoice, PaymentTransaction
 from .services import generate_invoice_pdf
 
@@ -16,22 +17,22 @@ def resend_purchase_emails_action(modeladmin, request, queryset):
     fail_count = 0
     for tx in queryset:
         try:
-            inv = getattr(tx, 'invoice', None)
-            if not inv and tx.status == 'COMPLETED':
+            inv = getattr(tx, "invoice", None)
+            if not inv and tx.status == "COMPLETED":
                 inv, _ = Invoice.objects.get_or_create(
                     transaction=tx,
                     defaults={
-                        'invoice_number': Invoice.generate_invoice_number(),
-                        'billing_name': (
+                        "invoice_number": Invoice.generate_invoice_number(),
+                        "billing_name": (
                             tx.user.get_full_name() or tx.user.username
                         ),
-                        'billing_email': (
+                        "billing_email": (
                             tx.user.email or f"{tx.user.username}@learnix.edu"
                         ),
-                        'subtotal': tx.amount,
-                        'tax_amount': 0.00,
-                        'total_amount': tx.amount
-                    }
+                        "subtotal": tx.amount,
+                        "tax_amount": 0.00,
+                        "total_amount": tx.amount,
+                    },
                 )
             pdf_bytes = generate_invoice_pdf(inv) if inv else None
             ok1 = send_course_purchase_success_email(
@@ -41,11 +42,12 @@ def resend_purchase_emails_action(modeladmin, request, queryset):
                 send_payment_receipt_invoice_email(
                     tx.user, tx.course, tx, inv, pdf_bytes=pdf_bytes
                 )
-                if inv else False
+                if inv
+                else False
             )
             if ok1 or ok2:
                 tx.confirmation_emails_sent = True
-                tx.save(update_fields=['confirmation_emails_sent'])
+                tx.save(update_fields=["confirmation_emails_sent"])
                 sent_count += 1
             else:
                 fail_count += 1
@@ -56,39 +58,53 @@ def resend_purchase_emails_action(modeladmin, request, queryset):
         messages.success(
             request,
             f"Successfully dispatched invoice/confirmation emails for "
-            f"{sent_count} transaction(s)."
+            f"{sent_count} transaction(s).",
         )
     if fail_count:
         messages.error(
             request,
             f"Failed to dispatch emails for {fail_count} transaction(s). "
-            f"Check server logs for details."
+            f"Check server logs for details.",
         )
 
 
 @admin.register(PaymentTransaction)
 class PaymentTransactionAdmin(admin.ModelAdmin):
     list_display = (
-        'order_number', 'user', 'course', 'amount', 'currency',
-        'status', 'confirmation_emails_sent', 'created_at'
+        "order_number",
+        "user",
+        "course",
+        "amount",
+        "currency",
+        "status",
+        "confirmation_emails_sent",
+        "created_at",
     )
-    list_filter = ('status', 'confirmation_emails_sent', 'created_at')
+    list_filter = ("status", "confirmation_emails_sent", "created_at")
     search_fields = (
-        'order_number', 'user__username', 'user__email', 'course__title',
-        'stripe_checkout_session_id'
+        "order_number",
+        "user__username",
+        "user__email",
+        "course__title",
+        "stripe_checkout_session_id",
     )
     actions = [resend_purchase_emails_action]
-    readonly_fields = ('created_at',)
+    readonly_fields = ("created_at",)
 
 
 @admin.register(Invoice)
 class InvoiceAdmin(admin.ModelAdmin):
     list_display = (
-        'invoice_number', 'billing_name', 'billing_email',
-        'total_amount', 'issued_at'
+        "invoice_number",
+        "billing_name",
+        "billing_email",
+        "total_amount",
+        "issued_at",
     )
     search_fields = (
-        'invoice_number', 'billing_name', 'billing_email',
-        'transaction__order_number'
+        "invoice_number",
+        "billing_name",
+        "billing_email",
+        "transaction__order_number",
     )
-    readonly_fields = ('issued_at',)
+    readonly_fields = ("issued_at",)

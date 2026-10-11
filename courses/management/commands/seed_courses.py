@@ -30,24 +30,34 @@ class Command(BaseCommand):
 
         instructors_data = [
             (
-                "elena_rostova", "Elena", "Rostova",
-                "Lead AI Fellow · Ex-DeepMind"
+                "elena_rostova",
+                "Elena",
+                "Rostova",
+                "Lead AI Fellow · Ex-DeepMind",
             ),
             (
-                "alex_vance", "Alex", "Vance",
-                "Staff Architect · Ex-Google Brain"
+                "alex_vance",
+                "Alex",
+                "Vance",
+                "Staff Architect · Ex-Google Brain",
             ),
             (
-                "marcus_jin", "Marcus", "Jin",
-                "Principal SRE · Cloud Infrastructure"
+                "marcus_jin",
+                "Marcus",
+                "Jin",
+                "Principal SRE · Cloud Infrastructure",
             ),
             (
-                "sarah_lin", "Sarah", "Lin",
-                "NLP Lab Lead, PhD · Vector Systems"
+                "sarah_lin",
+                "Sarah",
+                "Lin",
+                "NLP Lab Lead, PhD · Vector Systems",
             ),
             (
-                "devon_hayes", "Devon", "Hayes",
-                "Red Team Director · Zero-Trust"
+                "devon_hayes",
+                "Devon",
+                "Hayes",
+                "Red Team Director · Zero-Trust",
             ),
         ]
 
@@ -60,12 +70,12 @@ class Command(BaseCommand):
                     "last_name": lname,
                     "email": f"{username}@learnix.com",
                     "is_active": True,
-                }
+                },
             )
             if created:
                 user.set_password("LearnixPass2026!")
                 user.save()
-            if hasattr(user, 'profile'):
+            if hasattr(user, "profile"):
                 user.profile.headline = headline
                 user.profile.save()
             instructors[username] = user
@@ -82,8 +92,7 @@ class Command(BaseCommand):
         categories = {}
         for name, slug, icon in categories_data:
             cat, _ = CourseCategory.objects.get_or_create(
-                slug=slug,
-                defaults={"name": name, "icon": icon}
+                slug=slug, defaults={"name": name, "icon": icon}
             )
             categories[slug] = cat
 
@@ -107,49 +116,67 @@ class Command(BaseCommand):
                     "?auto=format&fit=crop&w=1200&q=80"
                 ),
                 "modules": [
-                    ("Foundations: Asynchronous Django & Channels", [
-                        (
-                            "1.1 Architecture Overview & ASGI Event Loops",
-                            860, True
-                        ),
-                        (
-                            "1.2 WebSockets & ASGI Handlers Setup",
-                            1335, True
-                        ),
-                        (
-                            "1.3 Redis Pub/Sub Layer Integration",
-                            1720, False
-                        ),
-                        (
-                            "1.4 ASGI Middleware & Cryptographic Handshakes",
-                            1185, False
-                        ),
-                    ]),
-                    ("Agentic Workflows with LangGraph & Django", [
-                        (
-                            "2.1 Multi-Agent State Graph Architecture",
-                            1450, False
-                        ),
-                        (
-                            "2.2 Tool Calling & ReAct Execution Loops",
-                            1620, False
-                        ),
-                        (
-                            "2.3 Human-in-the-Loop Interrupt Workflows",
-                            1980, False
-                        ),
-                    ]),
-                    ("Vector Databases & Hybrid Search Indexing", [
-                        (
-                            "3.1 Qdrant Vector Cluster Deployment",
-                            1200, False
-                        ),
-                        (
-                            "3.2 Dense vs Sparse Vector Hybrids",
-                            1400, False
-                        ),
-                    ]),
-                ]
+                    (
+                        "Foundations: Asynchronous Django & Channels",
+                        [
+                            (
+                                "1.1 Architecture Overview & ASGI Event Loops",
+                                860,
+                                True,
+                            ),
+                            (
+                                "1.2 WebSockets & ASGI Handlers Setup",
+                                1335,
+                                True,
+                            ),
+                            (
+                                "1.3 Redis Pub/Sub Layer Integration",
+                                1720,
+                                False,
+                            ),
+                            (
+                                "1.4 ASGI Middleware & Cryptographic Handshakes",
+                                1185,
+                                False,
+                            ),
+                        ],
+                    ),
+                    (
+                        "Agentic Workflows with LangGraph & Django",
+                        [
+                            (
+                                "2.1 Multi-Agent State Graph Architecture",
+                                1450,
+                                False,
+                            ),
+                            (
+                                "2.2 Tool Calling & ReAct Execution Loops",
+                                1620,
+                                False,
+                            ),
+                            (
+                                "2.3 Human-in-the-Loop Interrupt Workflows",
+                                1980,
+                                False,
+                            ),
+                        ],
+                    ),
+                    (
+                        "Vector Databases & Hybrid Search Indexing",
+                        [
+                            (
+                                "3.1 Qdrant Vector Cluster Deployment",
+                                1200,
+                                False,
+                            ),
+                            (
+                                "3.2 Dense vs Sparse Vector Hybrids",
+                                1400,
+                                False,
+                            ),
+                        ],
+                    ),
+                ],
             },
             {
                 "title": "Distributed Systems in Rust & Go",
@@ -172,31 +199,38 @@ class Command(BaseCommand):
                     "?auto=format&fit=crop&w=1200&q=80"
                 ),
                 "modules": [
-                    ("Raft Consensus & Distributed Log Replication", [
-                        (
-                            "1.1 Leader Election State Transitions",
-                            1100, True
-                        ),
-                        (
-                            "1.2 Log Invariants & Snapshotting",
-                            1420, True
-                        ),
-                        (
-                            "1.3 Network Split-Brain Simulations",
-                            1850, False
-                        ),
-                    ]),
-                    ("High-Performance Sharding Topologies", [
-                        (
-                            "2.1 Consistent Hashing with Virtual Nodes",
-                            1250, False
-                        ),
-                        (
-                            "2.2 Multi-Paxos and Dynamic Membership",
-                            1950, False
-                        ),
-                    ]),
-                ]
+                    (
+                        "Raft Consensus & Distributed Log Replication",
+                        [
+                            (
+                                "1.1 Leader Election State Transitions",
+                                1100,
+                                True,
+                            ),
+                            ("1.2 Log Invariants & Snapshotting", 1420, True),
+                            (
+                                "1.3 Network Split-Brain Simulations",
+                                1850,
+                                False,
+                            ),
+                        ],
+                    ),
+                    (
+                        "High-Performance Sharding Topologies",
+                        [
+                            (
+                                "2.1 Consistent Hashing with Virtual Nodes",
+                                1250,
+                                False,
+                            ),
+                            (
+                                "2.2 Multi-Paxos and Dynamic Membership",
+                                1950,
+                                False,
+                            ),
+                        ],
+                    ),
+                ],
             },
             {
                 "title": "High-Scale Kubernetes & Cloud Architecture",
@@ -217,21 +251,23 @@ class Command(BaseCommand):
                     "?auto=format&fit=crop&w=1200&q=80"
                 ),
                 "modules": [
-                    ("Advanced Operator SDK & Custom Resource Controllers", [
-                        (
-                            "1.1 Controller-Runtime Architecture",
-                            1020, True
-                        ),
-                        (
-                            "1.2 Reconcile Loops & Finalizers",
-                            1450, False
-                        ),
-                        (
-                            "1.3 Multi-Cluster Global Ingress Meshes",
-                            1750, False
-                        ),
-                    ]),
-                ]
+                    (
+                        "Advanced Operator SDK & Custom Resource Controllers",
+                        [
+                            (
+                                "1.1 Controller-Runtime Architecture",
+                                1020,
+                                True,
+                            ),
+                            ("1.2 Reconcile Loops & Finalizers", 1450, False),
+                            (
+                                "1.3 Multi-Cluster Global Ingress Meshes",
+                                1750,
+                                False,
+                            ),
+                        ],
+                    ),
+                ],
             },
             {
                 "title": "Production LLMs: RAG & Fine-Tuning",
@@ -253,17 +289,22 @@ class Command(BaseCommand):
                     "?auto=format&fit=crop&w=1200&q=80"
                 ),
                 "modules": [
-                    ("Quantized Model LoRA Architectures", [
-                        (
-                            "1.1 4-bit NormalFloat & Double Quantization",
-                            1150, True
-                        ),
-                        (
-                            "1.2 Supervised Fine-Tuning on Custom Corpora",
-                            1640, False
-                        ),
-                    ]),
-                ]
+                    (
+                        "Quantized Model LoRA Architectures",
+                        [
+                            (
+                                "1.1 4-bit NormalFloat & Double Quantization",
+                                1150,
+                                True,
+                            ),
+                            (
+                                "1.2 Supervised Fine-Tuning on Custom Corpora",
+                                1640,
+                                False,
+                            ),
+                        ],
+                    ),
+                ],
             },
             {
                 "title": "Modern Web Security & Zero-Trust",
@@ -284,17 +325,18 @@ class Command(BaseCommand):
                     "?auto=format&fit=crop&w=1200&q=80"
                 ),
                 "modules": [
-                    ("Identity Foundation & Cryptographic Tokens", [
-                        (
-                            "1.1 PKCE Authorization Code Flows",
-                            950, True
-                        ),
-                        (
-                            "1.2 Mutual TLS & SPIFFE/SPIRE Attestation",
-                            1320, False
-                        ),
-                    ]),
-                ]
+                    (
+                        "Identity Foundation & Cryptographic Tokens",
+                        [
+                            ("1.1 PKCE Authorization Code Flows", 950, True),
+                            (
+                                "1.2 Mutual TLS & SPIFFE/SPIRE Attestation",
+                                1320,
+                                False,
+                            ),
+                        ],
+                    ),
+                ],
             },
             {
                 "title": "High-Throughput Vector Databases & Embeddings",
@@ -316,17 +358,22 @@ class Command(BaseCommand):
                     "?auto=format&fit=crop&w=1200&q=80"
                 ),
                 "modules": [
-                    ("Vector Indexing Math & HNSW Graphs", [
-                        (
-                            "1.1 Approximate Nearest Neighbor Math",
-                            1080, True
-                        ),
-                        (
-                            "1.2 Product Quantization & Cache Alignment",
-                            1540, False
-                        ),
-                    ]),
-                ]
+                    (
+                        "Vector Indexing Math & HNSW Graphs",
+                        [
+                            (
+                                "1.1 Approximate Nearest Neighbor Math",
+                                1080,
+                                True,
+                            ),
+                            (
+                                "1.2 Product Quantization & Cache Alignment",
+                                1540,
+                                False,
+                            ),
+                        ],
+                    ),
+                ],
             },
         ]
 
@@ -344,7 +391,7 @@ class Command(BaseCommand):
                     "short_description": cdata["short_description"],
                     "thumbnail_url": cdata["thumbnail_url"],
                     "is_published": True,
-                }
+                },
             )
 
             for mod_idx, (m_title, lessons) in enumerate(
@@ -353,7 +400,7 @@ class Command(BaseCommand):
                 module, _ = CourseModule.objects.update_or_create(
                     course=course,
                     order_number=mod_idx,
-                    defaults={"title": m_title}
+                    defaults={"title": m_title},
                 )
                 for les_idx, (l_title, duration, is_prev) in enumerate(
                     lessons, start=1
@@ -365,8 +412,8 @@ class Command(BaseCommand):
                             "title": l_title,
                             "duration_seconds": duration,
                             "is_preview": is_prev,
-                            "video_url": SAMPLE_VIDEO_URL
-                        }
+                            "video_url": SAMPLE_VIDEO_URL,
+                        },
                     )
 
         student, created = User.objects.get_or_create(
@@ -376,11 +423,11 @@ class Command(BaseCommand):
                 "last_name": "Jenkins",
                 "email": "sarah@learnix.edu",
                 "is_active": True,
-            }
+            },
         )
         student.set_password("LearnixDemo2026!")
         student.save()
-        if hasattr(student, 'profile'):
+        if hasattr(student, "profile"):
             student.profile.headline = (
                 "Staff Engineer // Autonomous Agentic Systems"
             )
@@ -397,12 +444,12 @@ class Command(BaseCommand):
             enrollment, _ = Enrollment.objects.get_or_create(
                 user=student,
                 course=primary_course,
-                defaults={"is_active": True, "progress_percent": 78.00}
+                defaults={"is_active": True, "progress_percent": 78.00},
             )
             all_lessons = list(
-                Lesson.objects.filter(
-                    module__course=primary_course
-                ).order_by("module__order_number", "order_number")
+                Lesson.objects.filter(module__course=primary_course).order_by(
+                    "module__order_number", "order_number"
+                )
             )
             for les in all_lessons[:6]:
                 LessonProgress.objects.get_or_create(
@@ -410,8 +457,8 @@ class Command(BaseCommand):
                     lesson=les,
                     defaults={
                         "is_completed": True,
-                        "completed_at": timezone.now()
-                    }
+                        "completed_at": timezone.now(),
+                    },
                 )
             enrollment.calculate_progress()
 
@@ -423,9 +470,9 @@ class Command(BaseCommand):
                     "amount": Decimal("349.00"),
                     "currency": "USD",
                     "status": "COMPLETED",
-                }
+                },
             )
-            if not hasattr(tx, 'invoice'):
+            if not hasattr(tx, "invoice"):
                 Invoice.objects.get_or_create(
                     transaction=tx,
                     defaults={
@@ -435,7 +482,7 @@ class Command(BaseCommand):
                         "subtotal": Decimal("349.00"),
                         "tax_amount": Decimal("0.00"),
                         "total_amount": Decimal("349.00"),
-                    }
+                    },
                 )
 
         secondary_course = Course.objects.filter(
@@ -445,7 +492,7 @@ class Command(BaseCommand):
             Enrollment.objects.get_or_create(
                 user=student,
                 course=secondary_course,
-                defaults={"is_active": True, "progress_percent": 35.00}
+                defaults={"is_active": True, "progress_percent": 35.00},
             )
             tx2, _ = PaymentTransaction.objects.get_or_create(
                 user=student,
@@ -455,9 +502,9 @@ class Command(BaseCommand):
                     "amount": Decimal("289.00"),
                     "currency": "USD",
                     "status": "COMPLETED",
-                }
+                },
             )
-            if not hasattr(tx2, 'invoice'):
+            if not hasattr(tx2, "invoice"):
                 Invoice.objects.get_or_create(
                     transaction=tx2,
                     defaults={
@@ -467,7 +514,7 @@ class Command(BaseCommand):
                         "subtotal": Decimal("289.00"),
                         "tax_amount": Decimal("0.00"),
                         "total_amount": Decimal("289.00"),
-                    }
+                    },
                 )
 
         self.stdout.write(

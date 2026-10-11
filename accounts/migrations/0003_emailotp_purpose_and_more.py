@@ -7,18 +7,31 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('accounts', '0002_userprofile_academic_suffix_userprofile_country_code_and_more'),
+        (
+            "accounts",
+            "0002_userprofile_academic_suffix_userprofile_country_code_and_more",
+        ),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='emailotp',
-            name='purpose',
-            field=models.CharField(choices=[('registration', 'Registration Verification'), ('password_reset', 'Password Reset Verification')], default='registration', max_length=30),
+            model_name="emailotp",
+            name="purpose",
+            field=models.CharField(
+                choices=[
+                    ("registration", "Registration Verification"),
+                    ("password_reset", "Password Reset Verification"),
+                ],
+                default="registration",
+                max_length=30,
+            ),
         ),
         migrations.AddIndex(
-            model_name='emailotp',
-            index=models.Index(fields=['user', 'purpose', 'is_verified'], name='accounts_em_user_id_3d7110_idx'),
+            model_name="emailotp",
+            index=models.Index(
+                fields=["user", "purpose", "is_verified"],
+                name="accounts_em_user_id_3d7110_idx",
+            ),
         ),
     ]

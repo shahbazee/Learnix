@@ -7,27 +7,30 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('accounts', '0005_auto_create_superuser'),
+        ("accounts", "0005_auto_create_superuser"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.RemoveIndex(
-            model_name='emailotp',
-            name='accounts_em_user_id_5d6258_idx',
+            model_name="emailotp",
+            name="accounts_em_user_id_5d6258_idx",
         ),
         migrations.AddField(
-            model_name='emailotp',
-            name='code_hash',
-            field=models.CharField(db_index=True, default='', max_length=64),
+            model_name="emailotp",
+            name="code_hash",
+            field=models.CharField(db_index=True, default="", max_length=64),
             preserve_default=False,
         ),
         migrations.AddIndex(
-            model_name='emailotp',
-            index=models.Index(fields=['user', 'code_hash'], name='accounts_em_user_id_07eb9c_idx'),
+            model_name="emailotp",
+            index=models.Index(
+                fields=["user", "code_hash"],
+                name="accounts_em_user_id_07eb9c_idx",
+            ),
         ),
         migrations.RemoveField(
-            model_name='emailotp',
-            name='otp_code',
+            model_name="emailotp",
+            name="otp_code",
         ),
     ]

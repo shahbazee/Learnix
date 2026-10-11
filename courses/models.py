@@ -1,7 +1,7 @@
-from decimal import Decimal
 import hashlib
-from pathlib import Path
 import uuid
+from decimal import Decimal
+from pathlib import Path
 
 from django.conf import settings
 from django.db import models
@@ -12,14 +12,13 @@ class CourseCategory(models.Model):
     name = models.CharField(max_length=100, unique=True)
     slug = models.SlugField(max_length=120, unique=True)
     icon = models.CharField(
-        max_length=50, default='school',
-        help_text="Material symbol icon name"
+        max_length=50, default="school", help_text="Material symbol icon name"
     )
-    description = models.TextField(blank=True, default='')
+    description = models.TextField(blank=True, default="")
 
     class Meta:
         verbose_name_plural = "Course Categories"
-        ordering = ['name']
+        ordering = ["name"]
 
     def __str__(self):
         return self.name
@@ -42,14 +41,14 @@ class Course(models.Model):
     instructor = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        related_name="authored_courses"
+        related_name="authored_courses",
     )
     category = models.ForeignKey(
         CourseCategory,
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name="courses"
+        related_name="courses",
     )
     short_description = models.TextField(
         help_text=(
@@ -58,15 +57,13 @@ class Course(models.Model):
     )
     full_description = models.TextField(
         blank=True,
-        default='',
+        default="",
         help_text=(
             "Comprehensive syllabus outline, prerequisites, "
             "and learning outcomes"
-        )
+        ),
     )
-    price = models.DecimalField(
-        max_digits=8, decimal_places=2, default=0.00
-    )
+    price = models.DecimalField(max_digits=8, decimal_places=2, default=0.00)
     level = models.CharField(
         max_length=15, choices=LEVEL_CHOICES, default="BEGINNER"
     )
@@ -74,12 +71,12 @@ class Course(models.Model):
         upload_to="course_thumbnails/", null=True, blank=True
     )
     thumbnail_url = models.URLField(
-        max_length=500, blank=True, default='',
-        help_text="Fallback external URL for demo images"
+        max_length=500,
+        blank=True,
+        default="",
+        help_text="Fallback external URL for demo images",
     )
-    rating = models.DecimalField(
-        max_digits=3, decimal_places=2, default=4.90
-    )
+    rating = models.DecimalField(max_digits=3, decimal_places=2, default=4.90)
     reviews_count = models.PositiveIntegerField(default=120)
     is_published = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -133,11 +130,11 @@ class Course(models.Model):
         if self.thumbnail_url and self.thumbnail_url.strip():
             return self.thumbnail_url.strip()
 
-        static_root = Path(settings.BASE_DIR) / 'static'
-        static_img = static_root / 'images'
+        static_root = Path(settings.BASE_DIR) / "static"
+        static_img = static_root / "images"
         slug_paths = [
-            static_img / 'courses' / 'thumbnails' / f"{self.slug}.svg",
-            static_img / 'courses' / f"{self.slug}.svg",
+            static_img / "courses" / "thumbnails" / f"{self.slug}.svg",
+            static_img / "courses" / f"{self.slug}.svg",
         ]
         for path in slug_paths:
             if path.is_file():
@@ -147,9 +144,9 @@ class Course(models.Model):
         if self.category and self.category.slug:
             cat_slug = self.category.slug
             cat_paths = [
-                static_img / 'courses' / 'thumbnails' / f"{cat_slug}.svg",
-                static_img / 'categories' / f"{cat_slug}.svg",
-                static_img / 'courses' / f"{cat_slug}.svg",
+                static_img / "courses" / "thumbnails" / f"{cat_slug}.svg",
+                static_img / "categories" / f"{cat_slug}.svg",
+                static_img / "courses" / f"{cat_slug}.svg",
             ]
             for path in cat_paths:
                 if path.is_file():
@@ -166,9 +163,7 @@ class Course(models.Model):
 
 class CourseModule(models.Model):
     course = models.ForeignKey(
-        Course,
-        on_delete=models.CASCADE,
-        related_name="modules"
+        Course, on_delete=models.CASCADE, related_name="modules"
     )
     title = models.CharField(max_length=200)
     order_number = models.PositiveIntegerField(default=1)
@@ -184,28 +179,24 @@ class CourseModule(models.Model):
 
     @property
     def total_duration_seconds(self) -> int:
-        return sum(
-            lesson.duration_seconds for lesson in self.lessons.all()
-        )
+        return sum(lesson.duration_seconds for lesson in self.lessons.all())
 
 
 class Lesson(models.Model):
     module = models.ForeignKey(
-        CourseModule,
-        on_delete=models.CASCADE,
-        related_name="lessons"
+        CourseModule, on_delete=models.CASCADE, related_name="lessons"
     )
     title = models.CharField(max_length=200)
     video_url = models.CharField(
         max_length=500,
         blank=True,
-        default='',
-        help_text="Direct MP4 video URL or embed link"
+        default="",
+        help_text="Direct MP4 video URL or embed link",
     )
-    content = models.TextField(blank=True, default='')
+    content = models.TextField(blank=True, default="")
     duration_seconds = models.PositiveIntegerField(
         default=600,
-        help_text="Duration of lesson in seconds (e.g. 860 for 14m 20s)"
+        help_text="Duration of lesson in seconds (e.g. 860 for 14m 20s)",
     )
     order_number = models.PositiveIntegerField(default=1)
     is_preview = models.BooleanField(
@@ -213,7 +204,7 @@ class Lesson(models.Model):
         help_text=(
             "If True, guests and unenrolled students can "
             "stream this lesson for free"
-        )
+        ),
     )
 
     class Meta:
@@ -233,12 +224,10 @@ class Enrollment(models.Model):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        related_name="enrollments"
+        related_name="enrollments",
     )
     course = models.ForeignKey(
-        Course,
-        on_delete=models.CASCADE,
-        related_name="enrollments"
+        Course, on_delete=models.CASCADE, related_name="enrollments"
     )
     enrolled_at = models.DateTimeField(auto_now_add=True)
     is_active = models.BooleanField(default=True)
@@ -246,7 +235,7 @@ class Enrollment(models.Model):
         max_digits=5,
         decimal_places=2,
         default=0.00,
-        help_text="Calculated completion percentage (0.00% to 100.00%)"
+        help_text="Calculated completion percentage (0.00% to 100.00%)",
     )
 
     class Meta:
@@ -274,7 +263,7 @@ class Enrollment(models.Model):
             completed_count = LessonProgress.objects.filter(
                 user=self.user,
                 lesson__module__course=self.course,
-                is_completed=True
+                is_completed=True,
             ).count()
             self.progress_percent = round(
                 (completed_count / total_lessons) * 100, 2
@@ -291,7 +280,7 @@ class Enrollment(models.Model):
         return LessonProgress.objects.filter(
             user=self.user,
             lesson__module__course=self.course,
-            is_completed=True
+            is_completed=True,
         ).count()
 
     @property
@@ -308,18 +297,20 @@ class Enrollment(models.Model):
             LessonProgress.objects.filter(
                 user=self.user,
                 lesson__module__course=self.course,
-                is_completed=True
+                is_completed=True,
             ).values_list("lesson_id", flat=True)
         )
-        for module in self.course.modules.prefetch_related(
-            "lessons"
-        ).order_by("order_number"):
+        for module in self.course.modules.prefetch_related("lessons").order_by(
+            "order_number"
+        ):
             for lesson in module.lessons.order_by("order_number"):
                 if lesson.id not in completed_ids:
                     return lesson
-        first_module = self.course.modules.prefetch_related(
-            "lessons"
-        ).order_by("order_number").first()
+        first_module = (
+            self.course.modules.prefetch_related("lessons")
+            .order_by("order_number")
+            .first()
+        )
         if first_module:
             return first_module.lessons.order_by("order_number").first()
         return None
@@ -329,12 +320,10 @@ class LessonProgress(models.Model):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        related_name="lesson_progresses"
+        related_name="lesson_progresses",
     )
     lesson = models.ForeignKey(
-        Lesson,
-        on_delete=models.CASCADE,
-        related_name="progresses"
+        Lesson, on_delete=models.CASCADE, related_name="progresses"
     )
     is_completed = models.BooleanField(default=False)
     completed_at = models.DateTimeField(null=True, blank=True)
@@ -357,30 +346,26 @@ class Certificate(models.Model):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        related_name="certificates"
+        related_name="certificates",
     )
     course = models.ForeignKey(
-        Course,
-        on_delete=models.CASCADE,
-        related_name="certificates"
+        Course, on_delete=models.CASCADE, related_name="certificates"
     )
     enrollment = models.OneToOneField(
-        Enrollment,
-        on_delete=models.CASCADE,
-        related_name="certificate"
+        Enrollment, on_delete=models.CASCADE, related_name="certificate"
     )
     certificate_id = models.CharField(
         max_length=64,
         unique=True,
         db_index=True,
-        help_text="Unique verifiable code e.g. LRN-98214-X"
+        help_text="Unique verifiable code e.g. LRN-98214-X",
     )
     verification_hash = models.CharField(
         max_length=64,
-        help_text="SHA-256 cryptographic verification ledger hash"
+        help_text="SHA-256 cryptographic verification ledger hash",
     )
     ceus = models.DecimalField(
-        max_digits=4, decimal_places=1, default=Decimal('4.5')
+        max_digits=4, decimal_places=1, default=Decimal("4.5")
     )
     issued_at = models.DateTimeField(auto_now_add=True)
     pdf_file = models.FileField(
@@ -413,18 +398,17 @@ class Certificate(models.Model):
             f"LEARNIX_CERT:{user_id}:{course_slug}:"
             f"{timestamp_str}:SHA256_AUTH"
         )
-        return "0x" + hashlib.sha256(
-            raw.encode('utf-8')
-        ).hexdigest()[:38]
+        return "0x" + hashlib.sha256(raw.encode("utf-8")).hexdigest()[:38]
 
     @classmethod
     def issue_for_enrollment(cls, enrollment):
         if not enrollment.is_completed:
             return None
 
-        cert = getattr(enrollment, 'certificate', None)
+        cert = getattr(enrollment, "certificate", None)
         if not cert:
             from django.utils import timezone
+
             now_str = timezone.now().isoformat()
             v_hash = cls.compute_verification_hash(
                 enrollment.user.id, enrollment.course.slug, now_str
@@ -432,11 +416,11 @@ class Certificate(models.Model):
             cert, _ = cls.objects.get_or_create(
                 enrollment=enrollment,
                 defaults={
-                    'user': enrollment.user,
-                    'course': enrollment.course,
-                    'certificate_id': cls.generate_certificate_id(),
-                    'verification_hash': v_hash,
-                    'ceus': Decimal('4.5'),
-                }
+                    "user": enrollment.user,
+                    "course": enrollment.course,
+                    "certificate_id": cls.generate_certificate_id(),
+                    "verification_hash": v_hash,
+                    "ceus": Decimal("4.5"),
+                },
             )
         return cert

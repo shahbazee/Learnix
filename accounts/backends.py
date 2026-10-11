@@ -11,9 +11,7 @@ logger = logging.getLogger(__name__)
 class EmailOrUsernameModelBackend(ModelBackend):
     def authenticate(self, request, username=None, password=None, **kwargs):
         if username is None:
-            username = (
-                kwargs.get(User.USERNAME_FIELD) or kwargs.get('email')
-            )
+            username = kwargs.get(User.USERNAME_FIELD) or kwargs.get("email")
 
         if not username or not password:
             return None
@@ -21,10 +19,12 @@ class EmailOrUsernameModelBackend(ModelBackend):
         clean_credential = str(username).strip()
 
         try:
-            candidates = list(User.objects.filter(
-                Q(username__iexact=clean_credential) |
-                Q(email__iexact=clean_credential)
-            ).order_by('-is_active', '-id'))
+            candidates = list(
+                User.objects.filter(
+                    Q(username__iexact=clean_credential)
+                    | Q(email__iexact=clean_credential)
+                ).order_by("-is_active", "-id")
+            )
         except Exception as e:
             logger.error(
                 f"[AUTH ERROR] Database query failed for "
@@ -33,8 +33,7 @@ class EmailOrUsernameModelBackend(ModelBackend):
             return None
 
         candidate_summary = [
-            (u.username, u.email, f'active={u.is_active}')
-            for u in candidates
+            (u.username, u.email, f"active={u.is_active}") for u in candidates
         ]
         logger.info(
             f"[AUTH ATTEMPT] Credential: '{clean_credential}' | "
@@ -45,11 +44,12 @@ class EmailOrUsernameModelBackend(ModelBackend):
             if candidate.check_password(password):
                 if not candidate.is_active:
                     from accounts.models import EmailOTP
+
                     if EmailOTP.objects.filter(
                         user=candidate, is_verified=True
                     ).exists():
                         candidate.is_active = True
-                        candidate.save(update_fields=['is_active'])
+                        candidate.save(update_fields=["is_active"])
                         logger.info(
                             f"[AUTH AUTO-ACTIVATE] Activated user "
                             f"{candidate.username} ({candidate.email})"

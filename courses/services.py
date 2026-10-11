@@ -1,5 +1,5 @@
-from io import BytesIO
 import logging
+from io import BytesIO
 
 from django.conf import settings
 from django.core.files.base import ContentFile
@@ -11,18 +11,16 @@ logger = logging.getLogger(__name__)
 
 def generate_certificate_pdf(certificate) -> bytes:
     context = {
-        'certificate': certificate,
-        'user': certificate.user,
-        'course': certificate.course,
-        'site_name': settings.SITE_NAME,
-        'support_email': settings.DEFAULT_FROM_EMAIL,
+        "certificate": certificate,
+        "user": certificate.user,
+        "course": certificate.course,
+        "site_name": settings.SITE_NAME,
+        "support_email": settings.DEFAULT_FROM_EMAIL,
     }
-    html_string = render_to_string('courses/certificate_pdf.html', context)
+    html_string = render_to_string("courses/certificate_pdf.html", context)
     result_buffer = BytesIO()
     pdf = pisa.pisaDocument(
-        BytesIO(html_string.encode('utf-8')),
-        result_buffer,
-        encoding='utf-8'
+        BytesIO(html_string.encode("utf-8")), result_buffer, encoding="utf-8"
     )
     if pdf.err:
         logger.error(
@@ -38,7 +36,7 @@ def generate_certificate_pdf(certificate) -> bytes:
             certificate.pdf_file.save(
                 f"certificate_{certificate.certificate_id}.pdf",
                 ContentFile(pdf_bytes),
-                save=True
+                save=True,
             )
         except Exception as e:
             logger.warning(

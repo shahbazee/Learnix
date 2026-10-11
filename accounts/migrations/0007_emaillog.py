@@ -6,20 +6,45 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('accounts', '0006_remove_emailotp_accounts_em_user_id_5d6258_idx_and_more'),
+        (
+            "accounts",
+            "0006_remove_emailotp_accounts_em_user_id_5d6258_idx_and_more",
+        ),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='EmailLog',
+            name="EmailLog",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('idempotency_key', models.CharField(max_length=255, unique=True)),
-                ('recipient', models.EmailField(max_length=254)),
-                ('kind', models.CharField(max_length=50)),
-                ('status', models.CharField(choices=[('pending', 'Pending'), ('sent', 'Sent'), ('failed', 'Failed')], default='pending', max_length=20)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('sent_at', models.DateTimeField(blank=True, null=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "idempotency_key",
+                    models.CharField(max_length=255, unique=True),
+                ),
+                ("recipient", models.EmailField(max_length=254)),
+                ("kind", models.CharField(max_length=50)),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[
+                            ("pending", "Pending"),
+                            ("sent", "Sent"),
+                            ("failed", "Failed"),
+                        ],
+                        default="pending",
+                        max_length=20,
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("sent_at", models.DateTimeField(blank=True, null=True)),
             ],
         ),
     ]

@@ -7,9 +7,7 @@ from accounts.models import UserProfile
 
 
 class Command(BaseCommand):
-    help = (
-        "Initializes or updates the default administrator superuser account"
-    )
+    help = "Initializes or updates the default administrator superuser account"
 
     def handle(self, *args, **options):
         User = get_user_model()
@@ -18,7 +16,7 @@ class Command(BaseCommand):
         password = os.environ.get("ADMIN_PASSWORD", "12345678")
 
         user, created = User.objects.get_or_create(
-            username=username, defaults={'email': email}
+            username=username, defaults={"email": email}
         )
         user.email = email
         user.is_staff = True

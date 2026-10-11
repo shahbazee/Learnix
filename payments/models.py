@@ -15,36 +15,27 @@ class PaymentTransaction(models.Model):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        related_name="payments"
+        related_name="payments",
     )
     course = models.ForeignKey(
-        "courses.Course",
-        on_delete=models.CASCADE,
-        related_name="payments"
+        "courses.Course", on_delete=models.CASCADE, related_name="payments"
     )
     order_number = models.CharField(
         max_length=50,
         unique=True,
         db_index=True,
-        help_text="Human-readable reference e.g. LRN-98214"
+        help_text="Human-readable reference e.g. LRN-98214",
     )
     stripe_checkout_session_id = models.CharField(
-        max_length=255,
-        unique=True,
-        null=True,
-        blank=True
+        max_length=255, unique=True, null=True, blank=True
     )
     stripe_payment_intent_id = models.CharField(
-        max_length=255,
-        null=True,
-        blank=True
+        max_length=255, null=True, blank=True
     )
     amount = models.DecimalField(max_digits=8, decimal_places=2)
     currency = models.CharField(max_length=10, default="USD")
     status = models.CharField(
-        max_length=20,
-        choices=STATUS_CHOICES,
-        default="COMPLETED"
+        max_length=20, choices=STATUS_CHOICES, default="COMPLETED"
     )
     confirmation_emails_sent = models.BooleanField(
         default=False,
@@ -52,7 +43,7 @@ class PaymentTransaction(models.Model):
         help_text=(
             "Ensures purchase confirmation and invoice emails "
             "are dispatched exactly once."
-        )
+        ),
     )
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -76,15 +67,13 @@ class PaymentTransaction(models.Model):
 
 class Invoice(models.Model):
     transaction = models.OneToOneField(
-        PaymentTransaction,
-        on_delete=models.CASCADE,
-        related_name="invoice"
+        PaymentTransaction, on_delete=models.CASCADE, related_name="invoice"
     )
     invoice_number = models.CharField(
         max_length=50,
         unique=True,
         db_index=True,
-        help_text="e.g. INV-2026-00481"
+        help_text="e.g. INV-2026-00481",
     )
     billing_name = models.CharField(max_length=200)
     billing_email = models.EmailField()
@@ -105,6 +94,7 @@ class Invoice(models.Model):
     @classmethod
     def generate_invoice_number(cls) -> str:
         from django.utils import timezone
+
         year = timezone.now().year
         suffix = uuid.uuid4().hex[:5].upper()
         return f"INV-{year}-{suffix}"

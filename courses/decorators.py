@@ -13,7 +13,7 @@ def enrolled_required(view_func):
             try:
                 messages.info(
                     request,
-                    "Please authenticate to access the classroom lessons."
+                    "Please authenticate to access the classroom lessons.",
                 )
             except Exception:
                 pass
@@ -22,8 +22,8 @@ def enrolled_required(view_func):
         course = get_object_or_404(Course, slug=slug)
 
         has_enrollment = (
-            hasattr(request.user, 'enrollments') and
-            request.user.enrollments.filter(
+            hasattr(request.user, "enrollments")
+            and request.user.enrollments.filter(
                 course=course, is_active=True
             ).exists()
         )
@@ -33,7 +33,7 @@ def enrolled_required(view_func):
                 messages.error(
                     request,
                     "You must be enrolled in this course to access "
-                    "the classroom lessons."
+                    "the classroom lessons.",
                 )
             except Exception:
                 pass
@@ -51,23 +51,22 @@ def instructor_required(view_func):
             try:
                 messages.info(
                     request,
-                    "Please authenticate to access this instructor area."
+                    "Please authenticate to access this instructor area.",
                 )
             except Exception:
                 pass
             return redirect(f"/accounts/login/?next={request.path}")
 
-        profile = getattr(request.user, 'profile', None)
+        profile = getattr(request.user, "profile", None)
         is_instructor = (
-            (profile and profile.is_instructor) or
-            request.user.is_staff
-        )
+            profile and profile.is_instructor
+        ) or request.user.is_staff
         if not is_instructor:
             try:
                 messages.error(
                     request,
                     "Access restricted. You need an Instructor account "
-                    "to access this area."
+                    "to access this area.",
                 )
             except Exception:
                 pass

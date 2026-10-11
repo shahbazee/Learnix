@@ -1,11 +1,11 @@
-import os
 import logging
+import os
 import smtplib
-import time
 import threading
+import time
 
 from django.conf import settings
-from django.core.mail import send_mail, EmailMultiAlternatives
+from django.core.mail import EmailMultiAlternatives, send_mail
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 
@@ -28,23 +28,28 @@ def _is_retryable_email_error(exc) -> bool:
     if isinstance(exc, (TimeoutError, smtplib.SMTPConnectError)):
         return False
     if isinstance(exc, smtplib.SMTPResponseException):
-        code = getattr(exc, 'smtp_code', None)
+        code = getattr(exc, "smtp_code", None)
         return isinstance(code, int) and 400 <= code < 500
     return False
 
 
 def _send_via_http_api(
-    subject, html_message, plain_message, recipients,
-    attachment_filename=None, attachment_bytes=None,
-    attachment_mimetype="application/pdf"
+    subject,
+    html_message,
+    plain_message,
+    recipients,
+    attachment_filename=None,
+    attachment_bytes=None,
+    attachment_mimetype="application/pdf",
 ):
-    sender_name = getattr(settings, 'SITE_NAME', 'Learnix')
+    sender_name = getattr(settings, "SITE_NAME", "Learnix")
     sender_email = getattr(
-        settings, 'EMAIL_HOST_USER', 'shahbazbutt22ee@gmail.com'
+        settings, "EMAIL_HOST_USER", "shahbazbutt22ee@gmail.com"
     )
-    from_header = getattr(settings, 'DEFAULT_FROM_EMAIL', '')
-    if '@' in from_header:
+    from_header = getattr(settings, "DEFAULT_FROM_EMAIL", "")
+    if "@" in from_header:
         import email.utils
+
         parsed_name, parsed_email = email.utils.parseaddr(from_header)
         if parsed_email:
             sender_email = parsed_email
@@ -58,14 +63,15 @@ def _send_via_http_api(
     )
     text_body = plain_message or strip_tags(html_body)
 
-    brevo_key = (
-        getattr(settings, 'BREVO_API_KEY', '') or
-        os.getenv('BREVO_API_KEY', '')
+    brevo_key = getattr(settings, "BREVO_API_KEY", "") or os.getenv(
+        "BREVO_API_KEY", ""
     )
     if brevo_key:
         try:
-            import requests
             import base64
+
+            import requests
+
             payload = {
                 "sender": {"name": sender_name, "email": sender_email},
                 "to": [{"email": r} for r in recipients],
@@ -77,9 +83,9 @@ def _send_via_http_api(
                 payload["attachment"] = [
                     {
                         "name": attachment_filename,
-                        "content": base64.b64encode(
-                            attachment_bytes
-                        ).decode("ascii")
+                        "content": base64.b64encode(attachment_bytes).decode(
+                            "ascii"
+                        ),
                     }
                 ]
 
@@ -87,10 +93,10 @@ def _send_via_http_api(
                 "https://api.brevo.com/v3/smtp/email",
                 headers={
                     "api-key": brevo_key,
-                    "Content-Type": "application/json"
+                    "Content-Type": "application/json",
                 },
                 json=payload,
-                timeout=20
+                timeout=20,
             )
             if resp.status_code in (200, 201):
                 att_note = (
@@ -111,17 +117,18 @@ def _send_via_http_api(
         except Exception as err:
             logger.warning(f"Brevo HTTP API dispatch failed: {err}")
 
-    resend_key = (
-        getattr(settings, 'RESEND_API_KEY', '') or
-        os.getenv('RESEND_API_KEY', '')
+    resend_key = getattr(settings, "RESEND_API_KEY", "") or os.getenv(
+        "RESEND_API_KEY", ""
     )
     if resend_key:
         try:
-            import requests
             import base64
+
+            import requests
+
             sender_str = (
                 f"{sender_name} <{sender_email}>"
-                if '@' in sender_email
+                if "@" in sender_email
                 else "onboarding@resend.dev"
             )
             payload = {
@@ -135,9 +142,9 @@ def _send_via_http_api(
                 payload["attachments"] = [
                     {
                         "filename": attachment_filename,
-                        "content": base64.b64encode(
-                            attachment_bytes
-                        ).decode("ascii")
+                        "content": base64.b64encode(attachment_bytes).decode(
+                            "ascii"
+                        ),
                     }
                 ]
 
@@ -145,10 +152,10 @@ def _send_via_http_api(
                 "https://api.resend.com/emails",
                 headers={
                     "Authorization": f"Bearer {resend_key}",
-                    "Content-Type": "application/json"
+                    "Content-Type": "application/json",
                 },
                 json=payload,
-                timeout=20
+                timeout=20,
             )
             if resp.status_code in (200, 201):
                 logger.info(
@@ -168,57 +175,56 @@ def _send_via_http_api(
 
 
 def _send_via_brevo_smtp(
-    subject, html_message, plain_message, recipients,
-    attachment_filename=None, attachment_bytes=None,
-    attachment_mimetype="application/pdf"
+    subject,
+    html_message,
+    plain_message,
+    recipients,
+    attachment_filename=None,
+    attachment_bytes=None,
+    attachment_mimetype="application/pdf",
 ):
-    brevo_key = (
-        getattr(settings, 'BREVO_API_KEY', '') or
-        os.getenv('BREVO_API_KEY', '')
+    brevo_key = getattr(settings, "BREVO_API_KEY", "") or os.getenv(
+        "BREVO_API_KEY", ""
     )
     if not brevo_key:
         return False
 
-    sender_email = (
-        getattr(settings, 'EMAIL_HOST_USER', '') or
-        os.getenv('EMAIL_HOST_USER', '')
+    sender_email = getattr(settings, "EMAIL_HOST_USER", "") or os.getenv(
+        "EMAIL_HOST_USER", ""
     )
     if not sender_email:
         return False
 
     try:
         import smtplib
+        from email import encoders
+        from email.mime.base import MIMEBase
         from email.mime.multipart import MIMEMultipart
         from email.mime.text import MIMEText
-        from email.mime.base import MIMEBase
-        from email import encoders
 
-        msg = MIMEMultipart('mixed')
-        msg['Subject'] = subject
-        msg['From'] = getattr(
-            settings, 'DEFAULT_FROM_EMAIL', sender_email
-        )
-        msg['To'] = ', '.join(recipients)
+        msg = MIMEMultipart("mixed")
+        msg["Subject"] = subject
+        msg["From"] = getattr(settings, "DEFAULT_FROM_EMAIL", sender_email)
+        msg["To"] = ", ".join(recipients)
 
-        body_part = MIMEMultipart('alternative')
-        body_part.attach(MIMEText(plain_message or '', 'plain', 'utf-8'))
+        body_part = MIMEMultipart("alternative")
+        body_part.attach(MIMEText(plain_message or "", "plain", "utf-8"))
         if html_message:
-            body_part.attach(MIMEText(html_message, 'html', 'utf-8'))
+            body_part.attach(MIMEText(html_message, "html", "utf-8"))
         msg.attach(body_part)
 
         if attachment_bytes and attachment_filename:
-            attachment_part = MIMEBase('application', 'pdf')
+            attachment_part = MIMEBase("application", "pdf")
             attachment_part.set_payload(attachment_bytes)
             encoders.encode_base64(attachment_part)
             attachment_part.add_header(
-                'Content-Disposition', 'attachment',
-                filename=attachment_filename
+                "Content-Disposition",
+                "attachment",
+                filename=attachment_filename,
             )
             msg.attach(attachment_part)
 
-        with smtplib.SMTP(
-            'smtp-relay.brevo.com', 587, timeout=15
-        ) as server:
+        with smtplib.SMTP("smtp-relay.brevo.com", 587, timeout=15) as server:
             server.ehlo()
             server.starttls()
             server.login(sender_email, brevo_key)
@@ -239,33 +245,46 @@ def _send_via_brevo_smtp(
 
 
 def send_platform_email_async(
-    subject, template_name, context, recipient_email,
-    fallback_text=None, attachment_filename=None,
-    attachment_bytes=None, attachment_mimetype="application/pdf"
+    subject,
+    template_name,
+    context,
+    recipient_email,
+    fallback_text=None,
+    attachment_filename=None,
+    attachment_bytes=None,
+    attachment_mimetype="application/pdf",
 ):
     thread = threading.Thread(
         target=_send_platform_email,
         args=(
-            subject, template_name, context, recipient_email,
-            fallback_text, attachment_filename, attachment_bytes,
-            attachment_mimetype
+            subject,
+            template_name,
+            context,
+            recipient_email,
+            fallback_text,
+            attachment_filename,
+            attachment_bytes,
+            attachment_mimetype,
         ),
-        daemon=True
+        daemon=True,
     )
     thread.start()
     return True
 
 
 def _send_platform_email(
-    subject, template_name, context, recipient_email,
-    fallback_text=None, attachment_filename=None,
-    attachment_bytes=None, attachment_mimetype="application/pdf"
+    subject,
+    template_name,
+    context,
+    recipient_email,
+    fallback_text=None,
+    attachment_filename=None,
+    attachment_bytes=None,
+    attachment_mimetype="application/pdf",
 ):
     if isinstance(recipient_email, (list, tuple, set)):
         recipients = [
-            str(e).strip()
-            for e in recipient_email
-            if e and str(e).strip()
+            str(e).strip() for e in recipient_email if e and str(e).strip()
         ]
     else:
         recipients = (
@@ -276,17 +295,14 @@ def _send_platform_email(
 
     if not recipients:
         logger.warning(
-            f"Cannot dispatch email '{subject}': "
-            f"recipient email is empty."
+            f"Cannot dispatch email '{subject}': " f"recipient email is empty."
         )
         return False
 
+    context.setdefault("site_name", getattr(settings, "SITE_NAME", "Learnix"))
     context.setdefault(
-        'site_name', getattr(settings, 'SITE_NAME', 'Learnix')
-    )
-    context.setdefault(
-        'support_email',
-        getattr(settings, 'DEFAULT_FROM_EMAIL', 'shahbazbutt22ee@gmail.com')
+        "support_email",
+        getattr(settings, "DEFAULT_FROM_EMAIL", "shahbazbutt22ee@gmail.com"),
     )
 
     try:
@@ -299,20 +315,30 @@ def _send_platform_email(
         )
         html_message = None
         plain_message = (
-            fallback_text or
-            f"Notification from {context['site_name']}.\n\n"
+            fallback_text
+            or f"Notification from {context['site_name']}.\n\n"
             f"Please visit the website for details."
         )
 
     if _send_via_http_api(
-        subject, html_message, plain_message, recipients,
-        attachment_filename, attachment_bytes, attachment_mimetype
+        subject,
+        html_message,
+        plain_message,
+        recipients,
+        attachment_filename,
+        attachment_bytes,
+        attachment_mimetype,
     ):
         return True
 
     if attachment_bytes and _send_via_brevo_smtp(
-        subject, html_message, plain_message, recipients,
-        attachment_filename, attachment_bytes, attachment_mimetype
+        subject,
+        html_message,
+        plain_message,
+        recipients,
+        attachment_filename,
+        attachment_bytes,
+        attachment_mimetype,
     ):
         return True
 
@@ -329,8 +355,7 @@ def _send_platform_email(
                 if html_message:
                     email.attach_alternative(html_message, "text/html")
                 email.attach(
-                    attachment_filename, attachment_bytes,
-                    attachment_mimetype
+                    attachment_filename, attachment_bytes, attachment_mimetype
                 )
                 email.send(fail_silently=False)
             else:
@@ -340,22 +365,23 @@ def _send_platform_email(
                     from_email=settings.DEFAULT_FROM_EMAIL,
                     recipient_list=recipients,
                     html_message=html_message,
-                    fail_silently=False
+                    fail_silently=False,
                 )
             logger.info(
                 f"Email successfully dispatched to {recipients}: "
                 f"'{subject}'"
                 + (
                     f" [Attachment: {attachment_filename}]"
-                    if attachment_filename else ""
+                    if attachment_filename
+                    else ""
                 )
             )
             return True
         except Exception as e:
             last_error = e
             if (
-                attempt < EMAIL_SEND_MAX_ATTEMPTS and
-                _is_retryable_email_error(e)
+                attempt < EMAIL_SEND_MAX_ATTEMPTS
+                and _is_retryable_email_error(e)
             ):
                 logger.warning(
                     f"Email delivery attempt "
@@ -372,7 +398,7 @@ def _send_platform_email(
         f"Email delivery failed to {recipient_email} for subject "
         f"'{subject}'. Reason: {type(last_error).__name__} - {last_error}"
     )
-    if getattr(settings, 'DEBUG', False) or os.getenv('RENDER', ''):
+    if getattr(settings, "DEBUG", False) or os.getenv("RENDER", ""):
         print(
             f"[LEARNIX EMAIL NOTICE] SMTP delivery to "
             f"{recipient_email} failed: "
@@ -388,8 +414,8 @@ def send_registration_success_email(user, async_send=False):
     )
     recipient_email = user.email
     context = {
-        'user': user,
-        'login_url': 'https://learnix-ofqe.onrender.com/accounts/login/',
+        "user": user,
+        "login_url": "https://learnix-ofqe.onrender.com/accounts/login/",
     }
     fallback_text = (
         f"Hello {user.first_name or user.username},\n\n"
@@ -401,12 +427,18 @@ def send_registration_success_email(user, async_send=False):
     )
     if async_send:
         return send_platform_email_async(
-            subject, 'emails/registration_success.html',
-            context, recipient_email, fallback_text
+            subject,
+            "emails/registration_success.html",
+            context,
+            recipient_email,
+            fallback_text,
         )
     return _send_platform_email(
-        subject, 'emails/registration_success.html',
-        context, recipient_email, fallback_text
+        subject,
+        "emails/registration_success.html",
+        context,
+        recipient_email,
+        fallback_text,
     )
 
 
@@ -419,9 +451,9 @@ def send_otp_verification_email(
     )
     recipient_email = user.email
     context = {
-        'user': user,
-        'otp_code': otp_code,
-        'expires_minutes': expires_minutes,
+        "user": user,
+        "otp_code": otp_code,
+        "expires_minutes": expires_minutes,
     }
     fallback_text = (
         f"Hello {user.first_name or user.username},\n\n"
@@ -438,8 +470,8 @@ def send_otp_verification_email(
         f"code='{otp_code}' expires_in={expires_minutes}m"
     )
 
-    is_render = bool(os.getenv('RENDER', ''))
-    is_debug = getattr(settings, 'DEBUG', False)
+    is_render = bool(os.getenv("RENDER", ""))
+    is_debug = getattr(settings, "DEBUG", False)
     if is_render or is_debug:
         separator = "=" * 60
         print(f"\n{separator}")
@@ -449,19 +481,24 @@ def send_otp_verification_email(
             f"(expires in {expires_minutes} min)"
         )
         print(
-            "[LEARNIX OTP CODE] Check Render Logs "
-            "if email doesn't arrive"
+            "[LEARNIX OTP CODE] Check Render Logs " "if email doesn't arrive"
         )
         print(f"{separator}\n", flush=True)
 
     if async_send:
         return send_platform_email_async(
-            subject, 'emails/otp_verification.html',
-            context, recipient_email, fallback_text
+            subject,
+            "emails/otp_verification.html",
+            context,
+            recipient_email,
+            fallback_text,
         )
     return _send_platform_email(
-        subject, 'emails/otp_verification.html',
-        context, recipient_email, fallback_text
+        subject,
+        "emails/otp_verification.html",
+        context,
+        recipient_email,
+        fallback_text,
     )
 
 
@@ -474,9 +511,9 @@ def send_forgot_password_otp_email(
     )
     recipient_email = user.email
     context = {
-        'user': user,
-        'reset_code': reset_code,
-        'expires_minutes': expires_minutes,
+        "user": user,
+        "reset_code": reset_code,
+        "expires_minutes": expires_minutes,
     }
     fallback_text = (
         f"Hello {user.first_name or user.username},\n\n"
@@ -493,7 +530,7 @@ def send_forgot_password_otp_email(
         f"'{reset_code}' for recipient '{recipient_email}' "
         f"(expires in {expires_minutes}m)"
     )
-    if getattr(settings, 'DEBUG', False) or os.getenv('RENDER', ''):
+    if getattr(settings, "DEBUG", False) or os.getenv("RENDER", ""):
         print(
             f"[LEARNIX PASSWORD RESET OTP] Code for "
             f"{recipient_email}: {reset_code}"
@@ -501,12 +538,18 @@ def send_forgot_password_otp_email(
 
     if async_send:
         return send_platform_email_async(
-            subject, 'emails/forgot_password_otp.html',
-            context, recipient_email, fallback_text
+            subject,
+            "emails/forgot_password_otp.html",
+            context,
+            recipient_email,
+            fallback_text,
         )
     return _send_platform_email(
-        subject, 'emails/forgot_password_otp.html',
-        context, recipient_email, fallback_text
+        subject,
+        "emails/forgot_password_otp.html",
+        context,
+        recipient_email,
+        fallback_text,
     )
 
 
@@ -518,8 +561,8 @@ def send_password_changed_email(user, async_send=False):
     )
     recipient_email = user.email
     context = {
-        'user': user,
-        'login_url': 'https://learnix-ofqe.onrender.com/accounts/login/',
+        "user": user,
+        "login_url": "https://learnix-ofqe.onrender.com/accounts/login/",
     }
     fallback_text = (
         f"Hello {user.first_name or user.username},\n\n"
@@ -533,12 +576,18 @@ def send_password_changed_email(user, async_send=False):
     )
     if async_send:
         return send_platform_email_async(
-            subject, 'emails/password_changed.html',
-            context, recipient_email, fallback_text
+            subject,
+            "emails/password_changed.html",
+            context,
+            recipient_email,
+            fallback_text,
         )
     return _send_platform_email(
-        subject, 'emails/password_changed.html',
-        context, recipient_email, fallback_text
+        subject,
+        "emails/password_changed.html",
+        context,
+        recipient_email,
+        fallback_text,
     )
 
 
@@ -551,12 +600,13 @@ def send_course_purchase_success_email(
     )
 
     recipients = []
-    if getattr(user, 'email', None) and user.email.strip():
+    if getattr(user, "email", None) and user.email.strip():
         recipients.append(user.email.strip())
-    inv = invoice or getattr(transaction, 'invoice', None)
+    inv = invoice or getattr(transaction, "invoice", None)
     if (
-        inv and getattr(inv, 'billing_email', None) and
-        inv.billing_email.strip()
+        inv
+        and getattr(inv, "billing_email", None)
+        and inv.billing_email.strip()
     ):
         if inv.billing_email.strip() not in recipients:
             recipients.append(inv.billing_email.strip())
@@ -564,24 +614,26 @@ def send_course_purchase_success_email(
         recipients = [f"{user.username}@learnix.edu"]
 
     context = {
-        'user': user,
-        'course': course,
-        'transaction': transaction,
-        'invoice': inv,
+        "user": user,
+        "course": course,
+        "transaction": transaction,
+        "invoice": inv,
     }
     date_str = (
-        transaction.created_at.strftime('%B %d, %Y, %I:%M %p')
-        if getattr(transaction, 'created_at', None)
-        else 'Confirmed'
+        transaction.created_at.strftime("%B %d, %Y, %I:%M %p")
+        if getattr(transaction, "created_at", None)
+        else "Confirmed"
     )
     stripe_ref = (
-        getattr(transaction, 'stripe_payment_intent_id', None) or
-        getattr(transaction, 'stripe_checkout_session_id', None) or
-        'Stripe Verified'
+        getattr(transaction, "stripe_payment_intent_id", None)
+        or getattr(transaction, "stripe_checkout_session_id", None)
+        or "Stripe Verified"
     )
     customer_name = (
-        getattr(inv, 'billing_name', None) or
-        user.get_full_name() or user.first_name or user.username
+        getattr(inv, "billing_name", None)
+        or user.get_full_name()
+        or user.first_name
+        or user.username
     )
     fallback_text = (
         f"Hello {customer_name},\n\n"
@@ -600,28 +652,30 @@ def send_course_purchase_success_email(
         f"— The Learnix Team"
     )
     return _send_platform_email(
-        subject, 'emails/course_purchase_success.html',
-        context, recipients, fallback_text
+        subject,
+        "emails/course_purchase_success.html",
+        context,
+        recipients,
+        fallback_text,
     )
 
 
 def send_payment_receipt_invoice_email(
     user, course, transaction, invoice=None, pdf_bytes=None
 ):
-    inv_num = (
-        invoice.invoice_number if invoice else transaction.order_number
-    )
+    inv_num = invoice.invoice_number if invoice else transaction.order_number
     subject = (
         f"Official Tax Invoice & Receipt: #{inv_num} — "
         f"{getattr(settings, 'SITE_NAME', 'Learnix')}"
     )
 
     recipients = []
-    if getattr(user, 'email', None) and user.email.strip():
+    if getattr(user, "email", None) and user.email.strip():
         recipients.append(user.email.strip())
     if (
-        invoice and getattr(invoice, 'billing_email', None) and
-        invoice.billing_email.strip()
+        invoice
+        and getattr(invoice, "billing_email", None)
+        and invoice.billing_email.strip()
     ):
         if invoice.billing_email.strip() not in recipients:
             recipients.append(invoice.billing_email.strip())
@@ -629,31 +683,30 @@ def send_payment_receipt_invoice_email(
         recipients = [f"{user.username}@learnix.edu"]
 
     context = {
-        'user': user,
-        'course': course,
-        'transaction': transaction,
-        'invoice': invoice,
+        "user": user,
+        "course": course,
+        "transaction": transaction,
+        "invoice": invoice,
     }
-    date_val = (
-        getattr(invoice, 'issued_at', None) or
-        getattr(transaction, 'created_at', None)
+    date_val = getattr(invoice, "issued_at", None) or getattr(
+        transaction, "created_at", None
     )
     date_str = (
-        date_val.strftime('%B %d, %Y, %I:%M %p')
-        if date_val else 'Confirmed'
+        date_val.strftime("%B %d, %Y, %I:%M %p") if date_val else "Confirmed"
     )
     stripe_ref = (
-        getattr(transaction, 'stripe_payment_intent_id', None) or
-        getattr(transaction, 'stripe_checkout_session_id', None) or
-        'Stripe Verified'
+        getattr(transaction, "stripe_payment_intent_id", None)
+        or getattr(transaction, "stripe_checkout_session_id", None)
+        or "Stripe Verified"
     )
     customer_name = (
-        getattr(invoice, 'billing_name', None) or
-        user.get_full_name() or user.first_name or user.username
+        getattr(invoice, "billing_name", None)
+        or user.get_full_name()
+        or user.first_name
+        or user.username
     )
-    billed_to = (
-        getattr(invoice, 'billing_email', None) or
-        getattr(user, 'email', '')
+    billed_to = getattr(invoice, "billing_email", None) or getattr(
+        user, "email", ""
     )
     fallback_text = (
         f"Learnix\n"
@@ -688,9 +741,9 @@ def send_payment_receipt_invoice_email(
 
     attachment_filename = f"Learnix_Invoice_{inv_num}.pdf"
     if not pdf_bytes and invoice:
-        if getattr(invoice, 'pdf_file', None):
+        if getattr(invoice, "pdf_file", None):
             try:
-                invoice.pdf_file.open('rb')
+                invoice.pdf_file.open("rb")
                 pdf_bytes = invoice.pdf_file.read()
                 invoice.pdf_file.close()
             except Exception:
@@ -698,6 +751,7 @@ def send_payment_receipt_invoice_email(
         if not pdf_bytes:
             try:
                 from payments.services import generate_invoice_pdf
+
                 pdf_bytes = generate_invoice_pdf(invoice)
             except Exception as e:
                 logger.warning(
@@ -706,13 +760,13 @@ def send_payment_receipt_invoice_email(
 
     return _send_platform_email(
         subject,
-        'emails/payment_receipt_invoice.html',
+        "emails/payment_receipt_invoice.html",
         context,
         recipients,
         fallback_text,
         attachment_filename=attachment_filename if pdf_bytes else None,
         attachment_bytes=pdf_bytes,
-        attachment_mimetype='application/pdf'
+        attachment_mimetype="application/pdf",
     )
 
 
@@ -723,9 +777,9 @@ def send_course_enrollment_email(user, course, enrollment=None):
     )
     recipient_email = user.email or f"{user.username}@learnix.edu"
     context = {
-        'user': user,
-        'course': course,
-        'enrollment': enrollment,
+        "user": user,
+        "course": course,
+        "enrollment": enrollment,
     }
     fallback_text = (
         f"Hello {user.first_name or user.username},\n\n"
@@ -736,8 +790,11 @@ def send_course_enrollment_email(user, course, enrollment=None):
         f"— The Learnix Academic Pod"
     )
     return _send_platform_email(
-        subject, 'emails/course_enrollment.html',
-        context, recipient_email, fallback_text
+        subject,
+        "emails/course_enrollment.html",
+        context,
+        recipient_email,
+        fallback_text,
     )
 
 
@@ -748,11 +805,11 @@ def send_payment_failed_email(user, course, error_reason=None):
     )
     recipient_email = user.email or f"{user.username}@learnix.edu"
     context = {
-        'user': user,
-        'course': course,
-        'error_reason': (
-            error_reason or
-            "The card issuer declined the transaction or "
+        "user": user,
+        "course": course,
+        "error_reason": (
+            error_reason
+            or "The card issuer declined the transaction or "
             "the payment session timed out."
         ),
     }
@@ -767,6 +824,9 @@ def send_payment_failed_email(user, course, error_reason=None):
         f"— The Learnix Concierge Team"
     )
     return _send_platform_email(
-        subject, 'emails/payment_failed.html',
-        context, recipient_email, fallback_text
+        subject,
+        "emails/payment_failed.html",
+        context,
+        recipient_email,
+        fallback_text,
     )

@@ -6,20 +6,28 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('accounts', '0007_emaillog'),
+        ("accounts", "0007_emaillog"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='FailedTask',
+            name="FailedTask",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('task_name', models.CharField(max_length=255)),
-                ('args', models.JSONField(default=list)),
-                ('kwargs', models.JSONField(default=dict)),
-                ('exception', models.TextField()),
-                ('failed_at', models.DateTimeField(auto_now_add=True)),
-                ('resolved', models.BooleanField(default=False)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("task_name", models.CharField(max_length=255)),
+                ("args", models.JSONField(default=list)),
+                ("kwargs", models.JSONField(default=dict)),
+                ("exception", models.TextField()),
+                ("failed_at", models.DateTimeField(auto_now_add=True)),
+                ("resolved", models.BooleanField(default=False)),
             ],
         ),
     ]

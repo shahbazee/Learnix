@@ -40,7 +40,7 @@ def calculate_progress_badge(completed_count: int, total_count: int) -> str:
     html = (
         f'<span class="inline-flex items-center px-2.5 py-0.5 '
         f'rounded-full text-xs font-bold font-mono {color_class}">'
-        f'{pct}% Done</span>'
+        f"{pct}% Done</span>"
     )
     return mark_safe(html)
 
@@ -63,7 +63,7 @@ def two_digits(value):
 
 @register.filter(name="preview_count")
 def preview_count(module):
-    if hasattr(module, 'lessons'):
+    if hasattr(module, "lessons"):
         return module.lessons.filter(is_preview=True).count()
     return 0
 

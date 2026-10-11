@@ -20,8 +20,8 @@ from .serializers import (
     CourseCreateUpdateSerializer,
     CourseDetailSerializer,
     CourseListSerializer,
-    EnrollSerializer,
     EnrollmentSerializer,
+    EnrollSerializer,
     LessonProgressSerializer,
     MarkLessonCompleteSerializer,
 )
@@ -32,14 +32,14 @@ class IsInstructor(permissions.BasePermission):
         if not request.user.is_authenticated:
             return False
         return UserProfile.objects.filter(
-            user=request.user, role='instructor'
+            user=request.user, role="instructor"
         ).exists()
 
 
 class CourseCategoryViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = CourseCategory.objects.all()
     serializer_class = CourseCategorySerializer
-    lookup_field = 'slug'
+    lookup_field = "slug"
     permission_classes = [permissions.AllowAny]
 
 
@@ -56,35 +56,27 @@ def _bump_course_cache_version():
 
 
 class CourseViewSet(viewsets.ModelViewSet):
-    lookup_field = 'slug'
+    lookup_field = "slug"
 
     def get_permissions(self):
-        if self.action in (
-            'create', 'update', 'partial_update', 'destroy'
-        ):
+        if self.action in ("create", "update", "partial_update", "destroy"):
             return [IsInstructor()]
         return [permissions.AllowAny()]
 
     def get_serializer_class(self):
-        if self.action == 'retrieve':
+        if self.action == "retrieve":
             return CourseDetailSerializer
-        if self.action in (
-            'create', 'update', 'partial_update'
-        ):
+        if self.action in ("create", "update", "partial_update"):
             return CourseCreateUpdateSerializer
         return CourseListSerializer
 
     def get_queryset(self):
-        qs = Course.objects.select_related(
-            'category', 'instructor'
-        ).annotate(
-            lessons_count=Count(
-                'modules__lessons', distinct=True
-            )
-        ).prefetch_related('modules__lessons')
-        if self.action in (
-            'update', 'partial_update', 'destroy'
-        ):
+        qs = (
+            Course.objects.select_related("category", "instructor")
+            .annotate(lessons_count=Count("modules__lessons", distinct=True))
+            .prefetch_related("modules__lessons")
+        )
+        if self.action in ("update", "partial_update", "destroy"):
             return qs.filter(instructor=self.request.user)
         return qs.filter(is_published=True)
 
@@ -111,14 +103,15 @@ class CourseViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(instructor=self.request.user)
         _bump_course_cache_version()
-    
+
     def perform_update(self, serializer):
         serializer.save()
-    _bump_course_cache_version()
+        _bump_course_cache_version()
 
     def perform_destroy(self, instance):
         instance.delete()
         _bump_course_cache_version()
+
 
 class EnrollView(APIView):
     permission_classes = [permissions.IsAuthenticated]
@@ -126,16 +119,14 @@ class EnrollView(APIView):
 
     def post(self, request):
         serializer = EnrollSerializer(
-            data=request.data, context={'request': request}
+            data=request.data, context={"request": request}
         )
         serializer.is_valid(raise_exception=True)
-        course = serializer.validated_data['course']
+        course = serializer.validated_data["course"]
         enrollment = Enrollment.objects.create(
             user=request.user, course=course
         )
-        return Response(
-            EnrollmentSerializer(enrollment).data, status=201
-        )
+        return Response(EnrollmentSerializer(enrollment).data, status=201)
 
 
 class MyEnrollmentsView(generics.ListAPIView):
@@ -145,7 +136,7 @@ class MyEnrollmentsView(generics.ListAPIView):
     def get_queryset(self):
         return Enrollment.objects.filter(
             user=self.request.user, is_active=True
-        ).select_related('course__category', 'course__instructor')
+        ).select_related("course__category", "course__instructor")
 
 
 class MarkLessonCompleteView(APIView):
@@ -154,19 +145,17 @@ class MarkLessonCompleteView(APIView):
 
     def post(self, request):
         serializer = MarkLessonCompleteSerializer(
-            data=request.data, context={'request': request}
+            data=request.data, context={"request": request}
         )
         serializer.is_valid(raise_exception=True)
-        lesson = serializer.validated_data['lesson']
+        lesson = serializer.validated_data["lesson"]
         progress, _ = LessonProgress.objects.get_or_create(
             user=request.user, lesson=lesson
         )
         if not progress.is_completed:
             progress.is_completed = True
             progress.completed_at = timezone.now()
-            progress.save(
-                update_fields=['is_completed', 'completed_at']
-            )
+            progress.save(update_fields=["is_completed", "completed_at"])
         enrollment = Enrollment.objects.get(
             user=request.user, course=lesson.module.course
         )
@@ -181,4 +170,4 @@ class MyCertificatesView(generics.ListAPIView):
     def get_queryset(self):
         return Certificate.objects.filter(
             user=self.request.user
-        ).select_related('course')
+        ).select_related("course")
