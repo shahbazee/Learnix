@@ -118,6 +118,8 @@ class SignUpView(FormView):
             f"Your account is pending verification. A fresh verification "
             f"code has been dispatched to {user.email}.",
         )
+        verify_url = f"{reverse('accounts:verify_otp')}?token={token}"
+        return redirect(verify_url)
 
     def form_valid(self, form):
         is_re_registration = bool(form.instance and form.instance.pk)
