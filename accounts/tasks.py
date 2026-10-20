@@ -46,7 +46,6 @@ def send_otp_email(self, user_id, otp_code, expires_minutes=10):
         user,
         otp_code,
         expires_minutes=expires_minutes,
-        async_send=False,
     )
     if sent:
         log.status = "sent"
@@ -78,7 +77,7 @@ def send_welcome_email(self, user_id):
     )
     if not created and log.status == "sent":
         return
-    sent = send_registration_success_email(user, async_send=False)
+    sent = send_registration_success_email(user)
     if sent:
         log.status = "sent"
         log.sent_at = timezone.now()
@@ -113,7 +112,6 @@ def send_password_reset_email(self, user_id, reset_code, expires_minutes=10):
         user,
         reset_code,
         expires_minutes=expires_minutes,
-        async_send=False,
     )
     if sent:
         log.status = "sent"
@@ -145,7 +143,7 @@ def send_password_changed_email_task(self, user_id):
     )
     if not created and log.status == "sent":
         return
-    sent = send_password_changed_email(user, async_send=False)
+    sent = send_password_changed_email(user)
     if sent:
         log.status = "sent"
         log.sent_at = timezone.now()
