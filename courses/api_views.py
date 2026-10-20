@@ -5,7 +5,7 @@ from rest_framework import generics, permissions, viewsets
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from accounts.models import UserProfile
+from accounts.permissions import IsInstructor
 
 from .models import (
     Certificate,
@@ -25,15 +25,6 @@ from .serializers import (
     LessonProgressSerializer,
     MarkLessonCompleteSerializer,
 )
-
-
-class IsInstructor(permissions.BasePermission):
-    def has_permission(self, request, view):
-        if not request.user.is_authenticated:
-            return False
-        return UserProfile.objects.filter(
-            user=request.user, role="instructor"
-        ).exists()
 
 
 class CourseCategoryViewSet(viewsets.ReadOnlyModelViewSet):
