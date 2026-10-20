@@ -1,0 +1,60 @@
+{% if google_client_id %}
+<div id="googleGisWrap" data-next="{{ google_next|default:'' }}" class="flex justify-center">
+  <div id="googleGisButton"></div>
+</div>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script>
+  function submitGoogleCredential(response) {
+    var form = document.createElement('form');
+    form.method = 'POST';
+    form.action = "{% url 'accounts:google_complete' %}";
+    var fields = {
+      'csrfmiddlewaretoken': '{{ csrf_token }}',
+      'credential': response.credential
+    };
+    var wrap = document.getElementById('googleGisWrap');
+    if (wrap && wrap.dataset.next) {
+      fields['next'] = wrap.dataset.next;
+    }
+    var roleInput = document.getElementById('signupRoleInput');
+    if (roleInput) {
+      fields['role'] = roleInput.value;
+    }
+    Object.keys(fields).forEach(function (name) {
+      var input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = name;
+      input.value = fields[name];
+      form.appendChild(input);
+    });
+    document.body.appendChild(form);
+    form.submit();
+  }
+
+  function initGoogleGis() {
+    if (!window.google || !google.accounts || !google.accounts.id) {
+      return;
+    }
+    google.accounts.id.initialize({
+      client_id: '{{ google_client_id }}',
+      callback: submitGoogleCredential
+    });
+    google.accounts.id.renderButton(
+      document.getElementById('googleGisButton'),
+      {
+        theme: 'outline',
+        size: 'large',
+        shape: 'pill',
+        text: 'continue_with',
+        width: {{ google_btn_width|default:320 }}
+      }
+    );
+  }
+
+  if (window.google && google.accounts) {
+    initGoogleGis();
+  } else {
+    window.addEventListener('load', initGoogleGis);
+  }
+</script>
+{% endif %}

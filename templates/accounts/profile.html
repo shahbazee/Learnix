@@ -359,9 +359,7 @@
                   Disconnect
                 </button>
                 {% else %}
-                <a href="{% url 'accounts:google_login' %}" class="px-5 py-2 rounded-full text-xs font-bold text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 transition-colors inline-block">
-                  Connect
-                </a>
+                {% include "includes/_google_gis.html" with google_btn_width=240 %}
                 {% endif %}
               </div>
             </div>
