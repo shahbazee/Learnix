@@ -113,6 +113,7 @@ class GoogleLoginView(APIView):
         data["access"] = str(refresh.access_token)
         return Response(data)
 
+
 class LogoutView(APIView):
     def post(self, request):
         refresh_token = request.data.get("refresh")
