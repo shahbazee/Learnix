@@ -114,7 +114,6 @@ class StudentDashboardView(LoginRequiredMixin, TemplateView):
             certs_percent = 0
         certs_dashoffset = int(314 - (314 * (min(100, certs_percent) / 100)))
 
-
         recent_purchases = list(
             PaymentTransaction.objects.filter(user=user)
             .select_related("course", "invoice")

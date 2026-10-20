@@ -135,7 +135,8 @@ class Command(BaseCommand):
                                 False,
                             ),
                             (
-                                "1.4 ASGI Middleware & Cryptographic Handshakes",
+                                "1.4 ASGI Middleware & "
+                                "Cryptographic Handshakes",
                                 1185,
                                 False,
                             ),

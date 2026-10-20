@@ -1,3 +1,5 @@
+import logging
+
 from django.conf import settings
 from django.contrib.auth import get_user_model, login, logout
 from django.db import transaction
@@ -29,6 +31,7 @@ from .tasks import (
 )
 
 User = get_user_model()
+logger = logging.getLogger(__name__)
 
 
 class RegisterView(generics.CreateAPIView):
@@ -158,7 +161,10 @@ class LogoutView(APIView):
                 token = RefreshToken(refresh_token)
                 token.blacklist()
             except Exception:
-                pass
+                logger.warning(
+                    "Refresh token blacklist failed during logout.",
+                    exc_info=True,
+                )
         logout(request)
         return Response({"detail": "Logged out."})
 

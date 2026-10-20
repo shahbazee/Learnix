@@ -286,4 +286,3 @@ class UserLogoutView(View):
                 request, "You have been logged out of your Learnix session."
             )
         return redirect("core:home")
-

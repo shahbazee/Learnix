@@ -66,7 +66,9 @@ def _send_platform_email(
     if html_message:
         email.attach_alternative(html_message, "text/html")
     if attachment_bytes and attachment_filename:
-        email.attach(attachment_filename, attachment_bytes, attachment_mimetype)
+        email.attach(
+            attachment_filename, attachment_bytes, attachment_mimetype
+        )
 
     try:
         email.send(fail_silently=False)
@@ -376,7 +378,10 @@ def send_payment_receipt_invoice_email(
                 pdf_bytes = invoice.pdf_file.read()
                 invoice.pdf_file.close()
             except Exception:
-                pass
+                logger.warning(
+                    "Could not read the stored invoice PDF file.",
+                    exc_info=True,
+                )
         if not pdf_bytes:
             try:
                 from payments.services import generate_invoice_pdf
