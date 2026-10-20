@@ -5,13 +5,6 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from core.emails import (
-    send_forgot_password_otp_email,
-    send_otp_verification_email,
-    send_password_changed_email,
-    send_registration_success_email,
-)
-
 from .models import EmailOTP, UserProfile
 from .serializers import (
     ChangePasswordSerializer,

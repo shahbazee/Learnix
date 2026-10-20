@@ -23,13 +23,6 @@ from django.utils import timezone
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.generic import FormView, View
 
-from core.emails import (
-    send_forgot_password_otp_email,
-    send_otp_verification_email,
-    send_password_changed_email,
-    send_registration_success_email,
-)
-
 from .forms import (
     ForgotPasswordRequestForm,
     OTPVerificationForm,
@@ -765,7 +758,6 @@ def complete_google_auth_login(
     family_name="",
     next_url=None,
     role="student",
-    avatar_url="",
 ):
     google_email = google_email.strip().lower()
     user = User.objects.filter(email__iexact=google_email).first()
@@ -1021,7 +1013,6 @@ class GoogleCallbackView(View):
 
         given_name = userinfo.get("given_name", "")
         family_name = userinfo.get("family_name", "")
-        picture = userinfo.get("picture", "")
         next_url = request.session.pop("google_oauth_next", None)
         role = request.session.pop("google_oauth_role", "student")
 
@@ -1032,5 +1023,4 @@ class GoogleCallbackView(View):
             family_name,
             next_url,
             role=role,
-            avatar_url=picture,
         )
