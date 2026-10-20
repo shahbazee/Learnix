@@ -1,5 +1,8 @@
+from django.conf import settings
 from django.contrib.auth import get_user_model, login, logout
 from django.db import transaction
+from google.auth.transport import requests as google_requests
+from google.oauth2.id_token import verify_oauth2_token
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -8,6 +11,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from .models import EmailOTP, UserProfile
 from .serializers import (
     ChangePasswordSerializer,
+    GoogleLoginSerializer,
     LoginSerializer,
     PasswordResetRequestSerializer,
     PasswordResetVerifySerializer,
@@ -62,6 +66,88 @@ class LoginView(APIView):
         data["refresh"] = str(refresh)
         data["access"] = str(refresh.access_token)
         return Response(data)
+
+
+class GoogleLoginView(APIView):
+    permission_classes = [permissions.AllowAny]
+    serializer_class = GoogleLoginSerializer
+
+    def post(self, request):
+        serializer = GoogleLoginSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        try:
+            id_info = verify_oauth2_token(
+                serializer.validated_data["id_token"],
+                google_requests.Request(),
+                settings.GOOGLE_CLIENT_ID,
+            )
+        except Exception:
+            return Response(
+                {"detail": "Invalid Google token."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        email = (id_info.get("email") or "").strip().lower()
+        email_verified = id_info.get("email_verified")
+        if not email or email_verified not in (True, "true"):
+            return Response(
+                {"detail": "Invalid Google token."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        user = self._find_or_create_user(
+            email,
+            id_info.get("given_name") or "",
+            id_info.get("family_name") or "",
+        )
+        login(
+            request,
+            user,
+            backend="django.contrib.auth.backends.ModelBackend",
+        )
+        refresh = RefreshToken.for_user(user)
+        data = UserSerializer(user).data
+        data["refresh"] = str(refresh)
+        data["access"] = str(refresh.access_token)
+        return Response(data)
+
+    def _find_or_create_user(self, email, given_name, family_name):
+        user = User.objects.filter(email__iexact=email).first()
+        if user:
+            if not user.is_active:
+                user.is_active = True
+                user.save(update_fields=["is_active"])
+            profile, _ = UserProfile.objects.get_or_create(user=user)
+            if not profile.google_email:
+                profile.google_email = email
+                profile.save(update_fields=["google_email"])
+            return user
+        base_username = (
+            given_name.lower().replace(" ", "")
+            if given_name
+            else email.split("@")[0]
+        )
+        clean_username = "".join(
+            c for c in base_username if c.isalnum() or c in ["_", "."]
+        )
+        if not clean_username:
+            clean_username = "student"
+        username = clean_username
+        counter = 1
+        while User.objects.filter(username__iexact=username).exists():
+            username = f"{clean_username}_{counter}"
+            counter += 1
+        user = User.objects.create(
+            username=username,
+            email=email,
+            first_name=(given_name or email.split("@")[0].capitalize()),
+            last_name=family_name or "Learner",
+            is_active=True,
+        )
+        user.set_unusable_password()
+        user.save(update_fields=["password"])
+        profile, _ = UserProfile.objects.get_or_create(user=user)
+        profile.google_email = email
+        profile.save(update_fields=["google_email"])
+        return user
 
 
 class LogoutView(APIView):
