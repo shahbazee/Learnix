@@ -10,7 +10,7 @@ from .google_views import (
     GoogleLoginView,
     complete_google_auth_login,
 )
-from .helpers import otp_resend_allowed
+from .helpers import otp_resend_allowed, resend_otp_code, resolve_otp_user_id
 from .password_views import (
     ForgotPasswordView,
     ResetPasswordView,
@@ -34,4 +34,6 @@ __all__ = [
     "VerifyResetOTPView",
     "complete_google_auth_login",
     "otp_resend_allowed",
+    "resend_otp_code",
+    "resolve_otp_user_id",
 ]

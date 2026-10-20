@@ -17,11 +17,7 @@ class ProfileView(LoginRequiredMixin, View):
 
     def get_context(self, user):
         profile, _ = UserProfile.objects.get_or_create(user=user)
-        enrollments_count = (
-            user.enrollments.filter(is_active=True).count()
-            if hasattr(user, "enrollments")
-            else 0
-        )
+        enrollments_count = user.enrollments.filter(is_active=True).count()
         display_first_name = user.first_name or (
             user.username.split(".")[0].capitalize()
             if "." in user.username
@@ -32,13 +28,9 @@ class ProfileView(LoginRequiredMixin, View):
             if "." in user.username
             else ""
         )
-        payments = (
-            user.payments.select_related("course", "invoice").order_by(
-                "-created_at"
-            )[:10]
-            if hasattr(user, "payments")
-            else []
-        )
+        payments = user.payments.select_related("course", "invoice").order_by(
+            "-created_at"
+        )[:10]
         return {
             "profile": profile,
             "user": user,

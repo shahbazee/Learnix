@@ -4,7 +4,6 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import get_user_model, login, logout
 from django.contrib.auth.views import LoginView
-from django.core import signing
 from django.db import transaction
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse, reverse_lazy
@@ -15,7 +14,11 @@ from ..forms import OTPVerificationForm, StudentRegistrationForm, UserLoginForm
 from ..models import EmailOTP, UserProfile
 from ..otp_utils import verify_otp
 from ..tasks import send_otp_email, send_welcome_email
-from .helpers import _decode_otp_token, _generate_otp_token, otp_resend_allowed
+from .helpers import (
+    _generate_otp_token,
+    resend_otp_code,
+    resolve_otp_user_id,
+)
 
 User = get_user_model()
 logger = logging.getLogger(__name__)
@@ -133,19 +136,7 @@ class VerifyOTPView(FormView):
     success_url = reverse_lazy("courses:course_list")
 
     def dispatch(self, request, *args, **kwargs):
-        if request.user.is_authenticated:
-            return redirect("core:home")
-
-        user_id = request.session.get("otp_user_id")
-        token = request.GET.get("token") or request.POST.get("token")
-
-        if not user_id and token:
-            try:
-                user_id = _decode_otp_token(token)
-                request.session["otp_user_id"] = user_id
-                request.session.modified = True
-            except (signing.BadSignature, signing.SignatureExpired):
-                user_id = None
+        user_id = resolve_otp_user_id(request)
 
         if not user_id:
             messages.error(
@@ -173,15 +164,7 @@ class VerifyOTPView(FormView):
         return super().dispatch(request, *args, **kwargs)
 
     def get_user(self):
-        user_id = self.request.session.get("otp_user_id")
-        token = self.request.GET.get("token") or self.request.POST.get("token")
-        if not user_id and token:
-            try:
-                user_id = _decode_otp_token(token)
-                self.request.session["otp_user_id"] = user_id
-            except Exception:
-                pass
-        return get_object_or_404(User, id=user_id)
+        return get_object_or_404(User, id=resolve_otp_user_id(self.request))
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -225,20 +208,8 @@ class VerifyOTPView(FormView):
 
 
 class ResendOTPView(View):
-    RATE_LIMIT_SECONDS = 60
-
     def post(self, request, *args, **kwargs):
-        user_id = request.session.get("otp_user_id")
-        token = request.POST.get("token") or request.GET.get("token")
-
-        if not user_id and token:
-            try:
-                user_id = _decode_otp_token(token)
-                request.session["otp_user_id"] = user_id
-                request.session.modified = True
-            except Exception:
-                user_id = None
-
+        user_id = resolve_otp_user_id(request)
         if not user_id:
             messages.error(request, "Session expired. Please register again.")
             return redirect("accounts:signup")
@@ -250,63 +221,35 @@ class ResendOTPView(View):
             )
             return redirect("accounts:login")
 
-        token = token or _generate_otp_token(user.id)
-        last_sent = request.session.get("otp_last_sent")
-        if last_sent:
-            elapsed = timezone.now().timestamp() - last_sent
-            if elapsed < self.RATE_LIMIT_SECONDS:
-                remaining = int(self.RATE_LIMIT_SECONDS - elapsed)
-                messages.warning(
-                    request,
-                    f"Please wait {remaining} seconds before "
-                    f"requesting a new code.",
-                )
-                target_url = (
-                    f"{reverse('accounts:verify_otp')}?token={token}"
-                    if token
-                    else reverse("accounts:verify_otp")
-                )
-                return redirect(target_url)
-        if not otp_resend_allowed(user.id, "registration"):
+        token = request.POST.get("token") or _generate_otp_token(user.id)
+        target_url = f"{reverse('accounts:verify_otp')}?token={token}"
+
+        result, remaining = resend_otp_code(
+            request, user, "registration", "otp_last_sent", send_otp_email
+        )
+        if result == "cooldown":
+            messages.warning(
+                request,
+                f"Please wait {remaining} seconds before "
+                f"requesting a new code.",
+            )
+        elif result == "capped":
             messages.error(
                 request,
                 "Too many code requests. Please try again in an hour.",
             )
-            target_url = (
-                f"{reverse('accounts:verify_otp')}?token={token}"
-                if token
-                else reverse("accounts:verify_otp")
-            )
-            return redirect(target_url)
-
-        otp_record, code = EmailOTP.create_for_user(
-            user, purpose="registration"
-        )
-
-        try:
-            transaction.on_commit(lambda: send_otp_email.delay(user.id, code))
-            request.session["otp_last_sent"] = timezone.now().timestamp()
-            messages.info(
-                request,
-                f"A fresh verification code has been dispatched "
-                f"to {user.email}.",
-            )
-        except Exception as e:
-            logger.error(
-                f"Failed to resend OTP verification email "
-                f"to {user.email}: {e}"
-            )
+        elif result == "failed":
             messages.warning(
                 request,
                 "Could not send verification email. Please check your "
                 "network or try again in a moment.",
             )
-
-        target_url = (
-            f"{reverse('accounts:verify_otp')}?token={token}"
-            if token
-            else reverse("accounts:verify_otp")
-        )
+        else:
+            messages.info(
+                request,
+                f"A fresh verification code has been dispatched "
+                f"to {user.email}.",
+            )
         return redirect(target_url)
 
 
@@ -344,11 +287,3 @@ class UserLogoutView(View):
             )
         return redirect("core:home")
 
-    def get(self, request, *args, **kwargs):
-        if request.user.is_authenticated:
-            logout(request)
-            request.session.flush()
-            messages.info(
-                request, "You have been logged out of your Learnix session."
-            )
-        return redirect("core:home")

@@ -19,12 +19,9 @@ class EnrolledCourseRequiredMixin(AccessMixin):
         if request.user.is_staff:
             return super().dispatch(request, *args, **kwargs)
 
-        has_access = (
-            hasattr(request.user, "enrollments")
-            and request.user.enrollments.filter(
-                course__slug=course_slug, is_active=True
-            ).exists()
-        )
+        has_access = request.user.enrollments.filter(
+            course__slug=course_slug, is_active=True
+        ).exists()
 
         if not has_access:
             messages.warning(

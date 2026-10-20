@@ -16,7 +16,7 @@ from ..forms import (
 from ..models import EmailOTP
 from ..otp_utils import verify_otp
 from ..tasks import send_password_changed_email_task, send_password_reset_email
-from .helpers import otp_resend_allowed
+from .helpers import resend_otp_code
 
 User = get_user_model()
 logger = logging.getLogger(__name__)
@@ -109,8 +109,6 @@ class VerifyResetOTPView(FormView):
 
 
 class ResendResetOTPView(View):
-    RATE_LIMIT_SECONDS = 60
-
     def post(self, request, *args, **kwargs):
         user_id = request.session.get("reset_user_id")
         if not user_id:
@@ -120,38 +118,29 @@ class ResendResetOTPView(View):
             return redirect("accounts:forgot_password")
 
         user = get_object_or_404(User, id=user_id)
-
-        last_sent = request.session.get("reset_otp_last_sent")
-        if last_sent:
-            elapsed = timezone.now().timestamp() - last_sent
-            if elapsed < self.RATE_LIMIT_SECONDS:
-                remaining = int(self.RATE_LIMIT_SECONDS - elapsed)
-                messages.warning(
-                    request,
-                    f"Please wait {remaining} seconds before "
-                    f"requesting a new code.",
-                )
-                return redirect("accounts:verify_reset_otp")
-
-        if not otp_resend_allowed(user.id, "password_reset"):
+        result, remaining = resend_otp_code(
+            request,
+            user,
+            "password_reset",
+            "reset_otp_last_sent",
+            send_password_reset_email,
+        )
+        if result == "cooldown":
+            messages.warning(
+                request,
+                f"Please wait {remaining} seconds before "
+                f"requesting a new code.",
+            )
+        elif result == "capped":
             messages.error(
                 request,
                 "Too many code requests. Please try again in an hour.",
             )
-            return redirect("accounts:verify_reset_otp")
-
-        otp_record, code = EmailOTP.create_for_user(
-            user, purpose="password_reset"
-        )
-        request.session["reset_otp_last_sent"] = timezone.now().timestamp()
-
-        transaction.on_commit(
-            lambda: send_password_reset_email.delay(user.id, code)
-        )
-
-        messages.info(
-            request, "A fresh password reset code has been sent to your email."
-        )
+        elif result == "sent":
+            messages.info(
+                request,
+                "A fresh password reset code has been sent to your email.",
+            )
         return redirect("accounts:verify_reset_otp")
 
 
