@@ -1,5 +1,6 @@
 import logging
 
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -33,6 +34,7 @@ class ProfileView(LoginRequiredMixin, View):
         )[:10]
         return {
             "profile": profile,
+            "google_client_id": settings.GOOGLE_CLIENT_ID,
             "user": user,
             "display_first_name": display_first_name,
             "display_last_name": display_last_name,

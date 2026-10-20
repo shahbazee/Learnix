@@ -5,11 +5,7 @@ from .auth_views import (
     UserLogoutView,
     VerifyOTPView,
 )
-from .google_views import (
-    GoogleCallbackView,
-    GoogleLoginView,
-    complete_google_auth_login,
-)
+from .google_views import GoogleCompleteView, complete_google_auth_login
 from .helpers import otp_resend_allowed, resend_otp_code, resolve_otp_user_id
 from .password_views import (
     ForgotPasswordView,
@@ -21,8 +17,7 @@ from .profile_views import ProfileView
 
 __all__ = [
     "ForgotPasswordView",
-    "GoogleCallbackView",
-    "GoogleLoginView",
+    "GoogleCompleteView",
     "ProfileView",
     "ResendOTPView",
     "ResendResetOTPView",
