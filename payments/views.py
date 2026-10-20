@@ -20,10 +20,17 @@ from .models import Invoice, PaymentTransaction
 from .services import (
     generate_invoice_pdf,
     generate_receipt_pdf,
+    get_or_create_invoice,
     send_order_confirmation_email,
 )
 
 logger = logging.getLogger(__name__)
+
+
+def _pdf_download_response(pdf_bytes, filename):
+    response = HttpResponse(pdf_bytes, content_type="application/pdf")
+    response["Content-Disposition"] = f'attachment; filename="{filename}"'
+    return response
 
 
 class CreateCheckoutSessionView(LoginRequiredMixin, View):
@@ -39,50 +46,7 @@ class CreateCheckoutSessionView(LoginRequiredMixin, View):
             return redirect("courses:dashboard")
 
         if course.is_free:
-            with db_transaction.atomic():
-                order_num = PaymentTransaction.generate_order_number()
-                tx, _ = PaymentTransaction.objects.get_or_create(
-                    user=request.user,
-                    course=course,
-                    defaults={
-                        "order_number": order_num,
-                        "amount": Decimal("0.00"),
-                        "currency": "USD",
-                        "status": "COMPLETED",
-                    },
-                )
-                enrollment, _ = Enrollment.objects.get_or_create(
-                    user=request.user,
-                    course=course,
-                    defaults={"is_active": True, "progress_percent": 0.00},
-                )
-                inv, _ = Invoice.objects.get_or_create(
-                    transaction=tx,
-                    defaults={
-                        "invoice_number": Invoice.generate_invoice_number(),
-                        "billing_name": (
-                            request.user.get_full_name()
-                            or request.user.username
-                        ),
-                        "billing_email": (
-                            request.user.email
-                            or f"{request.user.username}@learnix.edu"
-                        ),
-                        "subtotal": Decimal("0.00"),
-                        "tax_amount": Decimal("0.00"),
-                        "total_amount": Decimal("0.00"),
-                    },
-                )
-            send_order_confirmation_email(request.user, course, tx, inv)
-            messages.success(
-                request,
-                f"Welcome to {course.title}! "
-                f"Your complimentary access is active.",
-            )
-            return redirect(
-                f"{reverse('payments:payment_success')}?"
-                f"order={tx.order_number}"
-            )
+            return self._enroll_free_course(request, course)
 
         order_num = PaymentTransaction.generate_order_number()
         tx, _ = PaymentTransaction.objects.get_or_create(
@@ -95,6 +59,55 @@ class CreateCheckoutSessionView(LoginRequiredMixin, View):
                 "currency": settings.STRIPE_CURRENCY.upper(),
             },
         )
+        return self._start_stripe_checkout(request, course, tx)
+
+    def _enroll_free_course(self, request, course):
+        with db_transaction.atomic():
+            order_num = PaymentTransaction.generate_order_number()
+            tx, _ = PaymentTransaction.objects.get_or_create(
+                user=request.user,
+                course=course,
+                defaults={
+                    "order_number": order_num,
+                    "amount": Decimal("0.00"),
+                    "currency": "USD",
+                    "status": "COMPLETED",
+                },
+            )
+            Enrollment.objects.get_or_create(
+                user=request.user,
+                course=course,
+                defaults={"is_active": True, "progress_percent": 0.00},
+            )
+            inv, _ = Invoice.objects.get_or_create(
+                transaction=tx,
+                defaults={
+                    "invoice_number": Invoice.generate_invoice_number(),
+                    "billing_name": (
+                        request.user.get_full_name()
+                        or request.user.username
+                    ),
+                    "billing_email": (
+                        request.user.email
+                        or f"{request.user.username}@learnix.edu"
+                    ),
+                    "subtotal": Decimal("0.00"),
+                    "tax_amount": Decimal("0.00"),
+                    "total_amount": Decimal("0.00"),
+                },
+            )
+        send_order_confirmation_email(request.user, course, tx, inv)
+        messages.success(
+            request,
+            f"Welcome to {course.title}! "
+            f"Your complimentary access is active.",
+        )
+        return redirect(
+            f"{reverse('payments:payment_success')}?"
+            f"order={tx.order_number}"
+        )
+
+    def _start_stripe_checkout(self, request, course, tx):
 
         try:
             stripe.api_key = settings.STRIPE_SECRET_KEY
@@ -185,28 +198,18 @@ class CheckoutModalView(LoginRequiredMixin, View):
 class PaymentSuccessView(LoginRequiredMixin, TemplateView):
     template_name = "payments/success.html"
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
+    def _find_transaction(self):
         user = self.request.user
-
         order_ref = self.request.GET.get("order")
         session_id = self.request.GET.get("session_id")
-
-        tx = None
         if order_ref:
             qs = PaymentTransaction.objects.filter(order_number=order_ref)
-            if not user.is_staff:
-                qs = qs.filter(user=user)
-            tx = qs.select_related("course", "invoice").first()
         elif session_id:
             qs = PaymentTransaction.objects.filter(
                 stripe_checkout_session_id=session_id
             )
-            if not user.is_staff:
-                qs = qs.filter(user=user)
-            tx = qs.select_related("course", "invoice").first()
         else:
-            tx = (
+            return (
                 PaymentTransaction.objects.filter(
                     user=user, status="COMPLETED"
                 )
@@ -214,6 +217,35 @@ class PaymentSuccessView(LoginRequiredMixin, TemplateView):
                 .order_by("-created_at")
                 .first()
             )
+        if not user.is_staff:
+            qs = qs.filter(user=user)
+        return qs.select_related("course", "invoice").first()
+
+    def _start_course_url(self, course):
+        first_module = (
+            course.modules.prefetch_related("lessons")
+            .order_by("order_number")
+            .first()
+        )
+        first_lesson = None
+        if first_module:
+            first_lesson = first_module.lessons.order_by(
+                "order_number"
+            ).first()
+        if first_lesson:
+            url = reverse(
+                "courses:lesson_view",
+                kwargs={
+                    "slug": course.slug,
+                    "lesson_id": first_lesson.id,
+                },
+            )
+            return url, first_lesson
+        return reverse("courses:dashboard"), None
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        tx = self._find_transaction()
 
         is_enrolled = False
         if tx and tx.course:
@@ -226,25 +258,9 @@ class PaymentSuccessView(LoginRequiredMixin, TemplateView):
         first_lesson = None
         start_course_url = None
         if tx and tx.course:
-            first_module = (
-                tx.course.modules.prefetch_related("lessons")
-                .order_by("order_number")
-                .first()
+            start_course_url, first_lesson = self._start_course_url(
+                tx.course
             )
-            if first_module:
-                first_lesson = first_module.lessons.order_by(
-                    "order_number"
-                ).first()
-            if first_lesson:
-                start_course_url = reverse(
-                    "courses:lesson_view",
-                    kwargs={
-                        "slug": tx.course.slug,
-                        "lesson_id": first_lesson.id,
-                    },
-                )
-            else:
-                start_course_url = reverse("courses:dashboard")
 
         transaction_id = None
         if tx:
@@ -307,21 +323,7 @@ class BillingHubView(LoginRequiredMixin, TemplateView):
 
         for tx in transactions:
             if tx.status == "COMPLETED" and not hasattr(tx, "invoice"):
-                Invoice.objects.get_or_create(
-                    transaction=tx,
-                    defaults={
-                        "invoice_number": Invoice.generate_invoice_number(),
-                        "billing_name": (
-                            user.get_full_name() or user.username
-                        ),
-                        "billing_email": (
-                            user.email or f"{user.username}@learnix.edu"
-                        ),
-                        "subtotal": tx.amount,
-                        "tax_amount": Decimal("0.00"),
-                        "total_amount": tx.amount,
-                    },
-                )
+                get_or_create_invoice(tx, user)
 
         transactions = (
             PaymentTransaction.objects.filter(user=user)
@@ -370,10 +372,8 @@ class DownloadInvoicePDFView(LoginRequiredMixin, View):
             )
             return redirect("payments:billing_hub")
 
-        response = HttpResponse(pdf_bytes, content_type="application/pdf")
         filename = f"Learnix_Invoice_{invoice.invoice_number}.pdf"
-        response["Content-Disposition"] = f'attachment; filename="{filename}"'
-        return response
+        return _pdf_download_response(pdf_bytes, filename)
 
 
 class DownloadReceiptPDFView(LoginRequiredMixin, View):
@@ -395,10 +395,8 @@ class DownloadReceiptPDFView(LoginRequiredMixin, View):
             )
             return redirect("payments:billing_hub")
 
-        response = HttpResponse(pdf_bytes, content_type="application/pdf")
         filename = f"Learnix_Receipt_{tx.order_number}.pdf"
-        response["Content-Disposition"] = f'attachment; filename="{filename}"'
-        return response
+        return _pdf_download_response(pdf_bytes, filename)
 
 
 class ExportAllInvoicesZipView(LoginRequiredMixin, View):
@@ -423,25 +421,7 @@ class ExportAllInvoicesZipView(LoginRequiredMixin, View):
 
                 inv = getattr(tx, "invoice", None)
                 if not inv and tx.status == "COMPLETED":
-                    inv, _ = Invoice.objects.get_or_create(
-                        transaction=tx,
-                        defaults={
-                            "invoice_number": (
-                                Invoice.generate_invoice_number()
-                            ),
-                            "billing_name": (
-                                request.user.get_full_name()
-                                or request.user.username
-                            ),
-                            "billing_email": (
-                                request.user.email
-                                or f"{request.user.username}@learnix.edu"
-                            ),
-                            "subtotal": tx.amount,
-                            "tax_amount": Decimal("0.00"),
-                            "total_amount": tx.amount,
-                        },
-                    )
+                    inv = get_or_create_invoice(tx, request.user)
                 if inv:
                     inv_bytes = generate_invoice_pdf(inv)
                     if inv_bytes:

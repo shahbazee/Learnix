@@ -170,7 +170,7 @@ def _activate_enrollment(user, course):
     return enrollment
 
 
-def _get_or_create_invoice(tx, user, billing_name, billing_email):
+def get_or_create_invoice(tx, user, billing_name=None, billing_email=None):
     b_name = billing_name or user.get_full_name() or user.username
     b_email = billing_email or user.email or f"{user.username}@learnix.edu"
     invoice, created = Invoice.objects.get_or_create(
@@ -317,7 +317,7 @@ def fulfill_order_and_dispatch_emails(
         tx.save()
 
         enrollment = _activate_enrollment(user, course)
-        invoice = _get_or_create_invoice(
+        invoice = get_or_create_invoice(
             tx, user, billing_name, billing_email
         )
         already_sent = bool(tx.confirmation_emails_sent)
