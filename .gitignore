@@ -27,9 +27,8 @@ env/
 *.cert
 !.env.example
 
-# Django Media & Collected Static
+# Django Media (user uploads, never in git)
 media/
-# staticfiles/ (tracked to ensure PaaS deployments have pre-compiled admin and app assets)
 
 # Logs & Databases
 *.log
