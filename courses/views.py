@@ -299,7 +299,6 @@ class StudentDashboardView(LoginRequiredMixin, TemplateView):
             certs_percent = 0
         certs_dashoffset = int(314 - (314 * (min(100, certs_percent) / 100)))
 
-        weekly_activity = self._generate_study_velocity_grid(user)
 
         recent_purchases = list(
             PaymentTransaction.objects.filter(user=user)
@@ -338,7 +337,6 @@ class StudentDashboardView(LoginRequiredMixin, TemplateView):
                 "aggregate_progress_percent": aggregate_progress_percent,
                 "hours_dashoffset": hours_dashoffset,
                 "certs_dashoffset": certs_dashoffset,
-                "weekly_activity": weekly_activity,
                 "recent_purchases": recent_purchases,
                 "stripe_customer_id": (
                     getattr(latest_purchase, "stripe_customer_id", None)
@@ -348,61 +346,6 @@ class StudentDashboardView(LoginRequiredMixin, TemplateView):
             }
         )
         return context
-
-    def _generate_study_velocity_grid(self, user):
-        today = timezone.localdate()
-        start_date = today - timedelta(days=83)
-
-        counts = Counter()
-        completed_dates = LessonProgress.objects.filter(
-            user=user,
-            is_completed=True,
-            completed_at__isnull=False,
-            completed_at__date__gte=start_date,
-        ).values_list("completed_at", flat=True)
-
-        for completed_at in completed_dates:
-            if timezone.is_aware(completed_at):
-                completed_date = timezone.localtime(completed_at).date()
-            else:
-                completed_date = completed_at.date()
-            counts[completed_date] += 1
-
-        color_classes = {
-            0: "bg-slate-100",
-            1: "bg-purple-200",
-            2: "bg-cyan-300",
-            3: "bg-purple-400",
-            4: "bg-violet-600",
-        }
-
-        weeks_data = []
-        for week_index in range(12):
-            week_start = start_date + timedelta(days=week_index * 7)
-            days_data = []
-            for day_offset in range(7):
-                day = week_start + timedelta(days=day_offset)
-                level = min(counts.get(day, 0), 4)
-                is_current = day == today
-                css_class = color_classes.get(level, "bg-slate-100")
-                if is_current:
-                    css_class = (
-                        "bg-violet-600 animate-pulse "
-                        "shadow-[0_0_10px_rgba(124,58,237,0.7)]"
-                    )
-                days_data.append(
-                    {
-                        "level": level,
-                        "class": css_class,
-                        "is_current": is_current,
-                    }
-                )
-            weeks_data.append(
-                {"week_number": week_index + 1, "days": days_data}
-            )
-
-        return weeks_data
-
 
 class EnrollCourseView(LoginRequiredMixin, View):
     def post(self, request, slug):

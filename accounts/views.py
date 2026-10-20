@@ -810,14 +810,6 @@ def complete_google_auth_login(
         profile, _ = UserProfile.objects.get_or_create(user=user)
         profile.google_email = google_email
         profile.role = assigned_role
-        profile.headline = (
-            "Masterclass Instructor"
-            if assigned_role == "instructor"
-            else "Engineering Fellow"
-        )
-        profile.location_timezone = (
-            "San Francisco, CA · Pacific Daylight (UTC-7)"
-        )
         profile.save()
         user.profile = profile
 
