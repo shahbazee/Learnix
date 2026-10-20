@@ -11,8 +11,8 @@ from django.utils import timezone
 from django.views.generic import FormView, View
 
 from ..forms import OTPVerificationForm, StudentRegistrationForm, UserLoginForm
-from ..models import EmailOTP, UserProfile
-from ..otp_utils import verify_otp
+from ..models import UserProfile
+from ..otp_utils import create_and_send_otp, verify_otp
 from ..tasks import send_otp_email, send_welcome_email
 from .helpers import (
     _generate_otp_token,
@@ -55,16 +55,13 @@ class SignUpView(FormView):
         return super().post(request, *args, **kwargs)
 
     def _dispatch_unverified_otp_and_redirect(self, user):
-        otp_record, code = EmailOTP.create_for_user(
-            user, purpose="registration"
-        )
+        create_and_send_otp(user, "registration", send_otp_email)
         token = _generate_otp_token(user.id)
 
         self.request.session["otp_user_id"] = user.id
         self.request.session["otp_token"] = token
         self.request.session.modified = True
 
-        transaction.on_commit(lambda: send_otp_email.delay(user.id, code))
         self.request.session["otp_last_sent"] = timezone.now().timestamp()
         messages.success(
             self.request,
@@ -90,9 +87,7 @@ class SignUpView(FormView):
             profile.role = role
             profile.save(update_fields=["role"])
 
-            otp_record, code = EmailOTP.create_for_user(
-                user, purpose="registration"
-            )
+            create_and_send_otp(user, "registration", send_otp_email)
 
         token = _generate_otp_token(user.id)
         self.request.session["otp_user_id"] = user.id
@@ -100,7 +95,6 @@ class SignUpView(FormView):
         self.request.session.modified = True
 
         try:
-            transaction.on_commit(lambda: send_otp_email.delay(user.id, code))
             self.request.session["otp_last_sent"] = timezone.now().timestamp()
             if is_re_registration:
                 messages.success(
@@ -286,4 +280,3 @@ class UserLogoutView(View):
                 request, "You have been logged out of your Learnix session."
             )
         return redirect("core:home")
-

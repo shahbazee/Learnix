@@ -5,15 +5,14 @@ from urllib.parse import urlencode
 import requests
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth import get_user_model, login
+from django.contrib.auth import login
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.generic import View
 
-from ..models import UserProfile
+from ..google_auth import find_or_create_google_user
 
-User = get_user_model()
 logger = logging.getLogger(__name__)
 
 
@@ -26,58 +25,9 @@ def complete_google_auth_login(
     role="student",
 ):
     google_email = google_email.strip().lower()
-    user = User.objects.filter(email__iexact=google_email).first()
-    is_new_user = False
-    is_linked_user = False
-
-    if user:
-        if not user.is_active:
-            user.is_active = True
-            user.save(update_fields=["is_active"])
-
-        profile, _ = UserProfile.objects.get_or_create(user=user)
-        if not profile.google_email:
-            profile.google_email = google_email
-            is_linked_user = True
-        profile.save()
-        user.profile = profile
-    else:
-        is_new_user = True
-        base_username = (
-            given_name.lower().replace(" ", "")
-            if given_name
-            else google_email.split("@")[0]
-        )
-        clean_username = "".join(
-            c for c in base_username if c.isalnum() or c in ["_", "."]
-        )
-        if not clean_username:
-            clean_username = "student"
-
-        username = clean_username
-        counter = 1
-        while User.objects.filter(username__iexact=username).exists():
-            username = f"{clean_username}_{counter}"
-            counter += 1
-
-        user = User.objects.create(
-            username=username,
-            email=google_email,
-            first_name=(given_name or google_email.split("@")[0].capitalize()),
-            last_name=family_name or "Learner",
-            is_active=True,
-        )
-        user.set_unusable_password()
-        user.save(update_fields=["password"])
-
-        assigned_role = (
-            role if role in ["student", "instructor"] else "student"
-        )
-        profile, _ = UserProfile.objects.get_or_create(user=user)
-        profile.google_email = google_email
-        profile.role = assigned_role
-        profile.save()
-        user.profile = profile
+    user, is_new_user, is_linked_user = find_or_create_google_user(
+        google_email, given_name, family_name, role=role
+    )
 
     login(request, user, backend="django.contrib.auth.backends.ModelBackend")
 
@@ -115,6 +65,11 @@ def complete_google_auth_login(
         )
 
     return redirect(target_redirect)
+
+
+def _oauth_error(request, message):
+    messages.error(request, message)
+    return redirect("accounts:login")
 
 
 class GoogleLoginView(View):
@@ -164,6 +119,58 @@ class GoogleLoginView(View):
 
 
 class GoogleCallbackView(View):
+    def _fetch_userinfo(self, request, code):
+        client_id = getattr(settings, "GOOGLE_CLIENT_ID", "").strip()
+        client_secret = getattr(
+            settings, "GOOGLE_CLIENT_SECRET", ""
+        ).strip()
+        redirect_uri = request.build_absolute_uri(
+            reverse_lazy("accounts:google_callback")
+        )
+        token_data = {
+            "code": code,
+            "client_id": client_id,
+            "client_secret": client_secret,
+            "redirect_uri": redirect_uri,
+            "grant_type": "authorization_code",
+        }
+        try:
+            token_resp = requests.post(
+                "https://oauth2.googleapis.com/token",
+                data=token_data,
+                timeout=10,
+            )
+            if token_resp.status_code != 200:
+                return None, _oauth_error(
+                    request,
+                    "Failed to exchange authorization token with "
+                    "Google servers. Please verify Google credentials.",
+                )
+            tokens = token_resp.json()
+            access_token = tokens.get("access_token")
+            if not access_token:
+                return None, _oauth_error(
+                    request,
+                    "Failed to retrieve access token from Google.",
+                )
+            userinfo_resp = requests.get(
+                "https://www.googleapis.com/oauth2/v3/userinfo",
+                headers={"Authorization": f"Bearer {access_token}"},
+                timeout=10,
+            )
+            if userinfo_resp.status_code != 200:
+                return None, _oauth_error(
+                    request,
+                    "Failed to fetch user profile from Google account.",
+                )
+            return userinfo_resp.json(), None
+        except requests.RequestException:
+            return None, _oauth_error(
+                request,
+                "Network error communicating with Google "
+                "authentication servers.",
+            )
+
     def get(self, request, *args, **kwargs):
         if "error" in request.GET:
             error = request.GET.get("error")
@@ -185,89 +192,34 @@ class GoogleCallbackView(View):
         state = request.GET.get("state")
         saved_state = request.session.pop("google_oauth_state", None)
         if not state or not saved_state or state != saved_state:
-            messages.error(
+            return _oauth_error(
                 request,
                 "OAuth security verification failed (state mismatch). "
                 "Please try again.",
             )
-            return redirect("accounts:login")
 
         code = request.GET.get("code")
         if not code:
-            messages.error(
+            return _oauth_error(
                 request, "Authorization code missing from Google callback."
             )
-            return redirect("accounts:login")
 
-        client_id = getattr(settings, "GOOGLE_CLIENT_ID", "").strip()
-        client_secret = getattr(settings, "GOOGLE_CLIENT_SECRET", "").strip()
-        redirect_uri = request.build_absolute_uri(
-            reverse_lazy("accounts:google_callback")
-        )
-
-        token_data = {
-            "code": code,
-            "client_id": client_id,
-            "client_secret": client_secret,
-            "redirect_uri": redirect_uri,
-            "grant_type": "authorization_code",
-        }
-
-        try:
-            token_resp = requests.post(
-                "https://oauth2.googleapis.com/token",
-                data=token_data,
-                timeout=10,
-            )
-            if token_resp.status_code != 200:
-                messages.error(
-                    request,
-                    "Failed to exchange authorization token with "
-                    "Google servers. Please verify Google credentials.",
-                )
-                return redirect("accounts:login")
-
-            tokens = token_resp.json()
-            access_token = tokens.get("access_token")
-            if not access_token:
-                messages.error(
-                    request, "Failed to retrieve access token from Google."
-                )
-                return redirect("accounts:login")
-
-            userinfo_resp = requests.get(
-                "https://www.googleapis.com/oauth2/v3/userinfo",
-                headers={"Authorization": f"Bearer {access_token}"},
-                timeout=10,
-            )
-            if userinfo_resp.status_code != 200:
-                messages.error(
-                    request,
-                    "Failed to fetch user profile from Google account.",
-                )
-                return redirect("accounts:login")
-
-            userinfo = userinfo_resp.json()
-        except requests.RequestException:
-            messages.error(
-                request,
-                "Network error communicating with Google "
-                "authentication servers.",
-            )
-            return redirect("accounts:login")
+        userinfo, error_response = self._fetch_userinfo(request, code)
+        if error_response is not None:
+            return error_response
 
         google_email = userinfo.get("email", "").strip().lower()
         if not google_email:
-            messages.error(
-                request, "Google account did not return a valid email address."
+            return _oauth_error(
+                request,
+                "Google account did not return a valid email address.",
             )
-            return redirect("accounts:login")
 
         if userinfo.get("email_verified") is False:
-            messages.error(
-                request, "Your Google email address is not verified by Google."
+            return _oauth_error(
+                request,
+                "Your Google email address is not verified by Google.",
             )
-            return redirect("accounts:login")
 
         given_name = userinfo.get("given_name", "")
         family_name = userinfo.get("family_name", "")

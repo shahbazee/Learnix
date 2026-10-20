@@ -1,3 +1,5 @@
+import logging
+
 from django.conf import settings
 from django.contrib.auth import get_user_model, login, logout
 from django.db import transaction
@@ -8,7 +10,9 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from .models import EmailOTP, UserProfile
+from .google_auth import find_or_create_google_user
+from .models import UserProfile
+from .otp_utils import create_and_send_otp
 from .serializers import (
     ChangePasswordSerializer,
     GoogleLoginSerializer,
@@ -29,6 +33,7 @@ from .tasks import (
 )
 
 User = get_user_model()
+logger = logging.getLogger(__name__)
 
 
 class RegisterView(generics.CreateAPIView):
@@ -39,10 +44,7 @@ class RegisterView(generics.CreateAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
-        otp_record, code = EmailOTP.create_for_user(
-            user, purpose="registration"
-        )
-        transaction.on_commit(lambda: send_otp_email.delay(user.id, code))
+        create_and_send_otp(user, "registration", send_otp_email)
         return Response(
             {
                 "detail": "Verification code sent to your email.",
@@ -93,7 +95,7 @@ class GoogleLoginView(APIView):
                 {"detail": "Invalid Google token."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        user = self._find_or_create_user(
+        user, _, _ = find_or_create_google_user(
             email,
             id_info.get("given_name") or "",
             id_info.get("family_name") or "",
@@ -109,46 +111,6 @@ class GoogleLoginView(APIView):
         data["access"] = str(refresh.access_token)
         return Response(data)
 
-    def _find_or_create_user(self, email, given_name, family_name):
-        user = User.objects.filter(email__iexact=email).first()
-        if user:
-            if not user.is_active:
-                user.is_active = True
-                user.save(update_fields=["is_active"])
-            profile, _ = UserProfile.objects.get_or_create(user=user)
-            if not profile.google_email:
-                profile.google_email = email
-                profile.save(update_fields=["google_email"])
-            return user
-        base_username = (
-            given_name.lower().replace(" ", "")
-            if given_name
-            else email.split("@")[0]
-        )
-        clean_username = "".join(
-            c for c in base_username if c.isalnum() or c in ["_", "."]
-        )
-        if not clean_username:
-            clean_username = "student"
-        username = clean_username
-        counter = 1
-        while User.objects.filter(username__iexact=username).exists():
-            username = f"{clean_username}_{counter}"
-            counter += 1
-        user = User.objects.create(
-            username=username,
-            email=email,
-            first_name=(given_name or email.split("@")[0].capitalize()),
-            last_name=family_name or "Learner",
-            is_active=True,
-        )
-        user.set_unusable_password()
-        user.save(update_fields=["password"])
-        profile, _ = UserProfile.objects.get_or_create(user=user)
-        profile.google_email = email
-        profile.save(update_fields=["google_email"])
-        return user
-
 
 class LogoutView(APIView):
     def post(self, request):
@@ -158,7 +120,10 @@ class LogoutView(APIView):
                 token = RefreshToken(refresh_token)
                 token.blacklist()
             except Exception:
-                pass
+                logger.warning(
+                    "Refresh token blacklist failed during logout.",
+                    exc_info=True,
+                )
         logout(request)
         return Response({"detail": "Logged out."})
 
@@ -214,11 +179,8 @@ class PasswordResetRequestView(APIView):
         email = serializer.validated_data["email"]
         user = User.objects.filter(email__iexact=email, is_active=True).first()
         if user:
-            otp_record, code = EmailOTP.create_for_user(
-                user, purpose="password_reset"
-            )
-            transaction.on_commit(
-                lambda: send_password_reset_email.delay(user.id, code)
+            create_and_send_otp(
+                user, "password_reset", send_password_reset_email
             )
         return Response(
             {"detail": "If an account exists, a reset code has been sent."}

@@ -1,4 +1,5 @@
 import hashlib
+import logging
 import uuid
 from decimal import Decimal
 from pathlib import Path
@@ -6,6 +7,8 @@ from pathlib import Path
 from django.conf import settings
 from django.db import models
 from django.utils.text import slugify
+
+logger = logging.getLogger(__name__)
 
 
 class CourseCategory(models.Model):
@@ -126,7 +129,10 @@ class Course(models.Model):
                 if self.thumbnail.url:
                     return self.thumbnail.url
             except Exception:
-                pass
+                logger.debug(
+                    "Could not resolve the course thumbnail URL.",
+                    exc_info=True,
+                )
         if self.thumbnail_url and self.thumbnail_url.strip():
             return self.thumbnail_url.strip()
 

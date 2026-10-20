@@ -55,24 +55,32 @@ def send_password_reset_otp_email(user, reset_code):
     return send_forgot_password_otp_email(user, reset_code)
 
 
-def generate_invoice_pdf(invoice) -> bytes:
-    context = {
-        "invoice": invoice,
-        "support_email": settings.DEFAULT_FROM_EMAIL,
-    }
-    html_string = render_to_string("payments/invoice_pdf.html", context)
+def _render_pdf(template_name, context, label):
+    html_string = render_to_string(template_name, context)
     result_buffer = BytesIO()
     pdf = pisa.pisaDocument(
         BytesIO(html_string.encode("utf-8")), result_buffer, encoding="utf-8"
     )
     if pdf.err:
         logger.error(
-            f"xhtml2pdf error generating invoice PDF "
-            f"{invoice.invoice_number}: {pdf.err}"
+            f"xhtml2pdf error generating {label}: {pdf.err}"
         )
         return None
+    return result_buffer.getvalue()
 
-    pdf_bytes = result_buffer.getvalue()
+
+def generate_invoice_pdf(invoice) -> bytes:
+    context = {
+        "invoice": invoice,
+        "support_email": settings.DEFAULT_FROM_EMAIL,
+    }
+    pdf_bytes = _render_pdf(
+        "payments/invoice_pdf.html",
+        context,
+        f"invoice PDF {invoice.invoice_number}",
+    )
+    if pdf_bytes is None:
+        return None
 
     if (
         getattr(invoice, "pdf_file", None) is not None
@@ -99,19 +107,174 @@ def generate_receipt_pdf(transaction) -> bytes:
         "transaction": transaction,
         "support_email": settings.DEFAULT_FROM_EMAIL,
     }
-    html_string = render_to_string("payments/receipt_pdf.html", context)
-    result_buffer = BytesIO()
-    pdf = pisa.pisaDocument(
-        BytesIO(html_string.encode("utf-8")), result_buffer, encoding="utf-8"
+    return _render_pdf(
+        "payments/receipt_pdf.html",
+        context,
+        f"receipt PDF {transaction.order_number}",
     )
-    if pdf.err:
+
+
+def _resolve_transaction(transaction, order_number, session_id):
+    queryset = PaymentTransaction.objects.select_for_update()
+    if transaction:
+        return queryset.filter(pk=transaction.pk).first()
+    if order_number:
+        return queryset.filter(order_number=order_number).first()
+    if session_id:
+        return queryset.filter(
+            stripe_checkout_session_id=session_id
+        ).first()
+    return None
+
+
+def _create_transaction(
+    user_id, course_id, order_number, session_id, stripe_payment_intent
+):
+    User = get_user_model()
+    user = None
+    course = None
+    if user_id:
+        user = User.objects.filter(pk=int(user_id)).first()
+    if course_id:
+        course = Course.objects.filter(pk=int(course_id)).first()
+    if not user or not course:
         logger.error(
-            f"xhtml2pdf error generating receipt PDF "
-            f"{transaction.order_number}: {pdf.err}"
+            f"Cannot fulfill order: missing user ({user_id}) "
+            f"or course ({course_id})"
         )
         return None
+    tx = PaymentTransaction.objects.create(
+        user=user,
+        course=course,
+        order_number=(
+            order_number or PaymentTransaction.generate_order_number()
+        ),
+        amount=course.price,
+        currency=settings.STRIPE_CURRENCY.upper(),
+        status="COMPLETED",
+        stripe_checkout_session_id=session_id,
+        stripe_payment_intent_id=stripe_payment_intent,
+    )
+    return tx, user, course
 
-    return result_buffer.getvalue()
+
+def _activate_enrollment(user, course):
+    enrollment, _ = Enrollment.objects.get_or_create(
+        user=user,
+        course=course,
+        defaults={"is_active": True, "progress_percent": 0.00},
+    )
+    if not enrollment.is_active:
+        enrollment.is_active = True
+        enrollment.save(update_fields=["is_active"])
+    return enrollment
+
+
+def get_or_create_invoice(tx, user, billing_name=None, billing_email=None):
+    b_name = billing_name or user.get_full_name() or user.username
+    b_email = billing_email or user.email or f"{user.username}@learnix.edu"
+    invoice, created = Invoice.objects.get_or_create(
+        transaction=tx,
+        defaults={
+            "invoice_number": Invoice.generate_invoice_number(),
+            "billing_name": b_name,
+            "billing_email": b_email,
+            "subtotal": tx.amount,
+            "tax_amount": Decimal("0.00"),
+            "total_amount": tx.amount,
+        },
+    )
+    if not created and (billing_name or billing_email):
+        updated_fields = []
+        if billing_name and invoice.billing_name != billing_name:
+            invoice.billing_name = billing_name
+            updated_fields.append("billing_name")
+        if billing_email and invoice.billing_email != billing_email:
+            invoice.billing_email = billing_email
+            updated_fields.append("billing_email")
+        if updated_fields:
+            invoice.save(update_fields=updated_fields)
+    return invoice
+
+
+def _dispatch_order_emails(
+    user, course, tx, invoice, enrollment, already_sent
+):
+    if already_sent:
+        logger.info(
+            f"Order #{tx.order_number} already confirmed — "
+            f"suppressed duplicate emails."
+        )
+        return False
+    pdf_bytes = None
+    try:
+        pdf_bytes = generate_invoice_pdf(invoice)
+    except Exception as e:
+        logger.warning(
+            f"Could not pre-render invoice PDF for order "
+            f"#{tx.order_number}: {e}"
+        )
+
+    delivery = {}
+
+    try:
+        delivery["purchase_confirmation"] = bool(
+            send_course_purchase_success_email(
+                user, course, tx, invoice=invoice
+            )
+        )
+    except Exception as e:
+        delivery["purchase_confirmation"] = False
+        logger.exception(
+            f"Unexpected error dispatching purchase confirmation "
+            f"email for order #{tx.order_number}: {e}"
+        )
+
+    try:
+        delivery["invoice_receipt"] = bool(
+            send_payment_receipt_invoice_email(
+                user, course, tx, invoice, pdf_bytes=pdf_bytes
+            )
+        )
+    except Exception as e:
+        delivery["invoice_receipt"] = False
+        logger.exception(
+            f"Unexpected error dispatching invoice/receipt email "
+            f"for order #{tx.order_number}: {e}"
+        )
+
+    try:
+        delivery["enrollment"] = bool(
+            send_course_enrollment_email(user, course, enrollment)
+        )
+    except Exception as e:
+        delivery["enrollment"] = False
+        logger.exception(
+            f"Unexpected error dispatching course enrollment email "
+            f"for order #{tx.order_number}: {e}"
+        )
+
+    if delivery.get("invoice_receipt"):
+        PaymentTransaction.objects.filter(pk=tx.pk).update(
+            confirmation_emails_sent=True
+        )
+        tx.confirmation_emails_sent = True
+        logger.info(
+            f"Order #{tx.order_number} fulfilled — all emails "
+            f"dispatched to {user.email} | {delivery}"
+        )
+        if not all(delivery.values()):
+            logger.warning(
+                f"Order #{tx.order_number}: invoice/receipt delivered "
+                f"but some other emails failed: {delivery}"
+            )
+        return True
+    logger.error(
+        f"Order #{tx.order_number}: invoice/receipt email FAILED "
+        f"for {user.email}. Delivery results: {delivery}. "
+        f"confirmation_emails_sent left False for automatic retry."
+    )
+    return False
 
 
 def fulfill_order_and_dispatch_emails(
@@ -124,64 +287,27 @@ def fulfill_order_and_dispatch_emails(
     billing_name=None,
     billing_email=None,
 ):
-    User = get_user_model()
-
     if billing_name and not isinstance(billing_name, str):
         billing_name = None
     if billing_email and not isinstance(billing_email, str):
         billing_email = None
 
     with db_transaction.atomic():
-        tx = None
-        if transaction:
-            tx = (
-                PaymentTransaction.objects.select_for_update()
-                .filter(pk=transaction.pk)
-                .first()
-            )
-        elif order_number:
-            tx = (
-                PaymentTransaction.objects.select_for_update()
-                .filter(order_number=order_number)
-                .first()
-            )
-        elif session_id:
-            tx = (
-                PaymentTransaction.objects.select_for_update()
-                .filter(stripe_checkout_session_id=session_id)
-                .first()
-            )
-
-        user = None
-        course = None
+        tx = _resolve_transaction(transaction, order_number, session_id)
         if tx:
             user = tx.user
             course = tx.course
         else:
-            if user_id:
-                user = User.objects.filter(pk=int(user_id)).first()
-            if course_id:
-                course = Course.objects.filter(pk=int(course_id)).first()
-
-            if not user or not course:
-                logger.error(
-                    f"Cannot fulfill order: missing user ({user_id}) "
-                    f"or course ({course_id})"
-                )
-                return None
-
-            tx = PaymentTransaction.objects.create(
-                user=user,
-                course=course,
-                order_number=(
-                    order_number or PaymentTransaction.generate_order_number()
-                ),
-                amount=course.price,
-                currency=settings.STRIPE_CURRENCY.upper(),
-                status="COMPLETED",
-                stripe_checkout_session_id=session_id,
-                stripe_payment_intent_id=stripe_payment_intent,
+            created = _create_transaction(
+                user_id,
+                course_id,
+                order_number,
+                session_id,
+                stripe_payment_intent,
             )
+            if created is None:
+                return None
+            tx, user, course = created
 
         tx.status = "COMPLETED"
         if session_id and not tx.stripe_checkout_session_id:
@@ -190,117 +316,15 @@ def fulfill_order_and_dispatch_emails(
             tx.stripe_payment_intent_id = stripe_payment_intent
         tx.save()
 
-        enrollment, _ = Enrollment.objects.get_or_create(
-            user=user,
-            course=course,
-            defaults={"is_active": True, "progress_percent": 0.00},
+        enrollment = _activate_enrollment(user, course)
+        invoice = get_or_create_invoice(
+            tx, user, billing_name, billing_email
         )
-        if not enrollment.is_active:
-            enrollment.is_active = True
-            enrollment.save(update_fields=["is_active"])
-
-        b_name = billing_name or user.get_full_name() or user.username
-        b_email = billing_email or user.email or f"{user.username}@learnix.edu"
-        invoice, created = Invoice.objects.get_or_create(
-            transaction=tx,
-            defaults={
-                "invoice_number": Invoice.generate_invoice_number(),
-                "billing_name": b_name,
-                "billing_email": b_email,
-                "subtotal": tx.amount,
-                "tax_amount": Decimal("0.00"),
-                "total_amount": tx.amount,
-            },
-        )
-        if not created and (billing_name or billing_email):
-            updated_fields = []
-            if billing_name and invoice.billing_name != billing_name:
-                invoice.billing_name = billing_name
-                updated_fields.append("billing_name")
-            if billing_email and invoice.billing_email != billing_email:
-                invoice.billing_email = billing_email
-                updated_fields.append("billing_email")
-            if updated_fields:
-                invoice.save(update_fields=updated_fields)
-
         already_sent = bool(tx.confirmation_emails_sent)
 
-    emails_sent = False
-    if not already_sent:
-        pdf_bytes = None
-        try:
-            pdf_bytes = generate_invoice_pdf(invoice)
-        except Exception as e:
-            logger.warning(
-                f"Could not pre-render invoice PDF for order "
-                f"#{tx.order_number}: {e}"
-            )
-
-        delivery = {}
-
-        try:
-            delivery["purchase_confirmation"] = bool(
-                send_course_purchase_success_email(
-                    user, course, tx, invoice=invoice
-                )
-            )
-        except Exception as e:
-            delivery["purchase_confirmation"] = False
-            logger.exception(
-                f"Unexpected error dispatching purchase confirmation "
-                f"email for order #{tx.order_number}: {e}"
-            )
-
-        try:
-            delivery["invoice_receipt"] = bool(
-                send_payment_receipt_invoice_email(
-                    user, course, tx, invoice, pdf_bytes=pdf_bytes
-                )
-            )
-        except Exception as e:
-            delivery["invoice_receipt"] = False
-            logger.exception(
-                f"Unexpected error dispatching invoice/receipt email "
-                f"for order #{tx.order_number}: {e}"
-            )
-
-        try:
-            delivery["enrollment"] = bool(
-                send_course_enrollment_email(user, course, enrollment)
-            )
-        except Exception as e:
-            delivery["enrollment"] = False
-            logger.exception(
-                f"Unexpected error dispatching course enrollment email "
-                f"for order #{tx.order_number}: {e}"
-            )
-
-        if delivery.get("invoice_receipt"):
-            PaymentTransaction.objects.filter(pk=tx.pk).update(
-                confirmation_emails_sent=True
-            )
-            tx.confirmation_emails_sent = True
-            emails_sent = True
-            logger.info(
-                f"Order #{tx.order_number} fulfilled — all emails "
-                f"dispatched to {user.email} | {delivery}"
-            )
-            if not all(delivery.values()):
-                logger.warning(
-                    f"Order #{tx.order_number}: invoice/receipt delivered "
-                    f"but some other emails failed: {delivery}"
-                )
-        else:
-            logger.error(
-                f"Order #{tx.order_number}: invoice/receipt email FAILED "
-                f"for {user.email}. Delivery results: {delivery}. "
-                f"confirmation_emails_sent left False for automatic retry."
-            )
-    else:
-        logger.info(
-            f"Order #{tx.order_number} already confirmed — "
-            f"suppressed duplicate emails."
-        )
+    emails_sent = _dispatch_order_emails(
+        user, course, tx, invoice, enrollment, already_sent
+    )
 
     return {
         "transaction": tx,

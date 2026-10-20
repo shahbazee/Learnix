@@ -29,10 +29,7 @@ logger = logging.getLogger(__name__)
 class StudentDashboardView(LoginRequiredMixin, TemplateView):
     template_name = "courses/dashboard.html"
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        user = self.request.user
-
+    def _get_enrollments(self, user):
         enrollments = list(
             Enrollment.objects.filter(user=user, is_active=True)
             .select_related(
@@ -44,7 +41,6 @@ class StudentDashboardView(LoginRequiredMixin, TemplateView):
             )
             .prefetch_related("course__modules__lessons")
         )
-
         featured_preview_course = None
         if not enrollments:
             featured_preview_course = (
@@ -53,12 +49,9 @@ class StudentDashboardView(LoginRequiredMixin, TemplateView):
                 .prefetch_related("modules__lessons")
                 .first()
             )
+        return enrollments, featured_preview_course
 
-        active_enrollment = next(
-            (e for e in enrollments if not e.is_completed),
-            enrollments[0] if enrollments else None,
-        )
-
+    def _active_info(self, user, active_enrollment):
         active_lesson = None
         active_module = None
         remaining_minutes = 0
@@ -75,26 +68,22 @@ class StudentDashboardView(LoginRequiredMixin, TemplateView):
                 )
                 if total_seconds:
                     remaining_minutes = int((total_seconds + 59) // 60)
+        return active_lesson, active_module, remaining_minutes
 
+    def _learning_stats(self, user, enrollments):
         completed_enrollments = [e for e in enrollments if e.is_completed]
-        completed_courses_count = len(completed_enrollments)
-
         completed_progresses = LessonProgress.objects.filter(
             user=user, is_completed=True
         ).select_related("lesson")
-        total_completed_lessons = completed_progresses.count()
         total_seconds = (
             completed_progresses.aggregate(
                 total=Sum("lesson__duration_seconds")
             )["total"]
             or 0
         )
-        learning_hours = round(total_seconds / 3600, 1)
-
         verified_certs_count = sum(
             1 for e in enrollments if hasattr(e, "certificate")
         )
-
         if enrollments:
             aggregate_progress_percent = int(
                 round(
@@ -102,18 +91,38 @@ class StudentDashboardView(LoginRequiredMixin, TemplateView):
                     / len(enrollments)
                 )
             )
-        else:
-            aggregate_progress_percent = 0
-
-        hours_dashoffset = int(
-            415 - (415 * (min(100, aggregate_progress_percent) / 100))
-        )
-        if enrollments:
             certs_percent = (verified_certs_count / len(enrollments)) * 100
         else:
+            aggregate_progress_percent = 0
             certs_percent = 0
-        certs_dashoffset = int(314 - (314 * (min(100, certs_percent) / 100)))
+        return {
+            "completed_courses_count": len(completed_enrollments),
+            "total_completed_lessons": completed_progresses.count(),
+            "learning_hours": round(total_seconds / 3600, 1),
+            "verified_certs_count": verified_certs_count,
+            "aggregate_progress_percent": aggregate_progress_percent,
+            "hours_dashoffset": int(
+                415 - (415 * (min(100, aggregate_progress_percent) / 100))
+            ),
+            "certs_dashoffset": int(
+                314 - (314 * (min(100, certs_percent) / 100))
+            ),
+        }
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+
+        enrollments, featured_preview_course = self._get_enrollments(user)
+
+        active_enrollment = next(
+            (e for e in enrollments if not e.is_completed),
+            enrollments[0] if enrollments else None,
+        )
+        active_lesson, active_module, remaining_minutes = (
+            self._active_info(user, active_enrollment)
+        )
+        stats = self._learning_stats(user, enrollments)
 
         recent_purchases = list(
             PaymentTransaction.objects.filter(user=user)
@@ -145,13 +154,15 @@ class StudentDashboardView(LoginRequiredMixin, TemplateView):
                 "active_module": active_module,
                 "remaining_minutes": remaining_minutes,
                 "other_enrollments": other_enrollments,
-                "completed_courses_count": completed_courses_count,
-                "total_completed_lessons": total_completed_lessons,
-                "learning_hours": learning_hours,
-                "verified_certs_count": verified_certs_count,
-                "aggregate_progress_percent": aggregate_progress_percent,
-                "hours_dashoffset": hours_dashoffset,
-                "certs_dashoffset": certs_dashoffset,
+                "completed_courses_count": stats["completed_courses_count"],
+                "total_completed_lessons": stats["total_completed_lessons"],
+                "learning_hours": stats["learning_hours"],
+                "verified_certs_count": stats["verified_certs_count"],
+                "aggregate_progress_percent": (
+                    stats["aggregate_progress_percent"]
+                ),
+                "hours_dashoffset": stats["hours_dashoffset"],
+                "certs_dashoffset": stats["certs_dashoffset"],
                 "recent_purchases": recent_purchases,
                 "stripe_customer_id": (
                     getattr(latest_purchase, "stripe_customer_id", None)

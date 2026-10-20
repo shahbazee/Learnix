@@ -4,7 +4,13 @@ from django.contrib import messages
 from django.db.models import Sum
 from django.http import HttpResponse
 from django.shortcuts import redirect
-from django.views.generic import CreateView, DetailView, TemplateView, UpdateView, View
+from django.views.generic import (
+    CreateView,
+    DetailView,
+    TemplateView,
+    UpdateView,
+    View,
+)
 
 from ..forms import CourseForm
 from ..mixins import InstructorRequiredMixin, OwnCourseObjectMixin

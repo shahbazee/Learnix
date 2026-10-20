@@ -1,9 +1,12 @@
+import logging
 from functools import wraps
 
 from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect
 
 from .models import Course
+
+logger = logging.getLogger(__name__)
 
 
 def enrolled_required(view_func):
@@ -16,7 +19,9 @@ def enrolled_required(view_func):
                     "Please authenticate to access the classroom lessons.",
                 )
             except Exception:
-                pass
+                logger.debug(
+                    "Could not add a flash message.", exc_info=True
+                )
             return redirect(f"/accounts/login/?next={request.path}")
 
         course = get_object_or_404(Course, slug=slug)
@@ -36,7 +41,9 @@ def enrolled_required(view_func):
                     "the classroom lessons.",
                 )
             except Exception:
-                pass
+                logger.debug(
+                    "Could not add a flash message.", exc_info=True
+                )
             return redirect("courses:course_detail", slug=slug)
 
         return view_func(request, slug, *args, **kwargs)
@@ -54,7 +61,9 @@ def instructor_required(view_func):
                     "Please authenticate to access this instructor area.",
                 )
             except Exception:
-                pass
+                logger.debug(
+                    "Could not add a flash message.", exc_info=True
+                )
             return redirect(f"/accounts/login/?next={request.path}")
 
         profile = getattr(request.user, "profile", None)
@@ -69,7 +78,9 @@ def instructor_required(view_func):
                     "to access this area.",
                 )
             except Exception:
-                pass
+                logger.debug(
+                    "Could not add a flash message.", exc_info=True
+                )
             return redirect("courses:dashboard")
 
         return view_func(request, *args, **kwargs)
