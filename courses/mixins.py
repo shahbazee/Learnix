@@ -1,4 +1,5 @@
 from django.contrib import messages
+from django.core.exceptions import PermissionDenied
 from django.contrib.auth.mixins import AccessMixin
 from django.shortcuts import redirect
 
@@ -58,3 +59,17 @@ class InstructorRequiredMixin(AccessMixin):
             return redirect("courses:dashboard")
 
         return super().dispatch(request, *args, **kwargs)
+
+
+class OwnCourseObjectMixin:
+    def get_object(self, queryset=None):
+        course = super().get_object(queryset)
+        if (
+            course.instructor != self.request.user
+            and not self.request.user.is_staff
+        ):
+            raise PermissionDenied(
+                "You do not have authorization to access another "
+                "instructor's course."
+            )
+        return course
