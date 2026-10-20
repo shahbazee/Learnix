@@ -291,15 +291,7 @@ def send_course_purchase_success_email(
     )
 
 
-def send_payment_receipt_invoice_email(
-    user, course, transaction, invoice=None, pdf_bytes=None
-):
-    inv_num = invoice.invoice_number if invoice else transaction.order_number
-    subject = (
-        f"Official Tax Invoice & Receipt: #{inv_num} — "
-        f"{getattr(settings, 'SITE_NAME', 'Learnix')}"
-    )
-
+def _receipt_recipients(user, invoice):
     recipients = []
     if getattr(user, "email", None) and user.email.strip():
         recipients.append(user.email.strip())
@@ -312,6 +304,44 @@ def send_payment_receipt_invoice_email(
             recipients.append(invoice.billing_email.strip())
     if not recipients:
         recipients = [f"{user.username}@learnix.edu"]
+    return recipients
+
+
+def _resolve_invoice_pdf(invoice, pdf_bytes):
+    if pdf_bytes or not invoice:
+        return pdf_bytes
+    if getattr(invoice, "pdf_file", None):
+        try:
+            invoice.pdf_file.open("rb")
+            pdf_bytes = invoice.pdf_file.read()
+            invoice.pdf_file.close()
+        except Exception:
+            logger.warning(
+                "Could not read the stored invoice PDF file.",
+                exc_info=True,
+            )
+    if not pdf_bytes:
+        try:
+            from payments.services import generate_invoice_pdf
+
+            pdf_bytes = generate_invoice_pdf(invoice)
+        except Exception as e:
+            logger.warning(
+                f"Could not generate invoice PDF attachment: {e}"
+            )
+    return pdf_bytes
+
+
+def send_payment_receipt_invoice_email(
+    user, course, transaction, invoice=None, pdf_bytes=None
+):
+    inv_num = invoice.invoice_number if invoice else transaction.order_number
+    subject = (
+        f"Official Tax Invoice & Receipt: #{inv_num} — "
+        f"{getattr(settings, 'SITE_NAME', 'Learnix')}"
+    )
+
+    recipients = _receipt_recipients(user, invoice)
 
     context = {
         "user": user,
@@ -371,26 +401,7 @@ def send_payment_receipt_invoice_email(
     )
 
     attachment_filename = f"Learnix_Invoice_{inv_num}.pdf"
-    if not pdf_bytes and invoice:
-        if getattr(invoice, "pdf_file", None):
-            try:
-                invoice.pdf_file.open("rb")
-                pdf_bytes = invoice.pdf_file.read()
-                invoice.pdf_file.close()
-            except Exception:
-                logger.warning(
-                    "Could not read the stored invoice PDF file.",
-                    exc_info=True,
-                )
-        if not pdf_bytes:
-            try:
-                from payments.services import generate_invoice_pdf
-
-                pdf_bytes = generate_invoice_pdf(invoice)
-            except Exception as e:
-                logger.warning(
-                    f"Could not generate invoice PDF attachment: {e}"
-                )
+    pdf_bytes = _resolve_invoice_pdf(invoice, pdf_bytes)
 
     return _send_platform_email(
         subject,
