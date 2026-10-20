@@ -5,15 +5,14 @@ from urllib.parse import urlencode
 import requests
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth import get_user_model, login
+from django.contrib.auth import login
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.generic import View
 
-from ..models import UserProfile
+from ..google_auth import find_or_create_google_user
 
-User = get_user_model()
 logger = logging.getLogger(__name__)
 
 
@@ -26,58 +25,9 @@ def complete_google_auth_login(
     role="student",
 ):
     google_email = google_email.strip().lower()
-    user = User.objects.filter(email__iexact=google_email).first()
-    is_new_user = False
-    is_linked_user = False
-
-    if user:
-        if not user.is_active:
-            user.is_active = True
-            user.save(update_fields=["is_active"])
-
-        profile, _ = UserProfile.objects.get_or_create(user=user)
-        if not profile.google_email:
-            profile.google_email = google_email
-            is_linked_user = True
-        profile.save()
-        user.profile = profile
-    else:
-        is_new_user = True
-        base_username = (
-            given_name.lower().replace(" ", "")
-            if given_name
-            else google_email.split("@")[0]
-        )
-        clean_username = "".join(
-            c for c in base_username if c.isalnum() or c in ["_", "."]
-        )
-        if not clean_username:
-            clean_username = "student"
-
-        username = clean_username
-        counter = 1
-        while User.objects.filter(username__iexact=username).exists():
-            username = f"{clean_username}_{counter}"
-            counter += 1
-
-        user = User.objects.create(
-            username=username,
-            email=google_email,
-            first_name=(given_name or google_email.split("@")[0].capitalize()),
-            last_name=family_name or "Learner",
-            is_active=True,
-        )
-        user.set_unusable_password()
-        user.save(update_fields=["password"])
-
-        assigned_role = (
-            role if role in ["student", "instructor"] else "student"
-        )
-        profile, _ = UserProfile.objects.get_or_create(user=user)
-        profile.google_email = google_email
-        profile.role = assigned_role
-        profile.save()
-        user.profile = profile
+    user, is_new_user, is_linked_user = find_or_create_google_user(
+        google_email, given_name, family_name, role=role
+    )
 
     login(request, user, backend="django.contrib.auth.backends.ModelBackend")
 
