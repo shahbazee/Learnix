@@ -1,6 +1,13 @@
 import hmac
 
+from django.db import transaction
+
 from .models import EmailOTP, hash_otp
+
+
+def create_and_send_otp(user, purpose, send_task):
+    _, code = EmailOTP.create_for_user(user, purpose=purpose)
+    transaction.on_commit(lambda: send_task.delay(user.id, code))
 
 
 def verify_otp(user, code, purpose):

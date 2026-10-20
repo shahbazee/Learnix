@@ -11,7 +11,8 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from .google_auth import find_or_create_google_user
-from .models import EmailOTP, UserProfile
+from .models import UserProfile
+from .otp_utils import create_and_send_otp
 from .serializers import (
     ChangePasswordSerializer,
     GoogleLoginSerializer,
@@ -43,10 +44,7 @@ class RegisterView(generics.CreateAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
-        otp_record, code = EmailOTP.create_for_user(
-            user, purpose="registration"
-        )
-        transaction.on_commit(lambda: send_otp_email.delay(user.id, code))
+        create_and_send_otp(user, "registration", send_otp_email)
         return Response(
             {
                 "detail": "Verification code sent to your email.",
@@ -181,11 +179,8 @@ class PasswordResetRequestView(APIView):
         email = serializer.validated_data["email"]
         user = User.objects.filter(email__iexact=email, is_active=True).first()
         if user:
-            otp_record, code = EmailOTP.create_for_user(
-                user, purpose="password_reset"
-            )
-            transaction.on_commit(
-                lambda: send_password_reset_email.delay(user.id, code)
+            create_and_send_otp(
+                user, "password_reset", send_password_reset_email
             )
         return Response(
             {"detail": "If an account exists, a reset code has been sent."}

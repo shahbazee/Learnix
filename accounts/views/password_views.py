@@ -14,7 +14,7 @@ from ..forms import (
     SetNewPasswordForm,
 )
 from ..models import EmailOTP
-from ..otp_utils import verify_otp
+from ..otp_utils import create_and_send_otp, verify_otp
 from ..tasks import send_password_changed_email_task, send_password_reset_email
 from .helpers import resend_otp_code
 
@@ -39,16 +39,12 @@ class ForgotPasswordView(FormView):
         self.request.session["reset_email"] = email
 
         if user:
-            otp_record, code = EmailOTP.create_for_user(
-                user, purpose="password_reset"
+            create_and_send_otp(
+                user, "password_reset", send_password_reset_email
             )
             self.request.session["reset_user_id"] = user.id
             self.request.session["reset_otp_last_sent"] = (
                 timezone.now().timestamp()
-            )
-
-            transaction.on_commit(
-                lambda: send_password_reset_email.delay(user.id, code)
             )
         else:
             self.request.session.pop("reset_user_id", None)
