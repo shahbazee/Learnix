@@ -398,12 +398,6 @@ def _send_platform_email(
         f"Email delivery failed to {recipient_email} for subject "
         f"'{subject}'. Reason: {type(last_error).__name__} - {last_error}"
     )
-    if getattr(settings, "DEBUG", False) or os.getenv("RENDER", ""):
-        print(
-            f"[LEARNIX EMAIL NOTICE] SMTP delivery to "
-            f"{recipient_email} failed: "
-            f"{type(last_error).__name__} - {last_error}"
-        )
     return False
 
 
@@ -467,23 +461,8 @@ def send_otp_verification_email(
 
     logger.info(
         f"[OTP DISPATCH] user='{recipient_email}' "
-        f"code='{otp_code}' expires_in={expires_minutes}m"
+        f"expires_in={expires_minutes}m"
     )
-
-    is_render = bool(os.getenv("RENDER", ""))
-    is_debug = getattr(settings, "DEBUG", False)
-    if is_render or is_debug:
-        separator = "=" * 60
-        print(f"\n{separator}")
-        print(f"[LEARNIX OTP CODE] user={recipient_email}")
-        print(
-            f"[LEARNIX OTP CODE] code={otp_code}  "
-            f"(expires in {expires_minutes} min)"
-        )
-        print(
-            "[LEARNIX OTP CODE] Check Render Logs " "if email doesn't arrive"
-        )
-        print(f"{separator}\n", flush=True)
 
     if async_send:
         return send_platform_email_async(
@@ -527,15 +506,9 @@ def send_forgot_password_otp_email(
     )
     logger.info(
         f"[LEARNIX PASSWORD RESET OTP] Dispatched reset OTP "
-        f"'{reset_code}' for recipient '{recipient_email}' "
+        f"for recipient '{recipient_email}' "
         f"(expires in {expires_minutes}m)"
     )
-    if getattr(settings, "DEBUG", False) or os.getenv("RENDER", ""):
-        print(
-            f"[LEARNIX PASSWORD RESET OTP] Code for "
-            f"{recipient_email}: {reset_code}"
-        )
-
     if async_send:
         return send_platform_email_async(
             subject,
