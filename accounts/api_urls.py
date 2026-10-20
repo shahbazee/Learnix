@@ -9,6 +9,9 @@ urlpatterns = [
         "verify-otp/", api_views.VerifyOTPView.as_view(), name="api-verify-otp"
     ),
     path("login/", api_views.LoginView.as_view(), name="api-login"),
+    path(
+        "google/", api_views.GoogleLoginView.as_view(), name="api-google-login"
+    ),
     path("logout/", api_views.LogoutView.as_view(), name="api-logout"),
     path("me/", api_views.MeView.as_view(), name="api-me"),
     path(
