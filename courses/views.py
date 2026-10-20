@@ -1,7 +1,5 @@
 import csv
 import logging
-from collections import Counter
-from datetime import timedelta
 
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
