@@ -98,6 +98,9 @@ class InstructorStudioView(InstructorRequiredMixin, TemplateView):
                 "draft_courses_count": sum(
                     1 for item in course_data if item["status"] == "DRAFT"
                 ),
+                "archived_courses_count": sum(
+                    1 for item in course_data if item["status"] == "ARCHIVED"
+                ),
                 "total_gross": f"{total_gross:,.2f}",
                 "total_students": total_students,
                 "avg_rating": avg_rating,

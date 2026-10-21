@@ -8,7 +8,14 @@ User = get_user_model()
 def find_or_create_google_user(
     email, given_name="", family_name="", role=None
 ):
-    user = User.objects.filter(email__iexact=email).first()
+    linked_profile = (
+        UserProfile.objects.filter(google_email__iexact=email)
+        .select_related("user")
+        .first()
+    )
+    user = linked_profile.user if linked_profile else None
+    if user is None:
+        user = User.objects.filter(email__iexact=email).first()
     if user:
         if not user.is_active:
             user.is_active = True

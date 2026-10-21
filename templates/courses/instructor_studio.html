@@ -172,6 +172,9 @@
         <button type="button" onclick="filterCourses('DRAFT')" id="tabDraft" class="px-4 py-1.5 rounded-full text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer">
           Drafts ({{ draft_courses_count }})
         </button>
+        <button type="button" onclick="filterCourses('ARCHIVED')" id="tabArchived" class="px-4 py-1.5 rounded-full text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer">
+          Archived ({{ archived_courses_count }})
+        </button>
       </div>
 
       <!-- Search Bar -->
@@ -427,7 +430,7 @@
       }
     });
 
-    ['tabAll', 'tabPublished', 'tabDraft'].forEach(id => {
+    ['tabAll', 'tabPublished', 'tabDraft', 'tabArchived'].forEach(id => {
       const el = document.getElementById(id);
       if (el) {
         el.className = 'px-4 py-1.5 rounded-full text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer';
@@ -436,6 +439,7 @@
     if (status === 'ALL') document.getElementById('tabAll').className = 'px-4 py-1.5 rounded-full bg-violet-600 text-white shadow-xs transition-all cursor-pointer';
     if (status === 'PUBLISHED') document.getElementById('tabPublished').className = 'px-4 py-1.5 rounded-full bg-violet-600 text-white shadow-xs transition-all cursor-pointer';
     if (status === 'DRAFT') document.getElementById('tabDraft').className = 'px-4 py-1.5 rounded-full bg-violet-600 text-white shadow-xs transition-all cursor-pointer';
+    if (status === 'ARCHIVED') document.getElementById('tabArchived').className = 'px-4 py-1.5 rounded-full bg-violet-600 text-white shadow-xs transition-all cursor-pointer';
   }
 
   function searchCourses(val) {

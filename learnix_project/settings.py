@@ -19,7 +19,9 @@ ALLOWED_HOSTS = config(
     "ALLOWED_HOSTS", default="localhost,127.0.0.1", cast=Csv()
 )
 
-if not DEBUG and SECRET_KEY.startswith("django-insecure-"):
+if not DEBUG and (
+    not SECRET_KEY or SECRET_KEY.startswith("django-insecure-")
+):
     raise ImproperlyConfigured(
         "SECRET_KEY must be set to a strong random value "
         "when DEBUG is False."

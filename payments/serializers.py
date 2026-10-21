@@ -82,5 +82,5 @@ class InvoiceSerializer(serializers.ModelSerializer):
         ]
 
 
-class DetailResponseSerializer(serializers.Serializer):
+class PaymentDetailResponseSerializer(serializers.Serializer):
     detail = serializers.CharField()

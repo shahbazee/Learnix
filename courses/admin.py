@@ -38,13 +38,32 @@ class CourseAdmin(admin.ModelAdmin):
         "level",
         "price",
         "is_published",
+        "is_archived",
         "total_lessons_count",
         "created_at",
     )
-    list_filter = ("is_published", "level", "category")
+    list_filter = ("is_published", "is_archived", "level", "category")
     search_fields = ("title", "short_description", "full_description")
     prepopulated_fields = {"slug": ("title",)}
     inlines = [CourseModuleInline]
+    actions = ["archive_selected_courses"]
+
+    @admin.action(
+        description="Archive selected courses (keeps student data)"
+    )
+    def archive_selected_courses(self, request, queryset):
+        updated = queryset.update(is_archived=True, is_published=False)
+        self.message_user(
+            request, f"{updated} course(s) archived."
+        )
+
+    def delete_model(self, request, obj):
+        obj.is_archived = True
+        obj.is_published = False
+        obj.save(update_fields=["is_archived", "is_published"])
+
+    def delete_queryset(self, request, queryset):
+        queryset.update(is_archived=True, is_published=False)
 
 
 @admin.register(CourseModule)

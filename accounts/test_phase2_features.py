@@ -175,3 +175,51 @@ class ZAuthThrottleTests(TestCase):
             statuses.append(response.status_code)
         self.assertNotIn(429, statuses[:20])
         self.assertEqual(statuses[20], 429)
+
+
+class GoogleLookupAfterEmailChangeTests(TestCase):
+    def test_google_signin_finds_user_by_linked_google_email(self):
+        from .google_auth import find_or_create_google_user
+
+        user = make_user("linked_user", "changed@example.com")
+        profile = user.profile
+        profile.google_email = "original.account@gmail.com"
+        profile.save(update_fields=["google_email"])
+        users_before = User.objects.count()
+        found, is_new, _ = find_or_create_google_user(
+            "original.account@gmail.com", given_name="Linked"
+        )
+        self.assertFalse(is_new)
+        self.assertEqual(found.pk, user.pk)
+        self.assertEqual(User.objects.count(), users_before)
+
+
+class LoginLockoutIpTests(TestCase):
+    def setUp(self):
+        cache.clear()
+        self.user = make_user("ip_user", "ip@example.com")
+
+    def test_lockout_does_not_block_other_ip_addresses(self):
+        url = reverse("accounts:login")
+        for _ in range(5):
+            self.client.post(
+                url,
+                {
+                    "username": "ip_user",
+                    "password": WRONG_PASSWORD,
+                    "role": "student",
+                },
+            )
+        response = self.client.post(
+            url,
+            {
+                "username": "ip_user",
+                "password": TEST_PASSWORD,
+                "role": "student",
+            },
+            REMOTE_ADDR="10.11.12.13",
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(
+            self.client.session.get("_auth_user_id"), str(self.user.pk)
+        )

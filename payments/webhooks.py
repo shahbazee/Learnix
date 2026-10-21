@@ -139,6 +139,18 @@ def _handle_charge_refunded(event):
     payment_intent = _event_field(charge, "payment_intent")
     if not payment_intent:
         return
+    amount = _event_field(charge, "amount")
+    amount_refunded = _event_field(charge, "amount_refunded")
+    if amount is not None and amount_refunded is not None:
+        try:
+            if int(amount_refunded) < int(amount):
+                logger.info(
+                    "Partial refund received for payment intent "
+                    f"{payment_intent}; enrollment kept active."
+                )
+                return
+        except (TypeError, ValueError):
+            pass
     transaction = PaymentTransaction.objects.filter(
         stripe_payment_intent_id=payment_intent
     ).first()

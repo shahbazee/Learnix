@@ -138,6 +138,50 @@ class WebhookRefundTests(TestCase):
         self.enrollment.refresh_from_db()
         self.assertFalse(self.enrollment.is_active)
 
+    def test_partial_refund_keeps_enrollment_and_status(self):
+        payload = {
+            "type": "charge.refunded",
+            "data": {
+                "object": {
+                    "payment_intent": "pi_refund_1",
+                    "amount": 4900,
+                    "amount_refunded": 1000,
+                }
+            },
+        }
+        response = self.client.post(
+            reverse("payments:stripe_webhook"),
+            data=json.dumps(payload),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        self.transaction.refresh_from_db()
+        self.assertEqual(self.transaction.status, "COMPLETED")
+        self.enrollment.refresh_from_db()
+        self.assertTrue(self.enrollment.is_active)
+
+    def test_full_refund_with_amounts_revokes_enrollment(self):
+        payload = {
+            "type": "charge.refunded",
+            "data": {
+                "object": {
+                    "payment_intent": "pi_refund_1",
+                    "amount": 4900,
+                    "amount_refunded": 4900,
+                }
+            },
+        }
+        response = self.client.post(
+            reverse("payments:stripe_webhook"),
+            data=json.dumps(payload),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        self.transaction.refresh_from_db()
+        self.assertEqual(self.transaction.status, "REFUNDED")
+        self.enrollment.refresh_from_db()
+        self.assertFalse(self.enrollment.is_active)
+
 
 class RefundAdminActionTests(TestCase):
     def setUp(self):

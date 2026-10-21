@@ -224,7 +224,10 @@ class UserLoginForm(AuthenticationForm):
 
     def clean(self):
         identifier = str(self.data.get("username") or "").strip().lower()
-        lock_key = f"login-lock:{identifier}"
+        ip_address = ""
+        if getattr(self, "request", None) is not None:
+            ip_address = self.request.META.get("REMOTE_ADDR", "")
+        lock_key = f"login-lock:{identifier}:{ip_address}"
         if identifier and cache.get(lock_key, 0) >= 5:
             raise ValidationError(
                 "Too many failed login attempts. "

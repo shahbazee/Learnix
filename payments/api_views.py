@@ -9,7 +9,7 @@ from rest_framework.views import APIView
 from .models import Invoice, PaymentTransaction
 from .serializers import (
     CheckoutSerializer,
-    DetailResponseSerializer,
+    PaymentDetailResponseSerializer,
     InvoiceSerializer,
     PaymentTransactionSerializer,
 )
@@ -97,7 +97,7 @@ class PaymentSuccessView(APIView):
 
 class PaymentCancelView(APIView):
     permission_classes = [permissions.AllowAny]
-    serializer_class = DetailResponseSerializer
+    serializer_class = PaymentDetailResponseSerializer
 
     def get(self, request):
         return Response({"detail": "Payment cancelled. No charge was made."})

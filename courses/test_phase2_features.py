@@ -224,3 +224,63 @@ class UnenrollTests(TestCase):
         self.assertEqual(response.status_code, 302)
         self.enrollment.refresh_from_db()
         self.assertTrue(self.enrollment.is_active)
+
+
+class CourseAdminArchiveTests(TestCase):
+    def setUp(self):
+        self.admin = User.objects.create_superuser(
+            username="course_admin",
+            email="cadmin@example.com",
+            password=TEST_PASSWORD,
+        )
+        self.instructor = make_user(
+            "inst_five", "inst5@example.com", "instructor"
+        )
+        self.course = make_course(
+            self.instructor, "Admin Course", "admin-course"
+        )
+        self.client.force_login(self.admin)
+
+    def test_admin_delete_view_archives_instead_of_deleting(self):
+        response = self.client.post(
+            f"/admin/courses/course/{self.course.pk}/delete/",
+            {"post": "yes"},
+        )
+        self.assertEqual(response.status_code, 302)
+        self.course.refresh_from_db()
+        self.assertTrue(self.course.is_archived)
+        self.assertFalse(self.course.is_published)
+
+    def test_admin_archive_action(self):
+        response = self.client.post(
+            "/admin/courses/course/",
+            {
+                "action": "archive_selected_courses",
+                "_selected_action": [str(self.course.pk)],
+            },
+        )
+        self.assertEqual(response.status_code, 302)
+        self.course.refresh_from_db()
+        self.assertTrue(self.course.is_archived)
+
+
+class StudioArchivedTabTests(TestCase):
+    def test_studio_context_counts_archived_courses(self):
+        instructor = make_user(
+            "inst_six", "inst6@example.com", "instructor"
+        )
+        course = make_course(
+            instructor, "Old Course", "old-course"
+        )
+        course.is_archived = True
+        course.is_published = False
+        course.save(update_fields=["is_archived", "is_published"])
+        self.client.force_login(instructor)
+        response = self.client.get(
+            reverse("courses:instructor_studio")
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.context["archived_courses_count"], 1
+        )
+        self.assertContains(response, "Archived (1)")
