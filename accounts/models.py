@@ -11,9 +11,11 @@ from django.utils import timezone
 class UserProfile(models.Model):
     ROLE_STUDENT = "student"
     ROLE_INSTRUCTOR = "instructor"
+    ROLE_ADMIN = "admin"
     ROLE_CHOICES = (
         (ROLE_STUDENT, "Student"),
         (ROLE_INSTRUCTOR, "Instructor"),
+        (ROLE_ADMIN, "Admin"),
     )
 
     user = models.OneToOneField(
@@ -26,7 +28,7 @@ class UserProfile(models.Model):
         choices=ROLE_CHOICES,
         default=ROLE_STUDENT,
         db_index=True,
-        help_text="Role distinguishing students from course instructors",
+        help_text="Role distinguishing students, instructors and admins",
     )
     avatar = models.ImageField(upload_to="avatars/", null=True, blank=True)
     bio = models.TextField(blank=True, default="")
@@ -59,6 +61,10 @@ class UserProfile(models.Model):
     @property
     def is_student(self) -> bool:
         return self.role == self.ROLE_STUDENT
+
+    @property
+    def is_admin(self) -> bool:
+        return self.role == self.ROLE_ADMIN
 
 
 def hash_otp(code):

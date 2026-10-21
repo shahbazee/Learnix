@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Courses | Learnix{% endblock %}
+
+{% block content %}
+<div class="relative z-10 w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 pt-6 pb-20 flex flex-col gap-8">
+
+  <div class="flex flex-col gap-2">
+    <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#0f172a] tracking-tight">
+      Platform <span class="bg-gradient-to-r from-cyan-500 via-violet-600 to-fuchsia-600 bg-clip-text text-transparent drop-shadow-sm">Courses</span>
+    </h1>
+    <p class="text-sm sm:text-base text-slate-600 font-medium max-w-3xl">
+      Every course on the platform with its instructor, price and enrollments.
+    </p>
+  </div>
+
+  {% include 'includes/_admin_nav.html' %}
+
+  <div class="rounded-3xl bg-white/80 backdrop-blur-xl border border-white p-6 sm:p-8 shadow-[0_20px_50px_-15px_rgba(99,102,241,0.1),0_4px_16px_-2px_rgba(0,0,0,0.04)]">
+    <div class="flex flex-col">
+      {% for course in courses %}
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 py-3 border-b border-slate-100 last:border-0">
+        <div class="min-w-0">
+          <a href="{% url 'courses:course_detail' course.slug %}" class="text-sm font-bold text-[#0f172a] hover:text-violet-700 transition-colors">{{ course.title }}</a>
+          <p class="text-[11px] font-mono text-slate-500 truncate">by {{ course.instructor.get_full_name|default:course.instructor.username }} · {{ course.category.name }} · {{ course.enrollments_count }} enrollments</p>
+        </div>
+        <div class="flex items-center gap-2 shrink-0">
+          {% if course.price > 0 %}
+          <span class="text-sm font-extrabold text-[#0f172a]">${{ course.price }}</span>
+          {% else %}
+          <span class="text-sm font-extrabold text-emerald-600">Free</span>
+          {% endif %}
+          {% if course.is_published %}
+          <span class="px-2.5 py-1 rounded-full bg-emerald-100 border border-emerald-200 text-emerald-700 text-[11px] font-bold">Published</span>
+          {% else %}
+          <span class="px-2.5 py-1 rounded-full bg-amber-100 border border-amber-200 text-amber-700 text-[11px] font-bold">Draft</span>
+          {% endif %}
+          {% if user.is_staff %}
+          <a href="{% url 'admin:courses_course_change' course.id %}" class="px-3 py-1.5 rounded-full bg-slate-100 hover:bg-violet-50 text-slate-700 hover:text-violet-700 font-mono text-[11px] font-bold transition-all border border-slate-200">Manage</a>
+          {% endif %}
+        </div>
+      </div>
+      {% empty %}
+      <p class="text-sm text-slate-500 font-medium py-4">No courses yet.</p>
+      {% endfor %}
+    </div>
+  </div>
+
+</div>
+{% endblock %}

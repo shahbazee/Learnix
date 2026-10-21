@@ -58,6 +58,30 @@ class InstructorRequiredMixin(AccessMixin):
         return super().dispatch(request, *args, **kwargs)
 
 
+class AdminRequiredMixin(AccessMixin):
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            messages.info(
+                request, "Please authenticate to access the Admin Panel."
+            )
+            return self.handle_no_permission()
+
+        profile = getattr(request.user, "profile", None)
+        is_admin = (
+            profile and profile.is_admin
+        ) or request.user.is_staff
+
+        if not is_admin:
+            messages.error(
+                request,
+                "Access restricted. You need an Admin account "
+                "to access the Admin Panel.",
+            )
+            return redirect("courses:dashboard")
+
+        return super().dispatch(request, *args, **kwargs)
+
+
 class OwnCourseObjectMixin:
     def get_object(self, queryset=None):
         course = super().get_object(queryset)

@@ -1,6 +1,13 @@
 from django.contrib import admin
 
-from .models import EmailLog, FailedTask
+from .models import EmailLog, FailedTask, UserProfile
+
+
+@admin.register(UserProfile)
+class UserProfileAdmin(admin.ModelAdmin):
+    list_display = ["user", "role", "google_email", "created_at"]
+    list_filter = ["role"]
+    search_fields = ["user__username", "user__email", "google_email"]
 
 
 @admin.register(EmailLog)

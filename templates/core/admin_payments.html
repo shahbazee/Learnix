@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Payments | Learnix{% endblock %}
+
+{% block content %}
+<div class="relative z-10 w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 pt-6 pb-20 flex flex-col gap-8">
+
+  <div class="flex flex-col gap-2">
+    <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#0f172a] tracking-tight">
+      Platform <span class="bg-gradient-to-r from-cyan-500 via-violet-600 to-fuchsia-600 bg-clip-text text-transparent drop-shadow-sm">Payments</span>
+    </h1>
+    <p class="text-sm sm:text-base text-slate-600 font-medium max-w-3xl">
+      Every payment transaction across the platform, latest first.
+    </p>
+  </div>
+
+  {% include 'includes/_admin_nav.html' %}
+
+  <div class="rounded-3xl bg-white/80 backdrop-blur-xl border border-white p-6 sm:p-8 shadow-[0_20px_50px_-15px_rgba(99,102,241,0.1),0_4px_16px_-2px_rgba(0,0,0,0.04)]">
+    <div class="flex flex-col">
+      {% for p in payments %}
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 py-3 border-b border-slate-100 last:border-0">
+        <div class="min-w-0">
+          <p class="text-sm font-bold text-[#0f172a] font-mono truncate">{{ p.order_number }}</p>
+          <p class="text-[11px] font-mono text-slate-500 truncate">{{ p.user.username }} · {{ p.course.title }} · {{ p.created_at|date:"M d, Y H:i" }}</p>
+        </div>
+        <div class="flex items-center gap-2 shrink-0">
+          <span class="text-sm font-extrabold text-[#0f172a]">${{ p.amount }} {{ p.currency }}</span>
+          {% if p.status == 'COMPLETED' %}
+          <span class="px-2.5 py-1 rounded-full bg-emerald-100 border border-emerald-200 text-emerald-700 text-[11px] font-bold">Completed</span>
+          {% elif p.status == 'PENDING' %}
+          <span class="px-2.5 py-1 rounded-full bg-amber-100 border border-amber-200 text-amber-700 text-[11px] font-bold">Pending</span>
+          {% elif p.status == 'FAILED' %}
+          <span class="px-2.5 py-1 rounded-full bg-red-100 border border-red-200 text-red-700 text-[11px] font-bold">Failed</span>
+          {% else %}
+          <span class="px-2.5 py-1 rounded-full bg-slate-100 border border-slate-200 text-slate-700 text-[11px] font-bold">{{ p.status }}</span>
+          {% endif %}
+          {% if user.is_staff %}
+          <a href="{% url 'admin:payments_paymenttransaction_change' p.id %}" class="px-3 py-1.5 rounded-full bg-slate-100 hover:bg-violet-50 text-slate-700 hover:text-violet-700 font-mono text-[11px] font-bold transition-all border border-slate-200">Manage</a>
+          {% endif %}
+        </div>
+      </div>
+      {% empty %}
+      <p class="text-sm text-slate-500 font-medium py-4">No payments yet.</p>
+      {% endfor %}
+    </div>
+
+    {% if is_paginated %}
+    <div class="flex items-center gap-2 mt-6">
+      {% if page_obj.has_previous %}
+      <a href="?page={{ page_obj.previous_page_number }}" class="px-4 py-2 rounded-full bg-slate-100 hover:bg-violet-50 text-slate-700 hover:text-violet-700 font-mono text-xs font-bold transition-all border border-slate-200">Previous</a>
+      {% endif %}
+      <span class="font-mono text-xs text-slate-500">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+      {% if page_obj.has_next %}
+      <a href="?page={{ page_obj.next_page_number }}" class="px-4 py-2 rounded-full bg-slate-100 hover:bg-violet-50 text-slate-700 hover:text-violet-700 font-mono text-xs font-bold transition-all border border-slate-200">Next</a>
+      {% endif %}
+    </div>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}

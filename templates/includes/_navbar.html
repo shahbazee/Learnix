@@ -31,6 +31,11 @@
         Studio
       </a>
       {% endif %}
+      {% if user.is_staff or user.profile.is_admin %}
+      <a href="{% url 'core:admin_dashboard' %}" class="px-4 py-1.5 rounded-full transition-all {% if request.resolver_match.view_name == 'core:admin_dashboard' or request.resolver_match.view_name == 'core:admin_users' or request.resolver_match.view_name == 'core:admin_courses' or request.resolver_match.view_name == 'core:admin_payments' %}bg-white text-fuchsia-700 shadow-sm font-semibold{% else %}text-slate-600 hover:text-slate-900 hover:bg-white/60{% endif %}">
+        Admin Panel
+      </a>
+      {% endif %}
       {% endif %}
     </nav>
 
@@ -77,6 +82,12 @@
               <a href="{% url 'courses:instructor_studio' %}" class="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:text-violet-700 hover:bg-violet-50 transition-colors">
                 <span class="material-symbols-outlined text-[17px] text-violet-600">co_present</span>
                 <span>Instructor Studio</span>
+              </a>
+              {% endif %}
+              {% if user.is_staff or user.profile.is_admin %}
+              <a href="{% url 'core:admin_dashboard' %}" class="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:text-fuchsia-700 hover:bg-fuchsia-50 transition-colors">
+                <span class="material-symbols-outlined text-[17px] text-fuchsia-600">admin_panel_settings</span>
+                <span>Admin Panel</span>
               </a>
               {% endif %}
               <a href="{% url 'payments:billing_hub' %}" class="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:text-cyan-700 hover:bg-cyan-50 transition-colors">
@@ -140,6 +151,12 @@
         <a href="{% url 'courses:instructor_studio' %}" onclick="toggleMobileMenu()" class="p-2.5 rounded-xl hover:bg-violet-50 text-violet-700 font-bold transition-colors flex items-center justify-between">
           <span>Instructor Studio</span>
           <span class="material-symbols-outlined text-[18px]">co_present</span>
+        </a>
+        {% endif %}
+        {% if user.is_staff or user.profile.is_admin %}
+        <a href="{% url 'core:admin_dashboard' %}" onclick="toggleMobileMenu()" class="p-2.5 rounded-xl hover:bg-fuchsia-50 text-fuchsia-700 font-bold transition-colors flex items-center justify-between">
+          <span>Admin Panel</span>
+          <span class="material-symbols-outlined text-[18px]">admin_panel_settings</span>
         </a>
         {% endif %}
         <a href="{% url 'payments:billing_hub' %}" onclick="toggleMobileMenu()" class="p-2.5 rounded-xl hover:bg-cyan-50 text-cyan-700 font-bold transition-colors flex items-center justify-between">

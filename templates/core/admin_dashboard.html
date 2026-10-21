@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Dashboard | Learnix{% endblock %}
+
+{% block content %}
+<div class="relative z-10 w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 pt-6 pb-20 flex flex-col gap-8">
+
+  <div class="flex flex-col gap-2">
+    <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#0f172a] tracking-tight">
+      Admin <span class="bg-gradient-to-r from-cyan-500 via-violet-600 to-fuchsia-600 bg-clip-text text-transparent drop-shadow-sm">Dashboard</span>
+    </h1>
+    <p class="text-sm sm:text-base text-slate-600 font-medium max-w-3xl">
+      Monitor every user, course, enrollment and payment across the platform.
+    </p>
+  </div>
+
+  {% include 'includes/_admin_nav.html' %}
+
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div class="rounded-3xl bg-white/80 backdrop-blur-xl border border-white p-6 shadow-[0_20px_50px_-15px_rgba(99,102,241,0.1),0_4px_16px_-2px_rgba(0,0,0,0.04)]">
+      <div class="w-10 h-10 rounded-full bg-violet-100 border border-violet-200 flex items-center justify-center text-violet-700 shadow-sm mb-4">
+        <span class="material-symbols-outlined text-[20px]">group</span>
+      </div>
+      <p class="text-3xl font-extrabold text-[#0f172a]">{{ stats.total_users }}</p>
+      <p class="text-xs sm:text-sm text-slate-600 font-medium mt-1">Total Users</p>
+      <p class="text-[11px] font-mono text-slate-500 mt-2">{{ stats.students }} students · {{ stats.instructors }} instructors · {{ stats.admins }} admins</p>
+    </div>
+
+    <div class="rounded-3xl bg-white/80 backdrop-blur-xl border border-white p-6 shadow-[0_20px_50px_-15px_rgba(99,102,241,0.1),0_4px_16px_-2px_rgba(0,0,0,0.04)]">
+      <div class="w-10 h-10 rounded-full bg-cyan-100 border border-cyan-200 flex items-center justify-center text-cyan-700 shadow-sm mb-4">
+        <span class="material-symbols-outlined text-[20px]">auto_stories</span>
+      </div>
+      <p class="text-3xl font-extrabold text-[#0f172a]">{{ stats.total_courses }}</p>
+      <p class="text-xs sm:text-sm text-slate-600 font-medium mt-1">Total Courses</p>
+      <p class="text-[11px] font-mono text-slate-500 mt-2">{{ stats.published_courses }} published</p>
+    </div>
+
+    <div class="rounded-3xl bg-white/80 backdrop-blur-xl border border-white p-6 shadow-[0_20px_50px_-15px_rgba(99,102,241,0.1),0_4px_16px_-2px_rgba(0,0,0,0.04)]">
+      <div class="w-10 h-10 rounded-full bg-fuchsia-100 border border-fuchsia-200 flex items-center justify-center text-fuchsia-700 shadow-sm mb-4">
+        <span class="material-symbols-outlined text-[20px]">school</span>
+      </div>
+      <p class="text-3xl font-extrabold text-[#0f172a]">{{ stats.total_enrollments }}</p>
+      <p class="text-xs sm:text-sm text-slate-600 font-medium mt-1">Total Enrollments</p>
+      <p class="text-[11px] font-mono text-slate-500 mt-2">across all courses</p>
+    </div>
+
+    <div class="rounded-3xl bg-white/80 backdrop-blur-xl border border-white p-6 shadow-[0_20px_50px_-15px_rgba(99,102,241,0.1),0_4px_16px_-2px_rgba(0,0,0,0.04)]">
+      <div class="w-10 h-10 rounded-full bg-emerald-100 border border-emerald-200 flex items-center justify-center text-emerald-700 shadow-sm mb-4">
+        <span class="material-symbols-outlined text-[20px]">payments</span>
+      </div>
+      <p class="text-3xl font-extrabold text-[#0f172a]">${{ stats.total_revenue }}</p>
+      <p class="text-xs sm:text-sm text-slate-600 font-medium mt-1">Total Revenue</p>
+      <p class="text-[11px] font-mono text-slate-500 mt-2">completed payments only</p>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div class="rounded-3xl bg-white/80 backdrop-blur-xl border border-white p-6 sm:p-8 shadow-[0_20px_50px_-15px_rgba(99,102,241,0.1),0_4px_16px_-2px_rgba(0,0,0,0.04)]">
+      <div class="flex items-center justify-between gap-3 mb-6">
+        <h2 class="text-lg sm:text-xl font-bold text-[#0f172a]">Recent Users</h2>
+        <a href="{% url 'core:admin_users' %}" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-slate-100 hover:bg-violet-50 text-slate-700 hover:text-violet-700 font-mono text-xs font-bold transition-all border border-slate-200">View All</a>
+      </div>
+      <div class="flex flex-col gap-3">
+        {% for u in recent_users %}
+        <div class="flex items-center justify-between gap-3 py-2 border-b border-slate-100 last:border-0">
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-violet-600 to-cyan-500 text-white flex items-center justify-center font-bold text-sm shrink-0">{{ u.username|slice:":1"|upper }}</div>
+            <div class="min-w-0">
+              <p class="text-sm font-bold text-[#0f172a] truncate">{{ u.get_full_name|default:u.username }}</p>
+              <p class="text-[11px] font-mono text-slate-500 truncate">{{ u.email }}</p>
+            </div>
+          </div>
+          {% if u.profile.role == 'admin' %}
+          <span class="px-2.5 py-1 rounded-full bg-fuchsia-100 border border-fuchsia-200 text-fuchsia-700 text-[11px] font-bold shrink-0">Admin</span>
+          {% elif u.profile.role == 'instructor' %}
+          <span class="px-2.5 py-1 rounded-full bg-violet-100 border border-violet-200 text-violet-700 text-[11px] font-bold shrink-0">Instructor</span>
+          {% else %}
+          <span class="px-2.5 py-1 rounded-full bg-cyan-100 border border-cyan-200 text-cyan-700 text-[11px] font-bold shrink-0">Student</span>
+          {% endif %}
+        </div>
+        {% empty %}
+        <p class="text-sm text-slate-500 font-medium">No users yet.</p>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="rounded-3xl bg-white/80 backdrop-blur-xl border border-white p-6 sm:p-8 shadow-[0_20px_50px_-15px_rgba(99,102,241,0.1),0_4px_16px_-2px_rgba(0,0,0,0.04)]">
+      <div class="flex items-center justify-between gap-3 mb-6">
+        <h2 class="text-lg sm:text-xl font-bold text-[#0f172a]">Recent Payments</h2>
+        <a href="{% url 'core:admin_payments' %}" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-slate-100 hover:bg-violet-50 text-slate-700 hover:text-violet-700 font-mono text-xs font-bold transition-all border border-slate-200">View All</a>
+      </div>
+      <div class="flex flex-col gap-3">
+        {% for p in recent_payments %}
+        <div class="flex items-center justify-between gap-3 py-2 border-b border-slate-100 last:border-0">
+          <div class="min-w-0">
+            <p class="text-sm font-bold text-[#0f172a] font-mono truncate">{{ p.order_number }}</p>
+            <p class="text-[11px] font-mono text-slate-500 truncate">{{ p.user.username }} · {{ p.course.title }}</p>
+          </div>
+          <div class="flex items-center gap-2 shrink-0">
+            <span class="text-sm font-extrabold text-[#0f172a]">${{ p.amount }}</span>
+            {% if p.status == 'COMPLETED' %}
+            <span class="px-2.5 py-1 rounded-full bg-emerald-100 border border-emerald-200 text-emerald-700 text-[11px] font-bold">Completed</span>
+            {% elif p.status == 'PENDING' %}
+            <span class="px-2.5 py-1 rounded-full bg-amber-100 border border-amber-200 text-amber-700 text-[11px] font-bold">Pending</span>
+            {% elif p.status == 'FAILED' %}
+            <span class="px-2.5 py-1 rounded-full bg-red-100 border border-red-200 text-red-700 text-[11px] font-bold">Failed</span>
+            {% else %}
+            <span class="px-2.5 py-1 rounded-full bg-slate-100 border border-slate-200 text-slate-700 text-[11px] font-bold">{{ p.status }}</span>
+            {% endif %}
+          </div>
+        </div>
+        {% empty %}
+        <p class="text-sm text-slate-500 font-medium">No payments yet.</p>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

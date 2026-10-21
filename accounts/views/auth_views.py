@@ -269,7 +269,10 @@ class UserLoginView(LoginView):
         if next_url:
             return next_url
         user = self.request.user
-        if hasattr(user, "profile") and user.profile.is_instructor:
+        profile = getattr(user, "profile", None)
+        if profile and profile.is_admin:
+            return reverse_lazy("core:admin_dashboard")
+        if profile and profile.is_instructor:
             return reverse_lazy("courses:instructor_studio")
         return reverse_lazy("accounts:profile")
 

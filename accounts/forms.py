@@ -272,10 +272,11 @@ class UserLoginForm(AuthenticationForm):
                 getattr(profile, "role", "student") if profile else "student"
             )
 
-            if not user.is_superuser and submitted_role in [
-                "student",
-                "instructor",
-            ]:
+            if (
+                not user.is_superuser
+                and actual_role != "admin"
+                and submitted_role in ["student", "instructor"]
+            ):
                 if actual_role != submitted_role:
                     role_display = (
                         "Instructor"

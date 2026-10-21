@@ -38,6 +38,8 @@ def complete_google_auth_login(
         next_url, allowed_hosts={request.get_host()}
     ):
         target_redirect = next_url
+    elif hasattr(user, "profile") and user.profile.is_admin:
+        target_redirect = reverse_lazy("core:admin_dashboard")
     elif hasattr(user, "profile") and user.profile.is_instructor:
         target_redirect = reverse_lazy("courses:instructor_studio")
     else:

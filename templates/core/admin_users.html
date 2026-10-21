@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Users | Learnix{% endblock %}
+
+{% block content %}
+<div class="relative z-10 w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 pt-6 pb-20 flex flex-col gap-8">
+
+  <div class="flex flex-col gap-2">
+    <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#0f172a] tracking-tight">
+      Platform <span class="bg-gradient-to-r from-cyan-500 via-violet-600 to-fuchsia-600 bg-clip-text text-transparent drop-shadow-sm">Users</span>
+    </h1>
+    <p class="text-sm sm:text-base text-slate-600 font-medium max-w-3xl">
+      Every registered account with its role. Roles are assigned here in the admin panel, never from the public signup form.
+    </p>
+  </div>
+
+  {% include 'includes/_admin_nav.html' %}
+
+  <div class="flex items-center gap-2 flex-wrap">
+    <a href="{% url 'core:admin_users' %}" class="px-4 py-2 rounded-full font-mono text-xs font-bold transition-all border {% if not request.GET.role %}bg-violet-600 text-white border-violet-600{% else %}bg-white/80 text-slate-700 border-slate-200 hover:bg-violet-50 hover:text-violet-700{% endif %}">All</a>
+    <a href="?role=student" class="px-4 py-2 rounded-full font-mono text-xs font-bold transition-all border {% if request.GET.role == 'student' %}bg-violet-600 text-white border-violet-600{% else %}bg-white/80 text-slate-700 border-slate-200 hover:bg-violet-50 hover:text-violet-700{% endif %}">Students</a>
+    <a href="?role=instructor" class="px-4 py-2 rounded-full font-mono text-xs font-bold transition-all border {% if request.GET.role == 'instructor' %}bg-violet-600 text-white border-violet-600{% else %}bg-white/80 text-slate-700 border-slate-200 hover:bg-violet-50 hover:text-violet-700{% endif %}">Instructors</a>
+    <a href="?role=admin" class="px-4 py-2 rounded-full font-mono text-xs font-bold transition-all border {% if request.GET.role == 'admin' %}bg-violet-600 text-white border-violet-600{% else %}bg-white/80 text-slate-700 border-slate-200 hover:bg-violet-50 hover:text-violet-700{% endif %}">Admins</a>
+  </div>
+
+  <div class="rounded-3xl bg-white/80 backdrop-blur-xl border border-white p-6 sm:p-8 shadow-[0_20px_50px_-15px_rgba(99,102,241,0.1),0_4px_16px_-2px_rgba(0,0,0,0.04)]">
+    <div class="flex flex-col">
+      {% for u in platform_users %}
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 py-3 border-b border-slate-100 last:border-0">
+        <div class="flex items-center gap-3 min-w-0">
+          <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-violet-600 to-cyan-500 text-white flex items-center justify-center font-bold text-sm shrink-0">{{ u.username|slice:":1"|upper }}</div>
+          <div class="min-w-0">
+            <p class="text-sm font-bold text-[#0f172a] truncate">{{ u.get_full_name|default:u.username }} <span class="font-mono text-[11px] text-slate-400 font-medium">@{{ u.username }}</span></p>
+            <p class="text-[11px] font-mono text-slate-500 truncate">{{ u.email }}</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2 shrink-0">
+          <span class="text-[11px] font-mono text-slate-500">Joined {{ u.date_joined|date:"M d, Y" }}</span>
+          {% if u.is_active %}
+          <span class="px-2.5 py-1 rounded-full bg-emerald-100 border border-emerald-200 text-emerald-700 text-[11px] font-bold">Active</span>
+          {% else %}
+          <span class="px-2.5 py-1 rounded-full bg-slate-100 border border-slate-200 text-slate-600 text-[11px] font-bold">Inactive</span>
+          {% endif %}
+          {% if u.profile.role == 'admin' %}
+          <span class="px-2.5 py-1 rounded-full bg-fuchsia-100 border border-fuchsia-200 text-fuchsia-700 text-[11px] font-bold">Admin</span>
+          {% elif u.profile.role == 'instructor' %}
+          <span class="px-2.5 py-1 rounded-full bg-violet-100 border border-violet-200 text-violet-700 text-[11px] font-bold">Instructor</span>
+          {% else %}
+          <span class="px-2.5 py-1 rounded-full bg-cyan-100 border border-cyan-200 text-cyan-700 text-[11px] font-bold">Student</span>
+          {% endif %}
+          {% if user.is_staff %}
+          <a href="{% url 'admin:auth_user_change' u.id %}" class="px-3 py-1.5 rounded-full bg-slate-100 hover:bg-violet-50 text-slate-700 hover:text-violet-700 font-mono text-[11px] font-bold transition-all border border-slate-200">Manage</a>
+          {% endif %}
+        </div>
+      </div>
+      {% empty %}
+      <p class="text-sm text-slate-500 font-medium py-4">No users found for this filter.</p>
+      {% endfor %}
+    </div>
+  </div>
+
+</div>
+{% endblock %}
