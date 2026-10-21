@@ -7,6 +7,7 @@ from google.auth.transport import requests as google_requests
 from google.oauth2.id_token import verify_oauth2_token
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
+from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
@@ -15,6 +16,7 @@ from .models import UserProfile
 from .otp_utils import create_and_send_otp
 from .serializers import (
     ChangePasswordSerializer,
+    DetailResponseSerializer,
     GoogleLoginSerializer,
     LoginSerializer,
     PasswordResetRequestSerializer,
@@ -36,7 +38,12 @@ User = get_user_model()
 logger = logging.getLogger(__name__)
 
 
-class RegisterView(generics.CreateAPIView):
+class AuthRateThrottleMixin:
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "auth"
+
+
+class RegisterView(AuthRateThrottleMixin, generics.CreateAPIView):
     serializer_class = RegisterSerializer
     permission_classes = [permissions.AllowAny]
 
@@ -54,7 +61,7 @@ class RegisterView(generics.CreateAPIView):
         )
 
 
-class LoginView(APIView):
+class LoginView(AuthRateThrottleMixin, APIView):
     permission_classes = [permissions.AllowAny]
     serializer_class = LoginSerializer
 
@@ -70,7 +77,7 @@ class LoginView(APIView):
         return Response(data)
 
 
-class GoogleLoginView(APIView):
+class GoogleLoginView(AuthRateThrottleMixin, APIView):
     permission_classes = [permissions.AllowAny]
     serializer_class = GoogleLoginSerializer
 
@@ -113,6 +120,8 @@ class GoogleLoginView(APIView):
 
 
 class LogoutView(APIView):
+    serializer_class = DetailResponseSerializer
+
     def post(self, request):
         refresh_token = request.data.get("refresh")
         if refresh_token:
@@ -137,7 +146,7 @@ class MeView(generics.RetrieveUpdateAPIView):
         return profile
 
 
-class VerifyOTPView(APIView):
+class VerifyOTPView(AuthRateThrottleMixin, APIView):
     permission_classes = [permissions.AllowAny]
     serializer_class = VerifyOTPSerializer
 
@@ -169,7 +178,7 @@ class ChangePasswordView(APIView):
         return Response({"detail": "Password changed successfully."})
 
 
-class PasswordResetRequestView(APIView):
+class PasswordResetRequestView(AuthRateThrottleMixin, APIView):
     permission_classes = [permissions.AllowAny]
     serializer_class = PasswordResetRequestSerializer
 
@@ -187,7 +196,7 @@ class PasswordResetRequestView(APIView):
         )
 
 
-class PasswordResetVerifyView(APIView):
+class PasswordResetVerifyView(AuthRateThrottleMixin, APIView):
     permission_classes = [permissions.AllowAny]
     serializer_class = PasswordResetVerifySerializer
 
@@ -197,7 +206,7 @@ class PasswordResetVerifyView(APIView):
         return Response({"token": serializer.validated_data["token"]})
 
 
-class PasswordResetConfirmView(APIView):
+class PasswordResetConfirmView(AuthRateThrottleMixin, APIView):
     permission_classes = [permissions.AllowAny]
     serializer_class = SetNewPasswordSerializer
 

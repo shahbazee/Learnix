@@ -44,7 +44,9 @@ class StudentDashboardView(LoginRequiredMixin, TemplateView):
         featured_preview_course = None
         if not enrollments:
             featured_preview_course = (
-                Course.objects.filter(is_published=True)
+                Course.objects.filter(
+                    is_published=True, is_archived=False
+                )
                 .select_related("category", "instructor")
                 .prefetch_related("modules__lessons")
                 .first()
@@ -176,7 +178,9 @@ class StudentDashboardView(LoginRequiredMixin, TemplateView):
 
 class EnrollCourseView(LoginRequiredMixin, View):
     def post(self, request, slug):
-        course = get_object_or_404(Course, slug=slug, is_published=True)
+        course = get_object_or_404(
+            Course, slug=slug, is_published=True, is_archived=False
+        )
 
         is_free_course = bool(
             getattr(course, "is_free", False)
@@ -222,6 +226,27 @@ class EnrollCourseView(LoginRequiredMixin, View):
             request,
             f"Congratulations! You have enrolled in "
             f"'{course.title}'. Your learning journey begins now.",
+        )
+        return redirect("courses:dashboard")
+
+
+class UnenrollView(LoginRequiredMixin, View):
+    def post(self, request, slug):
+        course = get_object_or_404(Course, slug=slug)
+        enrollment = request.user.enrollments.filter(
+            course=course, is_active=True
+        ).first()
+        if enrollment is None:
+            messages.error(
+                request, "You are not enrolled in this course."
+            )
+            return redirect("courses:dashboard")
+        enrollment.is_active = False
+        enrollment.save(update_fields=["is_active"])
+        messages.success(
+            request,
+            f"You have unenrolled from '{course.title}'. "
+            f"You can re-enroll any time from the course page.",
         )
         return redirect("courses:dashboard")
 

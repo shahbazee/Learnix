@@ -9,6 +9,11 @@ urlpatterns = [
     path("verify-otp/", views.VerifyOTPView.as_view(), name="verify_otp"),
     path("resend-otp/", views.ResendOTPView.as_view(), name="resend_otp"),
     path("login/", views.UserLoginView.as_view(), name="login"),
+    path(
+        "two-factor/",
+        views.TwoFactorVerifyView.as_view(),
+        name="two_factor_verify",
+    ),
     path("logout/", views.UserLogoutView.as_view(), name="logout"),
     path("profile/", views.ProfileView.as_view(), name="profile"),
     path(

@@ -68,7 +68,11 @@ class InstructorStudioView(InstructorRequiredMixin, TemplateView):
                     "rating": (float(course.rating) if course.rating else 0.0),
                     "reviews_count": getattr(course, "reviews_count", 0) or 0,
                     "status": (
-                        "PUBLISHED" if course.is_published else "DRAFT"
+                        "ARCHIVED"
+                        if course.is_archived
+                        else "PUBLISHED"
+                        if course.is_published
+                        else "DRAFT"
                     ),
                     "lessons_count": sum(
                         len(module.lessons.all())
@@ -204,8 +208,14 @@ class InstructorCourseDeleteView(InstructorRequiredMixin, View):
     def post(self, request, slug):
         course = _get_owned_course_or_403(request.user, slug)
         title = course.title
-        course.delete()
-        messages.success(request, f"Course '{title}' has been deleted.")
+        course.is_archived = True
+        course.is_published = False
+        course.save(update_fields=["is_archived", "is_published"])
+        messages.success(
+            request,
+            f"Course '{title}' has been archived. Enrolled students "
+            f"keep their progress and certificates.",
+        )
         return redirect("courses:instructor_studio")
 
 

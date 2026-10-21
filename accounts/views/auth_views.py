@@ -5,17 +5,19 @@ from django.contrib import messages
 from django.contrib.auth import get_user_model, login, logout
 from django.contrib.auth.views import LoginView
 from django.db import transaction
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.generic import FormView, View
 
 from ..forms import OTPVerificationForm, StudentRegistrationForm, UserLoginForm
-from ..models import UserProfile
+from ..models import EmailOTP, UserProfile
 from ..otp_utils import create_and_send_otp, verify_otp
 from ..tasks import send_otp_email, send_welcome_email
 from .helpers import (
     _generate_otp_token,
+    otp_resend_allowed,
     resend_otp_code,
     resolve_otp_user_id,
 )
@@ -278,10 +280,105 @@ class UserLoginView(LoginView):
 
     def form_valid(self, form):
         user = form.get_user()
+        profile = getattr(user, "profile", None)
+        if profile is not None and profile.two_factor_enabled:
+            create_and_send_otp(user, "two_factor", send_otp_email)
+            self.request.session["pending_2fa_user_id"] = user.pk
+            self.request.session["pending_2fa_backend"] = (
+                getattr(user, "backend", "")
+                or "django.contrib.auth.backends.ModelBackend"
+            )
+            self.request.session["pending_2fa_next"] = (
+                self.request.POST.get("next")
+                or self.request.GET.get("next")
+                or ""
+            )
+            messages.info(
+                self.request,
+                "Enter the 6-digit code we emailed you to finish "
+                "signing in.",
+            )
+            return redirect("accounts:two_factor_verify")
         messages.success(
             self.request, f"Welcome back, {user.first_name or user.username}!"
         )
         return super().form_valid(form)
+
+
+class TwoFactorVerifyView(View):
+    template_name = "accounts/two_factor_verify.html"
+
+    def _pending_user(self, request):
+        user_id = request.session.get("pending_2fa_user_id")
+        if not user_id:
+            return None
+        return User.objects.filter(pk=user_id, is_active=True).first()
+
+    def get(self, request):
+        user = self._pending_user(request)
+        if user is None:
+            return redirect("accounts:login")
+        return render(
+            request, self.template_name, {"pending_email": user.email}
+        )
+
+    def post(self, request):
+        user = self._pending_user(request)
+        if user is None:
+            return redirect("accounts:login")
+        if request.POST.get("action") == "resend":
+            return self._resend(request, user)
+        code = (request.POST.get("otp_code") or "").strip()
+        success, error, _ = verify_otp(user, code, "two_factor")
+        if not success:
+            messages.error(
+                request, error or "Invalid verification code."
+            )
+            return render(
+                request,
+                self.template_name,
+                {"pending_email": user.email},
+            )
+        EmailOTP.objects.filter(
+            user=user, purpose="two_factor", is_verified=False
+        ).delete()
+        backend = (
+            request.session.pop("pending_2fa_backend", "")
+            or "django.contrib.auth.backends.ModelBackend"
+        )
+        next_url = request.session.pop("pending_2fa_next", "")
+        request.session.pop("pending_2fa_user_id", None)
+        login(request, user, backend=backend)
+        messages.success(
+            request, f"Welcome back, {user.first_name or user.username}!"
+        )
+        if next_url and url_has_allowed_host_and_scheme(
+            next_url, allowed_hosts={request.get_host()}
+        ):
+            return redirect(next_url)
+        profile = getattr(user, "profile", None)
+        if profile is not None and profile.is_admin:
+            return redirect("core:admin_dashboard")
+        if profile is not None and profile.is_instructor:
+            return redirect("courses:instructor_studio")
+        return redirect("accounts:profile")
+
+    def _resend(self, request, user):
+        if not otp_resend_allowed(user.pk, "two_factor"):
+            messages.error(
+                request,
+                "Too many codes requested. Please wait a while "
+                "before trying again.",
+            )
+            return redirect("accounts:two_factor_verify")
+        EmailOTP.objects.filter(
+            user=user, purpose="two_factor", is_verified=False
+        ).delete()
+        create_and_send_otp(user, "two_factor", send_otp_email)
+        messages.success(
+            request, "A new code has been sent to your email."
+        )
+        return redirect("accounts:two_factor_verify")
 
 
 class UserLogoutView(View):

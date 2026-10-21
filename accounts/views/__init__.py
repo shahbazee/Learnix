@@ -1,6 +1,7 @@
 from .auth_views import (
     ResendOTPView,
     SignUpView,
+    TwoFactorVerifyView,
     UserLoginView,
     UserLogoutView,
     VerifyOTPView,
@@ -23,6 +24,7 @@ __all__ = [
     "ResendResetOTPView",
     "ResetPasswordView",
     "SignUpView",
+    "TwoFactorVerifyView",
     "UserLoginView",
     "UserLogoutView",
     "VerifyOTPView",

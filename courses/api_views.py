@@ -1,7 +1,9 @@
 from django.core.cache import cache
 from django.db.models import Count
 from django.utils import timezone
-from rest_framework import generics, permissions, viewsets
+from django_filters import BooleanFilter, FilterSet
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import filters, generics, permissions, viewsets
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -55,8 +57,33 @@ def _bump_course_cache_version():
         return 1
 
 
+class CourseFilter(FilterSet):
+    is_free = BooleanFilter(method="filter_is_free")
+
+    class Meta:
+        model = Course
+        fields = {
+            "level": ["exact"],
+            "category__slug": ["exact"],
+            "price": ["gte", "lte"],
+        }
+
+    def filter_is_free(self, queryset, name, value):
+        if value:
+            return queryset.filter(price=0)
+        return queryset.exclude(price=0)
+
+
 class CourseViewSet(viewsets.ModelViewSet):
     lookup_field = "slug"
+    filter_backends = [
+        DjangoFilterBackend,
+        filters.SearchFilter,
+        filters.OrderingFilter,
+    ]
+    filterset_class = CourseFilter
+    search_fields = ["title", "short_description"]
+    ordering_fields = ["price", "rating", "created_at"]
 
     def get_permissions(self):
         if self.action in ("create", "update", "partial_update", "destroy"):
@@ -78,7 +105,7 @@ class CourseViewSet(viewsets.ModelViewSet):
         )
         if self.action in ("update", "partial_update", "destroy"):
             return qs.filter(instructor=self.request.user)
-        return qs.filter(is_published=True)
+        return qs.filter(is_published=True, is_archived=False)
 
     def list(self, request, *args, **kwargs):
         version = _course_cache_version()
@@ -109,7 +136,9 @@ class CourseViewSet(viewsets.ModelViewSet):
         _bump_course_cache_version()
 
     def perform_destroy(self, instance):
-        instance.delete()
+        instance.is_archived = True
+        instance.is_published = False
+        instance.save(update_fields=["is_archived", "is_published"])
         _bump_course_cache_version()
 
 

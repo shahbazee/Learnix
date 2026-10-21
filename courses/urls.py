@@ -57,6 +57,16 @@ urlpatterns = [
         "<slug:slug>/enroll/", views.EnrollCourseView.as_view(), name="enroll"
     ),
     path(
+        "<slug:slug>/reviews/",
+        views.CourseReviewView.as_view(),
+        name="course_review",
+    ),
+    path(
+        "<slug:slug>/unenroll/",
+        views.UnenrollView.as_view(),
+        name="unenroll",
+    ),
+    path(
         "<slug:slug>/learn/<int:lesson_id>/",
         views.LessonView.as_view(),
         name="lesson_view",

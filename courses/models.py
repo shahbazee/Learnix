@@ -5,8 +5,11 @@ from decimal import Decimal
 from pathlib import Path
 
 from django.conf import settings
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.utils.text import slugify
+
+from core.validators import validate_image_file
 
 logger = logging.getLogger(__name__)
 
@@ -71,7 +74,10 @@ class Course(models.Model):
         max_length=15, choices=LEVEL_CHOICES, default="BEGINNER"
     )
     thumbnail = models.ImageField(
-        upload_to="course_thumbnails/", null=True, blank=True
+        upload_to="course_thumbnails/",
+        null=True,
+        blank=True,
+        validators=[validate_image_file],
     )
     thumbnail_url = models.URLField(
         max_length=500,
@@ -79,9 +85,10 @@ class Course(models.Model):
         default="",
         help_text="Fallback external URL for demo images",
     )
-    rating = models.DecimalField(max_digits=3, decimal_places=2, default=4.90)
-    reviews_count = models.PositiveIntegerField(default=120)
+    rating = models.DecimalField(max_digits=3, decimal_places=2, default=0.00)
+    reviews_count = models.PositiveIntegerField(default=0)
     is_published = models.BooleanField(default=False)
+    is_archived = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -430,3 +437,32 @@ class Certificate(models.Model):
                 },
             )
         return cert
+
+
+class Review(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="reviews",
+    )
+    course = models.ForeignKey(
+        Course,
+        on_delete=models.CASCADE,
+        related_name="reviews",
+    )
+    rating = models.PositiveSmallIntegerField(
+        validators=[MinValueValidator(1), MaxValueValidator(5)]
+    )
+    comment = models.TextField(blank=True, default="")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ("user", "course")
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return (
+            f"{self.user.username} rated {self.course.title} "
+            f"{self.rating}/5"
+        )

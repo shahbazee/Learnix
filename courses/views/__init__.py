@@ -1,6 +1,7 @@
 from .catalog_views import (
     CourseDetailView,
     CourseListView,
+    CourseReviewView,
     course_search_api,
     lesson_preview_api,
 )
@@ -11,6 +12,7 @@ from .learning_views import (
     LessonView,
     MarkCompleteView,
     StudentDashboardView,
+    UnenrollView,
 )
 from .studio_views import (
     ExportFinancialsCSVView,
@@ -25,6 +27,7 @@ __all__ = [
     "CertificateDetailView",
     "CourseDetailView",
     "CourseListView",
+    "CourseReviewView",
     "DownloadCertificatePDFView",
     "EnrollCourseView",
     "ExportFinancialsCSVView",
@@ -36,6 +39,7 @@ __all__ = [
     "LessonView",
     "MarkCompleteView",
     "StudentDashboardView",
+    "UnenrollView",
     "course_search_api",
     "lesson_preview_api",
 ]

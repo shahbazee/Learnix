@@ -8,9 +8,10 @@ from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
-from core.emails import send_payment_failed_email
-from courses.models import Course
+from core.emails import send_payment_failed_email, send_payment_refunded_email
+from courses.models import Course, Enrollment
 
+from .models import PaymentTransaction
 from .services import fulfill_order_and_dispatch_emails
 
 User = get_user_model()
@@ -26,11 +27,7 @@ def _event_field(obj, name, default=None):
 def _extract_event(request):
     payload = request.body
     sig_header = request.META.get("HTTP_STRIPE_SIGNATURE")
-    is_mock_mode = not sig_header and (
-        settings.DEBUG
-        or not settings.STRIPE_WEBHOOK_SECRET
-        or settings.STRIPE_WEBHOOK_SECRET.endswith("_placeholder")
-    )
+    is_mock_mode = not sig_header and settings.DEBUG
     if is_mock_mode:
         try:
             return json.loads(payload.decode("utf-8")), None
@@ -93,8 +90,26 @@ def _handle_checkout_completed(event):
     return None
 
 
+def _mark_transaction_failed(session, metadata):
+    order_number = metadata.get("order_number")
+    session_id = _event_field(session, "id")
+    transaction = None
+    if order_number:
+        transaction = PaymentTransaction.objects.filter(
+            order_number=order_number
+        ).first()
+    if transaction is None and session_id:
+        transaction = PaymentTransaction.objects.filter(
+            stripe_checkout_session_id=session_id
+        ).first()
+    if transaction is not None and transaction.status == "PENDING":
+        transaction.status = "FAILED"
+        transaction.save(update_fields=["status"])
+
+
 def _handle_payment_failed(event):
     session, metadata = _session_and_metadata(event)
+    _mark_transaction_failed(session, metadata)
     user_id = metadata.get("user_id")
     course_id = metadata.get("course_id")
     if not (user_id and course_id):
@@ -119,6 +134,31 @@ def _handle_payment_failed(event):
         logger.error(f"Error dispatching payment failure email: {e}")
 
 
+def _handle_charge_refunded(event):
+    charge = _event_field(_event_field(event, "data", {}), "object", {})
+    payment_intent = _event_field(charge, "payment_intent")
+    if not payment_intent:
+        return
+    transaction = PaymentTransaction.objects.filter(
+        stripe_payment_intent_id=payment_intent
+    ).first()
+    if transaction is None or transaction.status == "REFUNDED":
+        return
+    transaction.status = "REFUNDED"
+    transaction.save(update_fields=["status"])
+    Enrollment.objects.filter(
+        user=transaction.user,
+        course=transaction.course,
+        is_active=True,
+    ).update(is_active=False)
+    try:
+        send_payment_refunded_email(
+            transaction.user, transaction.course, transaction
+        )
+    except Exception as e:
+        logger.error(f"Error dispatching refund email: {e}")
+
+
 @csrf_exempt
 @require_POST
 def stripe_webhook(request):
@@ -135,4 +175,6 @@ def stripe_webhook(request):
         "checkout.session.expired",
     ]:
         _handle_payment_failed(event)
+    elif event_type == "charge.refunded":
+        _handle_charge_refunded(event)
     return HttpResponse(status=200)

@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.auth import authenticate, get_user_model
 from django.contrib.auth.forms import AuthenticationForm
+from django.core.cache import cache
 from django.core.exceptions import ValidationError
 
 User = get_user_model()
@@ -222,6 +223,24 @@ class UserLoginForm(AuthenticationForm):
             )
 
     def clean(self):
+        identifier = str(self.data.get("username") or "").strip().lower()
+        lock_key = f"login-lock:{identifier}"
+        if identifier and cache.get(lock_key, 0) >= 5:
+            raise ValidationError(
+                "Too many failed login attempts. "
+                "Please try again after 15 minutes."
+            )
+        try:
+            cleaned = self._clean_credentials()
+        except ValidationError:
+            if identifier:
+                cache.set(lock_key, cache.get(lock_key, 0) + 1, 900)
+            raise
+        if identifier:
+            cache.delete(lock_key)
+        return cleaned
+
+    def _clean_credentials(self):
         username = self.cleaned_data.get("username")
         password = self.cleaned_data.get("password")
 

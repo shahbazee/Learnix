@@ -13,7 +13,9 @@ class CheckoutSerializer(serializers.Serializer):
         request = self.context.get("request")
         try:
             course = Course.objects.get(
-                id=attrs["course_id"], is_published=True
+                id=attrs["course_id"],
+                is_published=True,
+                is_archived=False,
             )
         except Course.DoesNotExist:
             raise serializers.ValidationError(
@@ -78,3 +80,7 @@ class InvoiceSerializer(serializers.ModelSerializer):
             "issued_at",
             "pdf_file",
         ]
+
+
+class DetailResponseSerializer(serializers.Serializer):
+    detail = serializers.CharField()

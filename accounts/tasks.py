@@ -64,6 +64,44 @@ def send_otp_email(self, user_id, otp_code, expires_minutes=10):
     soft_time_limit=240,
     time_limit=300,
 )
+def send_email_change_otp_email(
+    self, user_id, otp_code, new_email, expires_minutes=10
+):
+    user_model = get_user_model()
+    try:
+        user = user_model.objects.get(pk=user_id)
+    except user_model.DoesNotExist:
+        return
+    key = f"otp-change:{user_id}:{otp_code}"
+    log, created = EmailLog.objects.get_or_create(
+        idempotency_key=key,
+        defaults={"recipient": new_email, "kind": "otp"},
+    )
+    if not created and log.status == "sent":
+        return
+    sent = send_otp_verification_email(
+        user,
+        otp_code,
+        expires_minutes=expires_minutes,
+        recipient_email=new_email,
+    )
+    if sent:
+        log.status = "sent"
+        log.sent_at = timezone.now()
+        log.save(update_fields=["status", "sent_at"])
+    else:
+        countdown = 60 * (2**self.request.retries)
+        raise self.retry(countdown=countdown)
+
+
+@shared_task(
+    bind=True,
+    base=EmailTask,
+    max_retries=5,
+    queue="emails",
+    soft_time_limit=240,
+    time_limit=300,
+)
 def send_welcome_email(self, user_id):
     user_model = get_user_model()
     try:

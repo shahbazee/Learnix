@@ -31,7 +31,7 @@ class HomeView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         featured_courses = (
-            Course.objects.filter(is_published=True)
+            Course.objects.filter(is_published=True, is_archived=False)
             .select_related(
                 "instructor",
                 "instructor__profile",
@@ -54,6 +54,7 @@ class HomeView(TemplateView):
         preview_course = (
             Course.objects.filter(
                 is_published=True,
+                is_archived=False,
                 modules__lessons__is_preview=True,
             )
             .distinct()

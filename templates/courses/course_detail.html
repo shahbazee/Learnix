@@ -218,6 +218,49 @@
         </div>
       </div>
 
+      <div class="space-y-4">
+        <h2 class="text-xl sm:text-2xl font-bold text-[#0f172a]">Student Reviews</h2>
+        <div class="rounded-3xl border border-slate-200/80 bg-white/90 backdrop-blur-xl p-6 sm:p-8 shadow-xs space-y-5">
+          {% if course.reviews_count %}
+          <p class="text-sm text-slate-600 font-medium">Average rating <strong class="text-[#0f172a]">{{ course.rating }}</strong> from {{ course.reviews_count }} review{{ course.reviews_count|pluralize }}.</p>
+          {% else %}
+          <p class="text-sm text-slate-600 font-medium">No reviews yet. Enrolled students can be the first to review this course.</p>
+          {% endif %}
+
+          {% for review in reviews %}
+          <div class="border-b border-slate-100 pb-4 last:border-0 last:pb-0">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-violet-600 to-cyan-500 text-white flex items-center justify-center font-bold text-xs shrink-0">{{ review.user.username|slice:":1"|upper }}</div>
+              <div>
+                <p class="text-sm font-bold text-[#0f172a]">{{ review.user.get_full_name|default:review.user.username }}</p>
+                <p class="text-[11px] font-mono text-amber-500">{% for i in "12345" %}{% if forloop.counter <= review.rating %}★{% else %}☆{% endif %}{% endfor %} <span class="text-slate-400">{{ review.created_at|date:"M d, Y" }}</span></p>
+              </div>
+            </div>
+            {% if review.comment %}<p class="text-xs sm:text-sm text-slate-600 leading-relaxed mt-2">{{ review.comment }}</p>{% endif %}
+          </div>
+          {% endfor %}
+
+          {% if can_review %}
+          <form method="post" action="{% url 'courses:course_review' course.slug %}" class="space-y-3 pt-2">
+            {% csrf_token %}
+            <p class="text-sm font-bold text-[#0f172a]">{% if user_review %}Update your review{% else %}Write a review{% endif %}</p>
+            <div class="flex flex-col sm:flex-row gap-3">
+              <select name="rating" required class="rounded-full border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 bg-white">
+                <option value="">Select rating</option>
+                {% for i in "54321" %}
+                <option value="{{ i }}" {% if user_review and user_review.rating == i|add:"0" %}selected{% endif %}>{{ i }} star{{ i|pluralize }}</option>
+                {% endfor %}
+              </select>
+              <input type="text" name="comment" value="{{ user_review.comment|default:'' }}" placeholder="Share your experience (optional)" class="flex-1 rounded-full border border-slate-200 px-4 py-2.5 text-sm text-slate-700 bg-white"/>
+            </div>
+            <button type="submit" class="px-5 py-2.5 rounded-full bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold shadow-md transition-colors cursor-pointer">Save Review</button>
+          </form>
+          {% elif not user.is_authenticated %}
+          <p class="text-xs text-slate-500 font-medium">Please sign in and enroll to write a review.</p>
+          {% endif %}
+        </div>
+      </div>
+
     </div>
 
     <aside class="lg:col-span-4 sticky top-28 hidden lg:block">

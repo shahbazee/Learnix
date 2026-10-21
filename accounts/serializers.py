@@ -252,3 +252,7 @@ class SetNewPasswordSerializer(serializers.Serializer):
         user.save()
         EmailOTP.objects.filter(user=user, purpose="password_reset").delete()
         return user
+
+
+class DetailResponseSerializer(serializers.Serializer):
+    detail = serializers.CharField()

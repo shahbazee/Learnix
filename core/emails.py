@@ -119,13 +119,13 @@ def send_registration_success_email(user):
 
 
 def send_otp_verification_email(
-    user, otp_code, expires_minutes=10
+    user, otp_code, expires_minutes=10, recipient_email=None
 ):
     subject = (
         f"Your {getattr(settings, 'SITE_NAME', 'Learnix')} "
         f"Verification Code: {otp_code}"
     )
-    recipient_email = user.email
+    recipient_email = recipient_email or user.email
     context = {
         "user": user,
         "otp_code": otp_code,
@@ -437,6 +437,37 @@ def send_course_enrollment_email(user, course, enrollment=None):
     return _send_platform_email(
         subject,
         "emails/course_enrollment.html",
+        context,
+        recipient_email,
+        fallback_text,
+    )
+
+
+def send_payment_refunded_email(user, course, transaction):
+    subject = (
+        f"Refund Processed for {course.title} — "
+        f"{getattr(settings, 'SITE_NAME', 'Learnix')}"
+    )
+    recipient_email = user.email or f"{user.username}@learnix.edu"
+    context = {
+        "user": user,
+        "course": course,
+        "transaction": transaction,
+    }
+    fallback_text = (
+        f"Hello {user.first_name or user.username},\n\n"
+        f"Your payment for '{course.title}' has been refunded.\n\n"
+        f"Order: {transaction.order_number}\n"
+        f"Amount refunded: {transaction.amount} "
+        f"{transaction.currency}\n\n"
+        f"The amount will return to your original payment method "
+        f"within 5-10 business days. Your enrollment in this "
+        f"course has been ended.\n\n"
+        f"— The Learnix Concierge Team"
+    )
+    return _send_platform_email(
+        subject,
+        "emails/payment_refunded.html",
         context,
         recipient_email,
         fallback_text,

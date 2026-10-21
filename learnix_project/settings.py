@@ -4,6 +4,7 @@ from datetime import timedelta
 from pathlib import Path
 
 from decouple import Csv, config
+from django.core.exceptions import ImproperlyConfigured
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -12,11 +13,17 @@ SECRET_KEY = config(
     default="django-insecure-learnix-dev-key-change-in-production",
 )
 
-DEBUG = config("DEBUG", default=True, cast=bool)
+DEBUG = config("DEBUG", default=False, cast=bool)
 
 ALLOWED_HOSTS = config(
     "ALLOWED_HOSTS", default="localhost,127.0.0.1", cast=Csv()
 )
+
+if not DEBUG and SECRET_KEY.startswith("django-insecure-"):
+    raise ImproperlyConfigured(
+        "SECRET_KEY must be set to a strong random value "
+        "when DEBUG is False."
+    )
 
 SITE_NAME = "Learnix"
 
@@ -34,6 +41,8 @@ INSTALLED_APPS = [
     "anymail",
     "rest_framework",
     "drf_spectacular",
+    "corsheaders",
+    "django_filters",
     "rest_framework_simplejwt",
     "rest_framework_simplejwt.token_blacklist",
     "django_celery_beat",
@@ -49,6 +58,15 @@ REST_FRAMEWORK = {
     ),
     "PAGE_SIZE": 10,
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    "DEFAULT_THROTTLE_CLASSES": [
+        "rest_framework.throttling.AnonRateThrottle",
+        "rest_framework.throttling.UserRateThrottle",
+    ],
+    "DEFAULT_THROTTLE_RATES": {
+        "anon": "300/hour",
+        "user": "2000/hour",
+        "auth": "20/minute",
+    },
 }
 
 SIMPLE_JWT = {
@@ -62,6 +80,7 @@ MIDDLEWARE = [
     "core.middleware.RequestTimingMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -201,6 +220,35 @@ WHITENOISE_MANIFEST_STRICT = False
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
+CORS_ALLOWED_ORIGINS = config(
+    "CORS_ALLOWED_ORIGINS", default="", cast=Csv()
+)
+CORS_ALLOW_CREDENTIALS = True
+
+# Optional S3 object storage for user uploads. Set S3_BUCKET_NAME
+# plus AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY in the environment
+# to move media off the local disk (needed on ephemeral hosts).
+S3_BUCKET_NAME = config("S3_BUCKET_NAME", default="")
+if S3_BUCKET_NAME:
+    AWS_STORAGE_BUCKET_NAME = S3_BUCKET_NAME
+    AWS_S3_REGION_NAME = config("S3_REGION_NAME", default="us-east-1")
+    AWS_ACCESS_KEY_ID = config("AWS_ACCESS_KEY_ID", default=None)
+    AWS_SECRET_ACCESS_KEY = config(
+        "AWS_SECRET_ACCESS_KEY", default=None
+    )
+    AWS_S3_FILE_OVERWRITE = False
+    AWS_DEFAULT_ACL = None
+    STORAGES = {
+        "default": {
+            "BACKEND": "storages.backends.s3.S3Storage",
+        },
+        "staticfiles": {
+            "BACKEND": (
+                "whitenoise.storage.CompressedStaticFilesStorage"
+            ),
+        },
+    }
+
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 if "test" in sys.argv:
@@ -303,6 +351,11 @@ LOGGING = {
             "level": "INFO",
             "propagate": False,
         },
+        "core.middleware": {
+            "handlers": ["console"],
+            "level": "INFO",
+            "propagate": False,
+        },
     },
 }
 
@@ -352,20 +405,11 @@ else:
         }
     }
 
+if "test" in sys.argv:
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        }
+    }
 
-LOGGING = {
-    "version": 1,
-    "disable_existing_loggers": False,
-    "handlers": {
-        "console": {
-            "class": "logging.StreamHandler",
-        },
-    },
-    "loggers": {
-        "core.middleware": {
-            "handlers": ["console"],
-            "level": "INFO",
-            "propagate": False,
-        },
-    },
-}
+

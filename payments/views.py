@@ -35,7 +35,9 @@ def _pdf_download_response(pdf_bytes, filename):
 
 class CreateCheckoutSessionView(LoginRequiredMixin, View):
     def post(self, request, course_slug):
-        course = get_object_or_404(Course, slug=course_slug, is_published=True)
+        course = get_object_or_404(
+            Course, slug=course_slug, is_published=True, is_archived=False
+        )
 
         if request.user.enrollments.filter(
             course=course, is_active=True

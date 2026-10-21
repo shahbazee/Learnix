@@ -2,13 +2,14 @@ import stripe
 from django.conf import settings
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
-from rest_framework import generics, permissions
+from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .models import Invoice, PaymentTransaction
 from .serializers import (
     CheckoutSerializer,
+    DetailResponseSerializer,
     InvoiceSerializer,
     PaymentTransactionSerializer,
 )
@@ -38,26 +39,34 @@ class CheckoutView(APIView):
             + "?session_id={CHECKOUT_SESSION_ID}"
         )
         cancel_url = request.build_absolute_uri(reverse("payment-cancel"))
-        session = stripe.checkout.Session.create(
-            mode="payment",
-            line_items=[
-                {
-                    "price_data": {
-                        "currency": transaction.currency.lower(),
-                        "unit_amount": int(transaction.amount * 100),
-                        "product_data": {"name": course.title},
-                    },
-                    "quantity": 1,
-                }
-            ],
-            metadata={
-                "order_number": transaction.order_number,
-                "user_id": str(request.user.id),
-                "course_id": str(course.id),
-            },
-            success_url=success_url,
-            cancel_url=cancel_url,
-        )
+        try:
+            session = stripe.checkout.Session.create(
+                mode="payment",
+                line_items=[
+                    {
+                        "price_data": {
+                            "currency": transaction.currency.lower(),
+                            "unit_amount": int(transaction.amount * 100),
+                            "product_data": {"name": course.title},
+                        },
+                        "quantity": 1,
+                    }
+                ],
+                metadata={
+                    "order_number": transaction.order_number,
+                    "user_id": str(request.user.id),
+                    "course_id": str(course.id),
+                },
+                success_url=success_url,
+                cancel_url=cancel_url,
+            )
+        except stripe.error.StripeError:
+            transaction.status = "FAILED"
+            transaction.save(update_fields=["status"])
+            return Response(
+                {"detail": "Payment provider error. Please try again."},
+                status=status.HTTP_502_BAD_GATEWAY,
+            )
         transaction.stripe_checkout_session_id = session.id
         transaction.save(update_fields=["stripe_checkout_session_id"])
         return Response(
@@ -88,6 +97,7 @@ class PaymentSuccessView(APIView):
 
 class PaymentCancelView(APIView):
     permission_classes = [permissions.AllowAny]
+    serializer_class = DetailResponseSerializer
 
     def get(self, request):
         return Response({"detail": "Payment cancelled. No charge was made."})

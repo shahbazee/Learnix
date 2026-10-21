@@ -7,6 +7,8 @@ from django.conf import settings
 from django.db import models
 from django.utils import timezone
 
+from core.validators import validate_image_file
+
 
 class UserProfile(models.Model):
     ROLE_STUDENT = "student"
@@ -30,7 +32,12 @@ class UserProfile(models.Model):
         db_index=True,
         help_text="Role distinguishing students, instructors and admins",
     )
-    avatar = models.ImageField(upload_to="avatars/", null=True, blank=True)
+    avatar = models.ImageField(
+        upload_to="avatars/",
+        null=True,
+        blank=True,
+        validators=[validate_image_file],
+    )
     bio = models.TextField(blank=True, default="")
     headline = models.CharField(max_length=255, blank=True, default="")
     phone_number = models.CharField(max_length=30, blank=True, default="")
@@ -46,7 +53,7 @@ class UserProfile(models.Model):
     github_username = models.CharField(max_length=100, blank=True, default="")
     storage_used_gb = models.FloatField(default=12.4)
     storage_total_gb = models.FloatField(default=50.0)
-    two_factor_enabled = models.BooleanField(default=True)
+    two_factor_enabled = models.BooleanField(default=False)
     preferred_currency = models.CharField(max_length=10, default="USD")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -88,6 +95,8 @@ class EmailOTP(models.Model):
         choices=[
             ("registration", "Registration Verification"),
             ("password_reset", "Password Reset Verification"),
+            ("two_factor", "Two-Factor Login Verification"),
+            ("email_change", "Email Change Verification"),
         ],
     )
     created_at = models.DateTimeField(auto_now_add=True)

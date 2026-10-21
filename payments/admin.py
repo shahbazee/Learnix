@@ -1,4 +1,7 @@
+from django.conf import settings
 from django.contrib import admin, messages
+
+import stripe
 
 from core.emails import (
     send_course_purchase_success_email,
@@ -68,6 +71,48 @@ def resend_purchase_emails_action(modeladmin, request, queryset):
         )
 
 
+@admin.action(
+    description="Refund selected completed payments via Stripe"
+)
+def refund_payments_action(modeladmin, request, queryset):
+    stripe.api_key = settings.STRIPE_SECRET_KEY
+    refunded_count = 0
+    skipped_count = 0
+    fail_count = 0
+    for tx in queryset:
+        if tx.status != "COMPLETED" or not tx.stripe_payment_intent_id:
+            skipped_count += 1
+            continue
+        try:
+            stripe.Refund.create(
+                payment_intent=tx.stripe_payment_intent_id
+            )
+            refunded_count += 1
+        except Exception:
+            fail_count += 1
+
+    if refunded_count:
+        messages.success(
+            request,
+            f"Refund requested at Stripe for {refunded_count} "
+            f"transaction(s). Status changes to REFUNDED when "
+            f"Stripe confirms via webhook.",
+        )
+    if skipped_count:
+        messages.warning(
+            request,
+            f"Skipped {skipped_count} transaction(s) — only "
+            f"COMPLETED payments with a payment intent can be "
+            f"refunded.",
+        )
+    if fail_count:
+        messages.error(
+            request,
+            f"Stripe refused refunds for {fail_count} "
+            f"transaction(s). Check the Stripe dashboard.",
+        )
+
+
 @admin.register(PaymentTransaction)
 class PaymentTransactionAdmin(admin.ModelAdmin):
     list_display = (
@@ -88,7 +133,7 @@ class PaymentTransactionAdmin(admin.ModelAdmin):
         "course__title",
         "stripe_checkout_session_id",
     )
-    actions = [resend_purchase_emails_action]
+    actions = [resend_purchase_emails_action, refund_payments_action]
     readonly_fields = ("created_at",)
 
 

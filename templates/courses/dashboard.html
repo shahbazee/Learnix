@@ -121,6 +121,10 @@
                   <span>Continue Course</span>
                 </a>
               {% endif %}
+              <form method="post" action="{% url 'courses:unenroll' item.course.slug %}" onsubmit="return confirm('Unenroll from {{ item.course.title|escapejs }}? You can re-enroll later; paid enrollments are not refunded by unenrolling.');" class="text-center">
+                {% csrf_token %}
+                <button type="submit" class="text-[11px] font-semibold text-slate-400 hover:text-red-600 transition-colors cursor-pointer">Unenroll from this course</button>
+              </form>
             </div>
           {% endfor %}
         </div>

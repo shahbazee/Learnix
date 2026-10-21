@@ -2,22 +2,33 @@ import logging
 
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth import update_session_auth_hash
+from django.contrib.auth import get_user_model, update_session_auth_hash
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db import transaction
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.views.generic import View
 
-from ..models import UserProfile
+from ..models import EmailOTP, UserProfile
+from ..otp_utils import verify_otp
+from ..tasks import send_email_change_otp_email
+from .helpers import otp_resend_allowed
 
 logger = logging.getLogger(__name__)
+
+User = get_user_model()
 
 
 class ProfileView(LoginRequiredMixin, View):
     template_name = "accounts/profile.html"
 
-    def get_context(self, user):
+    def get_context(self, user, request=None):
         profile, _ = UserProfile.objects.get_or_create(user=user)
+        pending_new_email = ""
+        if request is not None:
+            pending_new_email = request.session.get(
+                "pending_new_email", ""
+            )
         enrollments_count = user.enrollments.filter(is_active=True).count()
         display_first_name = user.first_name or (
             user.username.split(".")[0].capitalize()
@@ -40,15 +51,21 @@ class ProfileView(LoginRequiredMixin, View):
             "display_last_name": display_last_name,
             "enrollments_count": enrollments_count,
             "payments": payments,
+            "email_change_pending": bool(pending_new_email),
+            "pending_new_email": pending_new_email,
         }
 
     def get(self, request, *args, **kwargs):
-        context = self.get_context(request.user)
+        context = self.get_context(request.user, request)
         return render(request, self.template_name, context)
 
     def post(self, request, *args, **kwargs):
         user = request.user
         profile, _ = UserProfile.objects.get_or_create(user=user)
+
+        email_response = self._handle_email_change(request, user)
+        if email_response is not None:
+            return email_response
 
         is_ajax = request.headers.get(
             "x-requested-with"
@@ -126,6 +143,108 @@ class ProfileView(LoginRequiredMixin, View):
 
         messages.success(request, "Account settings successfully saved.")
         return redirect("accounts:profile")
+
+    def _handle_email_change(self, request, user):
+        action = request.POST.get("email_change_action")
+        if action is None:
+            return None
+        profile_url = "accounts:profile"
+        if action == "cancel":
+            request.session.pop("pending_new_email", None)
+            EmailOTP.objects.filter(
+                user=user, purpose="email_change", is_verified=False
+            ).delete()
+            messages.info(request, "Email change cancelled.")
+            return redirect(profile_url)
+        if action == "request":
+            new_email = (
+                request.POST.get("new_email") or ""
+            ).strip().lower()
+            if not new_email or "@" not in new_email:
+                messages.error(
+                    request, "Please enter a valid email address."
+                )
+                return redirect(profile_url)
+            if new_email == (user.email or "").lower():
+                messages.error(
+                    request,
+                    "This is already your current email address.",
+                )
+                return redirect(profile_url)
+            if (
+                User.objects.filter(email__iexact=new_email)
+                .exclude(pk=user.pk)
+                .exists()
+            ):
+                messages.error(
+                    request,
+                    "This email is already used by another account.",
+                )
+                return redirect(profile_url)
+            if not otp_resend_allowed(user.pk, "email_change"):
+                messages.error(
+                    request,
+                    "Too many codes requested. Please wait a while "
+                    "before trying again.",
+                )
+                return redirect(profile_url)
+            EmailOTP.objects.filter(
+                user=user, purpose="email_change", is_verified=False
+            ).delete()
+            _, code = EmailOTP.create_for_user(
+                user, purpose="email_change"
+            )
+            request.session["pending_new_email"] = new_email
+            transaction.on_commit(
+                lambda: send_email_change_otp_email.delay(
+                    user.id, code, new_email
+                )
+            )
+            messages.success(
+                request,
+                f"A verification code has been sent to {new_email}.",
+            )
+            return redirect(profile_url)
+        if action == "verify":
+            new_email = request.session.get("pending_new_email", "")
+            if not new_email:
+                messages.error(
+                    request,
+                    "No email change is in progress. "
+                    "Please start again.",
+                )
+                return redirect(profile_url)
+            code = (
+                request.POST.get("email_change_code") or ""
+            ).strip()
+            success, error, _ = verify_otp(user, code, "email_change")
+            if not success:
+                messages.error(
+                    request, error or "Invalid verification code."
+                )
+                return redirect(profile_url)
+            if (
+                User.objects.filter(email__iexact=new_email)
+                .exclude(pk=user.pk)
+                .exists()
+            ):
+                messages.error(
+                    request,
+                    "This email was just taken by another account. "
+                    "Please try a different one.",
+                )
+                return redirect(profile_url)
+            user.email = new_email
+            user.save(update_fields=["email"])
+            EmailOTP.objects.filter(
+                user=user, purpose="email_change", is_verified=False
+            ).delete()
+            request.session.pop("pending_new_email", None)
+            messages.success(
+                request, "Your email address has been updated."
+            )
+            return redirect(profile_url)
+        return None
 
     def _handle_password_change(self, request, user, is_ajax):
         current_password = request.POST.get("current_password")
