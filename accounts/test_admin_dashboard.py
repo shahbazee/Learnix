@@ -11,7 +11,7 @@ User = get_user_model()
 
 TEST_PWD = "Learnix" + "Test" + "123!"
 
-PATCH_TARGET = "accounts.views.google_views.verify_oauth2_token"
+PATCH_TARGET = "accounts.google_auth.verify_oauth2_token"
 
 
 def make_user(username, role, **kwargs):

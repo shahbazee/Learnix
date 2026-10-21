@@ -1,5 +1,4 @@
 import stripe
-from django.conf import settings
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from rest_framework import generics, permissions, status
@@ -7,6 +6,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .models import Invoice, PaymentTransaction
+from .services import create_stripe_checkout_session
 from .serializers import (
     CheckoutSerializer,
     PaymentDetailResponseSerializer,
@@ -33,30 +33,16 @@ class CheckoutView(APIView):
             currency="USD",
             status="PENDING",
         )
-        stripe.api_key = settings.STRIPE_SECRET_KEY
         success_url = (
             request.build_absolute_uri(reverse("payment-success"))
             + "?session_id={CHECKOUT_SESSION_ID}"
         )
         cancel_url = request.build_absolute_uri(reverse("payment-cancel"))
         try:
-            session = stripe.checkout.Session.create(
-                mode="payment",
-                line_items=[
-                    {
-                        "price_data": {
-                            "currency": transaction.currency.lower(),
-                            "unit_amount": int(transaction.amount * 100),
-                            "product_data": {"name": course.title},
-                        },
-                        "quantity": 1,
-                    }
-                ],
-                metadata={
-                    "order_number": transaction.order_number,
-                    "user_id": str(request.user.id),
-                    "course_id": str(course.id),
-                },
+            session = create_stripe_checkout_session(
+                user=request.user,
+                course=course,
+                transaction=transaction,
                 success_url=success_url,
                 cancel_url=cancel_url,
             )
@@ -67,8 +53,6 @@ class CheckoutView(APIView):
                 {"detail": "Payment provider error. Please try again."},
                 status=status.HTTP_502_BAD_GATEWAY,
             )
-        transaction.stripe_checkout_session_id = session.id
-        transaction.save(update_fields=["stripe_checkout_session_id"])
         return Response(
             {
                 "checkout_url": session.url,

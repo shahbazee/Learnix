@@ -18,6 +18,7 @@ from courses.models import Course, Enrollment
 
 from .models import Invoice, PaymentTransaction
 from .services import (
+    create_stripe_checkout_session,
     generate_invoice_pdf,
     generate_receipt_pdf,
     get_or_create_invoice,
@@ -112,9 +113,6 @@ class CreateCheckoutSessionView(LoginRequiredMixin, View):
     def _start_stripe_checkout(self, request, course, tx):
 
         try:
-            stripe.api_key = settings.STRIPE_SECRET_KEY
-            unit_amount = int(course.price * 100)
-
             success_url = request.build_absolute_uri(
                 f"{reverse('payments:payment_success')}?"
                 f"session_id={{CHECKOUT_SESSION_ID}}&order={tx.order_number}"
@@ -128,34 +126,16 @@ class CreateCheckoutSessionView(LoginRequiredMixin, View):
                 if course.short_description
                 else "Masterclass Architecture Track"
             )
-            checkout_session = stripe.checkout.Session.create(
-                customer_email=request.user.email or None,
-                payment_method_types=["card"],
-                line_items=[
-                    {
-                        "price_data": {
-                            "currency": settings.STRIPE_CURRENCY.lower(),
-                            "product_data": {
-                                "name": course.title,
-                                "description": desc,
-                            },
-                            "unit_amount": unit_amount,
-                        },
-                        "quantity": 1,
-                    }
-                ],
-                mode="payment",
-                metadata={
-                    "user_id": str(request.user.id),
-                    "course_id": str(course.id),
-                    "order_number": str(tx.order_number),
-                },
+            checkout_session = create_stripe_checkout_session(
+                user=request.user,
+                course=course,
+                transaction=tx,
                 success_url=success_url,
                 cancel_url=cancel_url,
+                customer_email=request.user.email or None,
+                description=desc,
+                payment_method_types=["card"],
             )
-
-            tx.stripe_checkout_session_id = checkout_session.id
-            tx.save(update_fields=["stripe_checkout_session_id"])
 
             return redirect(checkout_session.url)
 

@@ -7,10 +7,12 @@ from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.generic import View
-from google.auth.transport import requests as google_requests
-from google.oauth2.id_token import verify_oauth2_token
 
-from ..google_auth import find_or_create_google_user
+from ..google_auth import (
+    find_or_create_google_user,
+    verified_google_email,
+    verify_google_id_token,
+)
 from ..models import UserProfile
 
 logger = logging.getLogger(__name__)
@@ -73,20 +75,14 @@ def complete_google_auth_login(
 class GoogleCompleteView(View):
     def post(self, request, *args, **kwargs):
         credential = request.POST.get("credential", "")
-        try:
-            id_info = verify_oauth2_token(
-                credential,
-                google_requests.Request(),
-                settings.GOOGLE_CLIENT_ID,
-            )
-        except Exception:
-            logger.warning("Google GIS token verification failed")
+        id_info = verify_google_id_token(credential)
+        if id_info is None:
             return self._error(
                 request, "Invalid Google token. Please try again."
             )
 
-        email = (id_info.get("email") or "").strip().lower()
-        if not email or id_info.get("email_verified") not in (True, "true"):
+        email = verified_google_email(id_info)
+        if email is None:
             return self._error(
                 request,
                 "Your Google email address is not verified by Google.",

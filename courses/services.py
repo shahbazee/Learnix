@@ -6,7 +6,23 @@ from django.core.files.base import ContentFile
 from django.template.loader import render_to_string
 from xhtml2pdf import pisa
 
+from .models import Enrollment
+
 logger = logging.getLogger(__name__)
+
+
+def activate_enrollment(user, course):
+    enrollment, created = Enrollment.objects.get_or_create(
+        user=user,
+        course=course,
+        defaults={"is_active": True, "progress_percent": 0.00},
+    )
+    reactivated = False
+    if not created and not enrollment.is_active:
+        enrollment.is_active = True
+        enrollment.save(update_fields=["is_active"])
+        reactivated = True
+    return enrollment, created, reactivated
 
 
 def generate_certificate_pdf(certificate) -> bytes:

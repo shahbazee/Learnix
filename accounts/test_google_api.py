@@ -23,7 +23,7 @@ class GoogleLoginApiTests(TestCase):
 
     def _post(self, id_info=None, side_effect=None):
         with patch(
-            "accounts.api_views.verify_oauth2_token",
+            "accounts.google_auth.verify_oauth2_token",
             side_effect=side_effect,
             return_value=id_info,
         ):

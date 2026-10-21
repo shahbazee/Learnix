@@ -1,17 +1,18 @@
 import logging
 
-from django.conf import settings
 from django.contrib.auth import get_user_model, login, logout
 from django.db import transaction
-from google.auth.transport import requests as google_requests
-from google.oauth2.id_token import verify_oauth2_token
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from .google_auth import find_or_create_google_user
+from .google_auth import (
+    find_or_create_google_user,
+    verified_google_email,
+    verify_google_id_token,
+)
 from .models import UserProfile
 from .otp_utils import create_and_send_otp
 from .serializers import (
@@ -84,20 +85,13 @@ class GoogleLoginView(AuthRateThrottleMixin, APIView):
     def post(self, request):
         serializer = GoogleLoginSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        try:
-            id_info = verify_oauth2_token(
-                serializer.validated_data["id_token"],
-                google_requests.Request(),
-                settings.GOOGLE_CLIENT_ID,
-            )
-        except Exception:
-            return Response(
-                {"detail": "Invalid Google token."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-        email = (id_info.get("email") or "").strip().lower()
-        email_verified = id_info.get("email_verified")
-        if not email or email_verified not in (True, "true"):
+        id_info = verify_google_id_token(
+            serializer.validated_data["id_token"]
+        )
+        email = (
+            verified_google_email(id_info) if id_info is not None else None
+        )
+        if email is None:
             return Response(
                 {"detail": "Invalid Google token."},
                 status=status.HTTP_400_BAD_REQUEST,

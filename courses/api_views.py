@@ -7,8 +7,9 @@ from rest_framework import filters, generics, permissions, viewsets
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from accounts.models import UserProfile
+from accounts.permissions import IsInstructor
 
+from .services import activate_enrollment
 from .models import (
     Certificate,
     Course,
@@ -27,15 +28,6 @@ from .serializers import (
     LessonProgressSerializer,
     MarkLessonCompleteSerializer,
 )
-
-
-class IsInstructor(permissions.BasePermission):
-    def has_permission(self, request, view):
-        if not request.user.is_authenticated:
-            return False
-        return UserProfile.objects.filter(
-            user=request.user, role="instructor"
-        ).exists()
 
 
 class CourseCategoryViewSet(viewsets.ReadOnlyModelViewSet):
@@ -152,9 +144,7 @@ class EnrollView(APIView):
         )
         serializer.is_valid(raise_exception=True)
         course = serializer.validated_data["course"]
-        enrollment = Enrollment.objects.create(
-            user=request.user, course=course
-        )
+        enrollment, _, _ = activate_enrollment(request.user, course)
         return Response(EnrollmentSerializer(enrollment).data, status=201)
 
 

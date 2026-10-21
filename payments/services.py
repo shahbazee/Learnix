@@ -2,6 +2,8 @@ import logging
 from decimal import Decimal
 from io import BytesIO
 
+import stripe
+
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.files.base import ContentFile
@@ -16,7 +18,8 @@ from core.emails import (
     send_payment_receipt_invoice_email,
     send_registration_success_email,
 )
-from courses.models import Course, Enrollment
+from courses.models import Course
+from courses.services import activate_enrollment
 
 from .models import Invoice, PaymentTransaction
 
@@ -158,15 +161,52 @@ def _create_transaction(
     return tx, user, course
 
 
+def create_stripe_checkout_session(
+    user,
+    course,
+    transaction,
+    success_url,
+    cancel_url,
+    customer_email=None,
+    description=None,
+    payment_method_types=None,
+):
+    stripe.api_key = settings.STRIPE_SECRET_KEY
+    product_data = {"name": course.title}
+    if description:
+        product_data["description"] = description
+    params = {
+        "mode": "payment",
+        "line_items": [
+            {
+                "price_data": {
+                    "currency": transaction.currency.lower(),
+                    "unit_amount": int(course.price * 100),
+                    "product_data": product_data,
+                },
+                "quantity": 1,
+            }
+        ],
+        "metadata": {
+            "user_id": str(user.id),
+            "course_id": str(course.id),
+            "order_number": str(transaction.order_number),
+        },
+        "success_url": success_url,
+        "cancel_url": cancel_url,
+    }
+    if customer_email:
+        params["customer_email"] = customer_email
+    if payment_method_types:
+        params["payment_method_types"] = payment_method_types
+    session = stripe.checkout.Session.create(**params)
+    transaction.stripe_checkout_session_id = session.id
+    transaction.save(update_fields=["stripe_checkout_session_id"])
+    return session
+
+
 def _activate_enrollment(user, course):
-    enrollment, _ = Enrollment.objects.get_or_create(
-        user=user,
-        course=course,
-        defaults={"is_active": True, "progress_percent": 0.00},
-    )
-    if not enrollment.is_active:
-        enrollment.is_active = True
-        enrollment.save(update_fields=["is_active"])
+    enrollment, _, _ = activate_enrollment(user, course)
     return enrollment
 
 

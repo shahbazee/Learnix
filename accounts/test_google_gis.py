@@ -14,7 +14,7 @@ ID_INFO = {
     "sub": "google-sub-123",
 }
 
-PATCH_TARGET = "accounts.views.google_views.verify_oauth2_token"
+PATCH_TARGET = "accounts.google_auth.verify_oauth2_token"
 
 
 class GoogleGisViewTests(TestCase):

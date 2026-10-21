@@ -1,8 +1,34 @@
+import logging
+
+from django.conf import settings
 from django.contrib.auth import get_user_model
+from google.auth.transport import requests as google_requests
+from google.oauth2.id_token import verify_oauth2_token
 
 from .models import UserProfile
 
 User = get_user_model()
+
+logger = logging.getLogger(__name__)
+
+
+def verify_google_id_token(credential):
+    try:
+        return verify_oauth2_token(
+            credential,
+            google_requests.Request(),
+            settings.GOOGLE_CLIENT_ID,
+        )
+    except Exception:
+        logger.warning("Google token verification failed")
+        return None
+
+
+def verified_google_email(id_info):
+    email = (id_info.get("email") or "").strip().lower()
+    if not email or id_info.get("email_verified") not in (True, "true"):
+        return None
+    return email
 
 
 def find_or_create_google_user(

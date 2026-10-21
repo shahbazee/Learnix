@@ -20,7 +20,7 @@ from ..models import (
     Lesson,
     LessonProgress,
 )
-from ..services import generate_certificate_pdf
+from ..services import activate_enrollment, generate_certificate_pdf
 from .helpers import _ordered_lessons
 
 logger = logging.getLogger(__name__)
@@ -195,25 +195,17 @@ class EnrollCourseView(LoginRequiredMixin, View):
             return redirect("courses:course_detail", slug=course.slug)
 
         with transaction.atomic():
-            enrollment, created = Enrollment.objects.get_or_create(
-                user=request.user,
-                course=course,
-                defaults={
-                    "is_active": True,
-                    "progress_percent": 0.00,
-                },
+            enrollment, created, reactivated = activate_enrollment(
+                request.user, course
             )
 
-            if not created and enrollment.is_active:
+            if not created and not reactivated:
                 messages.info(
                     request,
                     f"You are already actively enrolled in "
                     f"'{course.title}'.",
                 )
                 return redirect("courses:dashboard")
-
-            enrollment.is_active = True
-            enrollment.save(update_fields=["is_active"])
 
         try:
             send_course_enrollment_email(request.user, course, enrollment)
