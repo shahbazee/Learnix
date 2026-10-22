@@ -13,6 +13,7 @@ from django.views.generic import (
 )
 
 from ..forms import CourseForm
+from accounts.permissions import can_publish_course
 from ..mixins import InstructorRequiredMixin, OwnCourseObjectMixin
 from payments.models import PaymentTransaction
 
@@ -167,6 +168,11 @@ class InstructorCourseCreateView(InstructorRequiredMixin, CreateView):
     def form_valid(self, form):
         course = form.save(commit=False)
         course.instructor = self.request.user
+        forced_draft = course.is_published and not can_publish_course(
+            self.request.user
+        )
+        if forced_draft:
+            course.is_published = False
         course.save()
         if hasattr(form, "save_m2m"):
             form.save_m2m()
@@ -174,6 +180,12 @@ class InstructorCourseCreateView(InstructorRequiredMixin, CreateView):
             self.request,
             f"Course '{course.title}' created successfully!",
         )
+        if forced_draft:
+            messages.warning(
+                self.request,
+                "Course saved as draft. You do not have "
+                "permission to publish courses yet.",
+            )
         return redirect("courses:instructor_studio")
 
     def get_context_data(self, **kwargs):
@@ -192,11 +204,25 @@ class InstructorCourseUpdateView(
     slug_url_kwarg = "slug"
 
     def form_valid(self, form):
-        course = form.save()
+        course = form.save(commit=False)
+        forced_draft = course.is_published and not can_publish_course(
+            self.request.user
+        )
+        if forced_draft:
+            course.is_published = False
+        course.save()
+        if hasattr(form, "save_m2m"):
+            form.save_m2m()
         messages.success(
             self.request,
             f"Course '{course.title}' updated successfully!",
         )
+        if forced_draft:
+            messages.warning(
+                self.request,
+                "Course saved as draft. You do not have "
+                "permission to publish courses yet.",
+            )
         return redirect("courses:instructor_studio")
 
     def get_context_data(self, **kwargs):
