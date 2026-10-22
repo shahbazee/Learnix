@@ -6,6 +6,9 @@ from pathlib import Path
 from decouple import Csv, config
 from django.core.exceptions import ImproperlyConfigured
 
+import sentry_sdk
+from sentry_sdk.integrations.django import DjangoIntegration
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = config(
@@ -14,7 +17,13 @@ SECRET_KEY = config(
 )
 
 DEBUG = config("DEBUG", default=False, cast=bool)
-
+SENTRY_DSN = config("SENTRY_DSN", default="")
+if SENTRY_DSN:
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        integrations=[DjangoIntegration()],
+        environment="production" if not DEBUG else "local",
+    )
 ALLOWED_HOSTS = config(
     "ALLOWED_HOSTS", default="localhost,127.0.0.1", cast=Csv()
 )

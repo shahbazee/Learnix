@@ -21,3 +21,4 @@ django-filter==26.2
 django-cors-headers==4.9.0
 django-storages==1.14.6
 boto3==1.43.116
+sentry-sdk[django]==2.72.0
