@@ -7,7 +7,7 @@ from rest_framework import filters, generics, permissions, viewsets
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from accounts.permissions import IsInstructor
+from accounts.permissions import IsInstructor, can_publish_course
 
 from .services import activate_enrollment
 from .models import (
@@ -120,11 +120,24 @@ class CourseViewSet(viewsets.ModelViewSet):
         return Response(data)
 
     def perform_create(self, serializer):
-        serializer.save(instructor=self.request.user)
+        published = serializer.validated_data.get(
+            "is_published", False
+        )
+        if published and not can_publish_course(self.request.user):
+            published = False
+        serializer.save(
+            instructor=self.request.user, is_published=published
+        )
         _bump_course_cache_version()
 
     def perform_update(self, serializer):
-        serializer.save()
+        extra = {}
+        if "is_published" in serializer.validated_data:
+            wanted = serializer.validated_data["is_published"]
+            extra["is_published"] = bool(
+                wanted and can_publish_course(self.request.user)
+            )
+        serializer.save(**extra)
         _bump_course_cache_version()
 
     def perform_destroy(self, instance):

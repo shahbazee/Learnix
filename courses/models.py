@@ -99,6 +99,9 @@ class Course(models.Model):
             models.Index(fields=["price"]),
             models.Index(fields=["level"]),
         ]
+        permissions = [
+            ("publish_course", "Can publish course"),
+        ]
 
     def __str__(self):
         return self.title
