@@ -4,10 +4,16 @@ import secrets
 from datetime import timedelta
 
 from django.conf import settings
+from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils import timezone
 
 from core.validators import validate_image_file
+
+
+class User(AbstractUser):
+    class Meta(AbstractUser.Meta):
+        db_table = "auth_user"
 
 
 class UserProfile(models.Model):

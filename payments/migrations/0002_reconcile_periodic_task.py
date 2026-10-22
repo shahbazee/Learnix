@@ -16,7 +16,10 @@ def create_reconcile_schedule(apps, schema_editor):
     PeriodicTask.objects.get_or_create(
         name="reconcile-pending-purchase-emails",
         defaults={
-            "task": "payments.tasks.reconcile_pending_purchase_emails_task",
+            "task": (
+                "payments.tasks."
+                "reconcile_pending_purchase_emails_task"
+            ),
             "crontab": schedule,
             "enabled": True,
         },
@@ -31,13 +34,15 @@ def remove_reconcile_schedule(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
+
     dependencies = [
-        ("payments", "0002_paymenttransaction_confirmation_emails_sent"),
+        ("payments", "0001_initial"),
         ("django_celery_beat", "0019_alter_periodictasks_options"),
     ]
 
     operations = [
         migrations.RunPython(
-            create_reconcile_schedule, remove_reconcile_schedule
+            create_reconcile_schedule,
+            reverse_code=remove_reconcile_schedule,
         ),
     ]
