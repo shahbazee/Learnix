@@ -1,3 +1,6 @@
+# Seed migration: preserves the previous auto-superuser behavior
+# (formerly accounts 0005) on the custom user model.
+
 import os
 
 from django.contrib.auth.hashers import make_password
@@ -5,7 +8,7 @@ from django.db import migrations
 
 
 def ensure_superuser(apps, schema_editor):
-    User = apps.get_model("auth", "User")
+    User = apps.get_model("accounts", "User")
     UserProfile = apps.get_model("accounts", "UserProfile")
 
     username = os.environ.get("ADMIN_USERNAME", "shahbaz")
@@ -40,7 +43,7 @@ def ensure_superuser(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("accounts", "0004_userprofile_role"),
+        ('accounts', '0001_initial'),
     ]
 
     operations = [
