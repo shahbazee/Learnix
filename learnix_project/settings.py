@@ -24,6 +24,7 @@ if SENTRY_DSN:
         integrations=[DjangoIntegration()],
         environment="production" if not DEBUG else "local",
     )
+MAINTENANCE_MODE = config("MAINTENANCE_MODE", default=False, cast=bool)
 ALLOWED_HOSTS = config(
     "ALLOWED_HOSTS", default="localhost,127.0.0.1", cast=Csv()
 )
@@ -90,6 +91,7 @@ SIMPLE_JWT = {
 }
 
 MIDDLEWARE = [
+    "core.middleware.RequestIdMiddleware",
     "core.middleware.RequestTimingMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
@@ -98,6 +100,7 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "core.middleware.MaintenanceModeMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
