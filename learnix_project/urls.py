@@ -11,6 +11,7 @@ urlpatterns = [
     path("healthz/", health_check_view, name="health_check"),
     path("admin/", admin.site.urls),
     path("accounts/", include("accounts.urls")),
+    path("auth/", include("allauth.urls")),
     path("courses/", include("courses.urls")),
     path("payments/", include("payments.urls")),
     path("dashboard/", StudentDashboardView.as_view(), name="dashboard"),

@@ -1,7 +1,5 @@
-from unittest.mock import patch
-
 from django.contrib.auth import get_user_model
-from django.test import TestCase
+from django.test import RequestFactory, TestCase
 from django.urls import reverse
 from rest_framework.test import APIClient
 
@@ -11,7 +9,6 @@ User = get_user_model()
 
 TEST_PWD = "Learnix" + "Test" + "123!"
 
-PATCH_TARGET = "accounts.google_auth.verify_oauth2_token"
 
 
 def make_user(username, role, **kwargs):
@@ -137,39 +134,31 @@ class AdminCreationGuardTests(TestCase):
         self.assertFalse(User.objects.filter(username="mallory").exists())
 
     def test_google_signup_cannot_create_admin(self):
-        id_info = {
-            "email": "new.user@gmail.com",
-            "email_verified": True,
-            "given_name": "New",
-            "family_name": "User",
-            "sub": "google-sub-999",
-        }
-        with patch(PATCH_TARGET, return_value=id_info):
-            self.client.post(
-                reverse("accounts:google_complete"),
-                {"credential": "test-credential", "role": "admin"},
-            )
+        from allauth.socialaccount.models import (
+            SocialAccount,
+            SocialLogin,
+        )
+        from django.contrib.auth.models import AnonymousUser
+        from django.contrib.messages.storage.fallback import (
+            FallbackStorage,
+        )
+
+        account = SocialAccount(
+            provider="google",
+            uid="google-sub-999",
+            extra_data={"email": "new.user@gmail.com"},
+        )
+        new_user = User(
+            username="new.user",
+            email="new.user@gmail.com",
+            first_name="New",
+            last_name="User",
+        )
+        sociallogin = SocialLogin(user=new_user, account=account)
+        request = RequestFactory().post("/auth/google/login/callback/")
+        request.session = self.client.session
+        request.user = AnonymousUser()
+        request._messages = FallbackStorage(request)
+        sociallogin.save(request)
         user = User.objects.get(email="new.user@gmail.com")
         self.assertEqual(user.profile.role, "student")
-
-    def test_google_login_admin_redirected_to_admin_dashboard(self):
-        admin = make_user("admin_boss", "admin")
-        admin.email = "boss@gmail.com"
-        admin.save(update_fields=["email"])
-        id_info = {
-            "email": "boss@gmail.com",
-            "email_verified": True,
-            "given_name": "Boss",
-            "family_name": "Admin",
-            "sub": "google-sub-111",
-        }
-        with patch(PATCH_TARGET, return_value=id_info):
-            response = self.client.post(
-                reverse("accounts:google_complete"),
-                {"credential": "test-credential"},
-            )
-        self.assertRedirects(
-            response,
-            reverse("core:admin_dashboard"),
-            fetch_redirect_response=False,
-        )

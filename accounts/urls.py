@@ -36,9 +36,4 @@ urlpatterns = [
         views.ResetPasswordView.as_view(),
         name="reset_password",
     ),
-    path(
-        "google/complete/",
-        views.GoogleCompleteView.as_view(),
-        name="google_complete",
-    ),
 ]

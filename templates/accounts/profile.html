@@ -347,6 +347,8 @@
           </div>
 
           <div class="divide-y divide-slate-100 space-y-0">
+            {% load socialaccount %}
+            {% get_social_accounts user as social_accounts %}
             <div class="py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div class="flex items-center gap-3.5">
                 <div class="w-10 h-10 rounded-2xl bg-slate-100 flex items-center justify-center shrink-0">
@@ -360,8 +362,8 @@
                 <div>
                   <h3 class="text-sm font-bold text-slate-900">Google</h3>
                   <p class="text-xs text-slate-500">
-                    {% if profile.google_email %}
-                    Connected as <span class="font-medium text-slate-800">{{ profile.google_email }}</span>
+                    {% if social_accounts.google %}
+                    Connected as <span class="font-medium text-slate-800">{{ social_accounts.google.0.extra_data.email }}</span>
                     {% else %}
                     Not connected
                     {% endif %}
@@ -370,12 +372,14 @@
               </div>
 
               <div>
-                {% if profile.google_email %}
-                <button type="submit" name="disconnect_google" value="1" class="px-4 py-2 rounded-full text-xs font-bold text-rose-600 hover:bg-rose-50 border border-rose-200 transition-colors">
+                {% if social_accounts.google %}
+                <a href="{% url 'socialaccount_connections' %}" class="inline-block px-4 py-2 rounded-full text-xs font-bold text-rose-600 hover:bg-rose-50 border border-rose-200 transition-colors">
                   Disconnect
-                </button>
+                </a>
                 {% else %}
-                {% include "includes/_google_gis.html" with google_btn_width=240 %}
+                <a href="{% provider_login_url 'google' process='connect' %}" class="inline-block px-4 py-2 rounded-full text-xs font-bold text-slate-700 hover:bg-slate-50 border border-slate-300 transition-colors">
+                  Connect Google
+                </a>
                 {% endif %}
               </div>
             </div>
