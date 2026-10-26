@@ -31,11 +31,6 @@ class SignUpView(FormView):
     form_class = StudentRegistrationForm
     success_url = reverse_lazy("accounts:verify_otp")
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["google_client_id"] = settings.GOOGLE_CLIENT_ID
-        return context
-
     def dispatch(self, request, *args, **kwargs):
         if request.user.is_authenticated:
             return redirect("core:home")
@@ -258,11 +253,6 @@ class UserLoginView(LoginView):
     template_name = "accounts/login.html"
     authentication_form = UserLoginForm
     redirect_authenticated_user = True
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["google_client_id"] = settings.GOOGLE_CLIENT_ID
-        return context
 
     def get_success_url(self):
         next_url = self.request.GET.get("next") or self.request.POST.get(

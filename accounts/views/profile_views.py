@@ -1,6 +1,5 @@
 import logging
 
-from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import get_user_model, update_session_auth_hash
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -45,7 +44,6 @@ class ProfileView(LoginRequiredMixin, View):
         )[:10]
         return {
             "profile": profile,
-            "google_client_id": settings.GOOGLE_CLIENT_ID,
             "user": user,
             "display_first_name": display_first_name,
             "display_last_name": display_last_name,
@@ -101,11 +99,6 @@ class ProfileView(LoginRequiredMixin, View):
             profile.location_timezone = request.POST.get(
                 "location_timezone", ""
             ).strip()
-
-        if "disconnect_google" in request.POST:
-            profile.google_email = ""
-        elif "google_email" in request.POST:
-            profile.google_email = request.POST.get("google_email", "").strip()
 
         if "disconnect_github" in request.POST:
             profile.github_username = ""
