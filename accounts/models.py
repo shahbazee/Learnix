@@ -38,6 +38,7 @@ class UserProfile(models.Model):
         db_index=True,
         help_text="Role distinguishing students, instructors and admins",
     )
+    role_selected = models.BooleanField(default=False)
     avatar = models.ImageField(
         upload_to="avatars/",
         null=True,
@@ -186,3 +187,65 @@ class FailedTask(models.Model):
 
     def __str__(self):
         return f"{self.task_name} failed at {self.failed_at:%Y-%m-%d %H:%M}"
+
+
+class RoleChangeRequest(models.Model):
+    class Role(models.TextChoices):
+        STUDENT = "student", "Student"
+        INSTRUCTOR = "instructor", "Instructor"
+
+    class Status(models.TextChoices):
+        PENDING = "pending", "Pending"
+        APPROVED = "approved", "Approved"
+        REJECTED = "rejected", "Rejected"
+
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="role_requests"
+    )
+    from_role = models.CharField(max_length=20, choices=Role)
+    to_role = models.CharField(max_length=20, choices=Role)
+    reason = models.TextField(blank=True)
+    status = models.CharField(
+        max_length=20, choices=Status, default=Status.PENDING
+    )
+    reviewed_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="reviewed_role_requests",
+    )
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
+class InstructorRegistrationRequest(models.Model):
+    class Status(models.TextChoices):
+        PENDING = "pending", "Pending"
+        APPROVED = "approved", "Approved"
+        REJECTED = "rejected", "Rejected"
+
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="instructor_requests"
+    )
+    bio = models.TextField()
+    expertise = models.CharField(max_length=200)
+    portfolio_url = models.URLField(blank=True)
+    terms_accepted = models.BooleanField(default=False)
+    status = models.CharField(
+        max_length=20, choices=Status, default=Status.PENDING
+    )
+    reviewed_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="reviewed_instructor_requests",
+    )
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    professional_title = models.CharField(max_length=100, blank=True)
+    teaching_experience = models.TextField(blank=True)
+    profile_picture = models.ImageField(
+        upload_to="istructor_profile/", blank=True, null=True
+    )

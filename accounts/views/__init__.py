@@ -14,13 +14,16 @@ from .password_views import (
     VerifyResetOTPView,
 )
 from .profile_views import ProfileView
+from .role_views import GoogleStartView, RoleSelectView
 
 __all__ = [
     "ForgotPasswordView",
+    "GoogleStartView",
     "ProfileView",
     "ResendOTPView",
     "ResendResetOTPView",
     "ResetPasswordView",
+    "RoleSelectView",
     "SignUpView",
     "TwoFactorVerifyView",
     "UserLoginView",

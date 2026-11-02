@@ -36,6 +36,12 @@ class CourseCategory(models.Model):
 
 
 class Course(models.Model):
+    class Status(models.TextChoices):
+        DRAFT = "draft", "Draft"
+        PENDING_REVIEW = "pending_review", "Pending Review"
+        APPROVED = "approved", "Approved"
+        REJECTED = "rejected", "Rejected"
+
     LEVEL_CHOICES = (
         ("BEGINNER", "Beginner"),
         ("INTERMEDIATE", "Intermediate"),
@@ -87,6 +93,17 @@ class Course(models.Model):
     )
     rating = models.DecimalField(max_digits=3, decimal_places=2, default=0.00)
     reviews_count = models.PositiveIntegerField(default=0)
+    review_status = models.CharField(
+    max_length=20, choices=Status, default=Status.DRAFT
+    )
+    reviewed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="reviewed_courses",
+    )
+    review_note = models.TextField(blank=True)
     is_published = models.BooleanField(default=False)
     is_archived = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)

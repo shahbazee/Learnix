@@ -36,4 +36,7 @@ urlpatterns = [
         views.ResetPasswordView.as_view(),
         name="reset_password",
     ),
+    path("google/start/", views.GoogleStartView.as_view(), name="google_start"),
+    path("role-select/", views.RoleSelectView.as_view(), name="role_select"),
+
 ]

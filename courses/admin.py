@@ -43,10 +43,36 @@ class CourseAdmin(admin.ModelAdmin):
         "created_at",
     )
     list_filter = ("is_published", "is_archived", "level", "category")
+
+    actions = ["approve_courses", "reject_courses"]
+
+    @admin.action(description="Approve selected courses")
+    def approve_courses(self, request, queryset):
+        pending = queryset.filter(review_status=Course.Status.PENDING_REVIEW)
+        approved = 0
+        for course in pending:
+            course.review_status = Course.Status.APPROVED
+            course.is_published = True
+            course.reviewed_by = request.user
+            course.save()
+            approved += 1
+        self.message_user(request, f"{approved} courses approved.")
+
+    @admin.action(description="Reject selected courses")
+    def reject_courses(self, request, queryset):
+        pending = queryset.filter(review_status=Course.Status.PENDING_REVIEW)
+        rejected = 0
+        for course in pending:
+            course.review_status = Course.Status.REJECTED
+            course.reviewed_by = request.user
+            course.save()
+            rejected += 1
+        self.message_user(request, f"{rejected} courses rejected.")
+
     search_fields = ("title", "short_description", "full_description")
     prepopulated_fields = {"slug": ("title",)}
     inlines = [CourseModuleInline]
-    actions = ["archive_selected_courses"]
+    actions = ["archive_selected_courses", "approve_courses", "reject_courses"]
 
     @admin.action(
         description="Archive selected courses (keeps student data)"
